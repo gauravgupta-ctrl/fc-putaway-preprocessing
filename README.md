@@ -33,7 +33,9 @@ Visit http://localhost:3000 to see your app!
 
 ## Deployment
 
-Ready to deploy? Check out [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+Ready to deploy? Check out:
+- **[Deployment & User Access Guide](./docs/DEPLOYMENT_AND_ACCESS.md)** - For understanding how to deploy and how users will access it
+- **[Technical Deployment Guide](./DEPLOYMENT.md)** - For detailed technical deployment instructions
 
 **Recommended:** Deploy to Vercel for the easiest setup.
 
