@@ -78,7 +78,25 @@ cp .env.example .env.local
 
 # Edit .env.local and add your Supabase and Resend credentials
 # (See instructions in .env.example file)
+
+# Run the development server
+npm run dev
 ```
+
+---
+
+## Version Control (Optional but Recommended)
+
+The project is set up with Git for version control. To connect to a remote repository (GitHub, GitLab, etc.):
+
+1. **Create a repository** on GitHub (or your preferred platform)
+2. **Connect it** to your local repository:
+   ```bash
+   git remote add origin <your-repository-url>
+   git push -u origin main
+   ```
+
+This lets you backup your code and collaborate with others!
 
 ---
 
