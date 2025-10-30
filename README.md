@@ -31,6 +31,12 @@ npm run dev
 
 Visit http://localhost:3000 to see your app!
 
+## Deployment
+
+Ready to deploy? Check out [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+**Recommended:** Deploy to Vercel for the easiest setup.
+
 ## Project Structure
 
 ```
