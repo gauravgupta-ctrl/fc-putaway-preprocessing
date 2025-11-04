@@ -2,28 +2,28 @@ import { supabase } from './supabase';
 
 export type UserRole = 'admin' | 'operator';
 
-export async function getUserRole(): Promise<UserRole | null> {
+export async function getCurrentUserRole(): Promise<UserRole | null> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) return null;
 
-  // Get role from user metadata
   const role = session.user.user_metadata?.role as UserRole;
   return role || null;
 }
 
-export async function checkRole(allowedRoles: UserRole[]): Promise<boolean> {
-  const role = await getUserRole();
-  if (!role) return false;
-  return allowedRoles.includes(role);
-}
-
-export async function requireRole(allowedRoles: UserRole[]): Promise<void> {
-  const hasAccess = await checkRole(allowedRoles);
-  if (!hasAccess) {
-    throw new Error('Access denied');
-  }
+export async function checkAccess(requiredRole: UserRole): Promise<boolean> {
+  const userRole = await getCurrentUserRole();
+  
+  if (!userRole) return false;
+  
+  // Admin has access to everything
+  if (userRole === 'admin') return true;
+  
+  // Operator only has access to operator pages
+  if (requiredRole === 'operator' && userRole === 'operator') return true;
+  
+  return false;
 }
 

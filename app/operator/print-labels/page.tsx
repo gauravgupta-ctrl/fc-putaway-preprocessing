@@ -2,35 +2,36 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Printer, Check } from 'lucide-react';
-import { generatePalletLabels, getPreprocessingItems } from '@/lib/operator';
+import { Badge } from '@/components/ui/badge';
+import { Printer, CheckCircle, Package } from 'lucide-react';
+import { createPalletLabel, getCompletedItemsCount } from '@/lib/operator';
 import { supabase } from '@/lib/supabase';
 
 export default function PrintLabelsPage() {
-  const searchParams = useSearchParams();
-  const toId = searchParams.get('toId');
-  const toNumber = searchParams.get('toNumber');
-  const fromScan = searchParams.get('fromScan') === 'true';
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const transferOrderId = searchParams.get('to');
+  const transferNumber = searchParams.get('num');
 
-  const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [labelCount, setLabelCount] = useState(1);
+  const [printing, setPrinting] = useState(false);
+  const [printed, setPrinted] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [allComplete, setAllComplete] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
 
   useEffect(() => {
-    if (!toId || !toNumber) {
+    if (!transferOrderId || !transferNumber) {
       router.push('/operator');
       return;
     }
+
     checkAuth();
-    checkCompletion();
-  }, [toId]);
+    loadCompletedCount();
+  }, [transferOrderId, transferNumber]);
 
   async function checkAuth() {
     const {
@@ -39,141 +40,166 @@ export default function PrintLabelsPage() {
     setUserId(session?.user?.id || null);
   }
 
-  async function checkCompletion() {
-    if (!toId) return;
-    try {
-      const items = await getPreprocessingItems(toId);
-      const completed = items.filter((item) => item.preprocessing_status === 'completed');
-      const requested = items.filter((item) => item.preprocessing_status === 'requested');
-
-      setCompletedCount(completed.length);
-      setAllComplete(requested.length === 0 && completed.length > 0);
-    } catch (err) {
-      console.error('Error checking completion:', err);
-    }
+  async function loadCompletedCount() {
+    if (!transferOrderId) return;
+    const count = await getCompletedItemsCount(transferOrderId);
+    setCompletedCount(count);
   }
 
   async function handlePrint() {
-    if (!toId || !userId || quantity < 1) return;
+    if (!transferOrderId || !userId) return;
 
-    setLoading(true);
+    setPrinting(true);
+
     try {
-      await generatePalletLabels(toId, quantity, userId);
+      // Create pallet label records
+      for (let i = 1; i <= labelCount; i++) {
+        await createPalletLabel(transferOrderId, i, labelCount, userId);
+      }
+
+      // Log the print request (in production, this would trigger actual printing)
+      console.log('='.repeat(50));
+      console.log('PALLET LABEL PRINT REQUEST');
+      console.log('='.repeat(50));
+      console.log(`Transfer Order: ${transferNumber}`);
+      console.log(`Date/Time: ${new Date().toLocaleString()}`);
+      console.log(`Total Labels: ${labelCount}`);
+      console.log(`Completed Items: ${completedCount}`);
+      console.log('='.repeat(50));
+      
+      for (let i = 1; i <= labelCount; i++) {
+        console.log(`\nLabel ${i} of ${labelCount}:`);
+        console.log('-----------------------------------');
+        console.log(`PRE-PROCESSED`);
+        console.log(`TO: ${transferNumber}`);
+        console.log(`${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`);
+        console.log(`Label ${i}/${labelCount}`);
+        console.log('-----------------------------------');
+      }
+
+      console.log('\n' + '='.repeat(50));
+      console.log('END PRINT REQUEST');
+      console.log('='.repeat(50));
+
+      setPrinted(true);
+      setPrinting(false);
 
       // Show success message
-      alert(`Print request sent for ${quantity} label(s)!`);
-
-      // If came from scan page, go back
-      // If all items complete, go to end flow
-      if (fromScan) {
-        router.push(`/operator/scan-item?toId=${toId}&toNumber=${toNumber}`);
-      } else {
-        router.push(`/operator/end-flow?toId=${toId}&toNumber=${toNumber}`);
-      }
-    } catch (err) {
-      console.error('Error printing labels:', err);
-      alert('Failed to request print. Please try again.');
-    } finally {
-      setLoading(false);
+      alert(`${labelCount} label(s) sent to printer!\n\nCheck console for label details.`);
+    } catch (error) {
+      console.error('Error printing labels:', error);
+      alert('Failed to print labels. Please try again.');
+      setPrinting(false);
     }
   }
 
-  function handleSkip() {
-    if (fromScan) {
-      router.push(`/operator/scan-item?toId=${toId}&toNumber=${toNumber}`);
-    } else {
-      router.push(`/operator/end-flow?toId=${toId}&toNumber=${toNumber}`);
-    }
+  function handleDone() {
+    router.push('/operator');
+  }
+
+  if (!transferOrderId || !transferNumber) {
+    return null;
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-73px)]">
-      {/* TO Info */}
-      <div className="bg-gray-50 border-b px-6 py-4">
-        <div>
-          <p className="text-sm text-gray-600">Transfer Order</p>
-          <p className="text-xl font-bold">{toNumber}</p>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-md space-y-8">
-          {/* Icon */}
-          <div className="flex justify-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-              <Printer className="w-10 h-10 text-green-600" />
-            </div>
-          </div>
-
-          {/* Title */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold">Print Pallet Labels</h2>
-            {allComplete ? (
-              <p className="text-green-600 font-medium">
-                ✓ All items processed ({completedCount} items)
-              </p>
-            ) : (
-              <p className="text-gray-600">{completedCount} item(s) completed</p>
-            )}
-          </div>
-
-          {/* Quantity Input */}
-          <Card className="p-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="quantity" className="text-base">
-                  Number of labels
-                </Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="text-2xl h-16 text-center font-bold mt-2"
-                />
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {!printed ? (
+          <>
+            {/* Header */}
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <Printer className="h-16 w-16 text-blue-600" />
               </div>
-
-              <p className="text-sm text-gray-500 text-center">
-                Each label will include: TO #{toNumber}, date/time, "PRE-PROCESSED"
-              </p>
+              <h1 className="text-3xl font-bold mb-2">Print Labels</h1>
+              <Badge variant="outline" className="text-lg px-4 py-2">
+                {transferNumber}
+              </Badge>
+              <p className="text-gray-600 mt-4">{completedCount} items completed</p>
             </div>
+
+            {/* Label Count Input */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center">Number of Labels</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="labelCount">How many pallet labels?</Label>
+                  <Input
+                    id="labelCount"
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={labelCount}
+                    onChange={(e) => setLabelCount(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="text-2xl h-16 text-center"
+                  />
+                </div>
+
+                <div className="text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
+                  <p className="font-semibold mb-2">Label Details:</p>
+                  <p>• TO: {transferNumber}</p>
+                  <p>• Date/Time: {new Date().toLocaleString()}</p>
+                  <p>• Label format: "1 of {labelCount}", "2 of {labelCount}", etc.</p>
+                </div>
+
+                <Button
+                  onClick={handlePrint}
+                  disabled={printing || labelCount < 1}
+                  className="w-full h-16 text-xl"
+                >
+                  {printing ? 'Printing...' : `Print ${labelCount} Label(s)`}
+                </Button>
+
+                <Button
+                  onClick={() => router.back()}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Back
+                </Button>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          /* Success Screen */
+          <Card className="border-green-300 bg-green-50">
+            <CardContent className="pt-6">
+              <div className="text-center space-y-6">
+                <CheckCircle className="h-24 w-24 text-green-600 mx-auto" />
+                <div>
+                  <p className="text-2xl font-bold text-green-900 mb-2">
+                    Labels Printed!
+                  </p>
+                  <p className="text-green-700">
+                    {labelCount} label(s) sent to printer
+                  </p>
+                  <Badge variant="outline" className="text-lg px-4 py-2 mt-4">
+                    {transferNumber}
+                  </Badge>
+                </div>
+
+                <div className="space-y-3">
+                  <Button
+                    onClick={handleDone}
+                    className="w-full h-16 text-xl bg-green-600 hover:bg-green-700"
+                  >
+                    <Package className="h-5 w-5 mr-2" />
+                    Scan New Transfer Order
+                  </Button>
+                  <Button
+                    onClick={() => router.back()}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Back to Items
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
           </Card>
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <Button
-              onClick={handlePrint}
-              disabled={loading || !userId || quantity < 1}
-              className="w-full h-16 text-xl"
-              size="lg"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                  Printing...
-                </>
-              ) : (
-                <>
-                  <Printer className="mr-2 h-6 w-6" />
-                  Print {quantity} Label{quantity > 1 ? 's' : ''}
-                </>
-              )}
-            </Button>
-
-            <Button
-              onClick={handleSkip}
-              disabled={loading}
-              variant="outline"
-              className="w-full h-14 text-lg"
-              size="lg"
-            >
-              Skip for Now
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

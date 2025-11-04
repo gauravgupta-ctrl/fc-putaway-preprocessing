@@ -1,24 +1,52 @@
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getCurrentUserRole } from '@/lib/roles';
+import { Loader2 } from 'lucide-react';
 
 export default function OperatorLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Mobile-optimized header */}
-      <header className="sticky top-0 bg-white border-b shadow-sm z-50">
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/operator" className="flex items-center gap-2 text-gray-600">
-              <ArrowLeft className="h-6 w-6" />
-            </Link>
-            <h1 className="text-lg font-semibold">Pre-Processing</h1>
-            <div className="w-6" /> {/* Spacer for centering */}
-          </div>
-        </div>
-      </header>
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const router = useRouter();
 
-      {/* Main Content - Full screen mobile optimized */}
-      <main className="pb-safe">{children}</main>
+  useEffect(() => {
+    checkAccess();
+  }, []);
+
+  async function checkAccess() {
+    const role = await getCurrentUserRole();
+    
+    if (!role) {
+      router.push('/login');
+      return;
+    }
+
+    if (role !== 'operator' && role !== 'admin') {
+      alert('Access denied. Operator access required.');
+      router.push('/');
+      return;
+    }
+
+    setAuthorized(true);
+    setLoading(false);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!authorized) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {children}
     </div>
   );
 }
