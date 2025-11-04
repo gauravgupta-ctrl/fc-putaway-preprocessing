@@ -1,19 +1,50 @@
--- Add roles to users via metadata
--- This allows us to control access to admin vs operator pages
+-- Add user roles table and management
 
--- Set the admin user role (update email if different)
-UPDATE auth.users 
-SET raw_user_meta_data = raw_user_meta_data || '{"role": "admin"}'::jsonb
-WHERE email = 'admin@test.com';
+-- Create user roles table
+CREATE TABLE IF NOT EXISTS user_roles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('admin', 'operator')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id)
+);
 
--- Example: Create an operator user (run this manually if needed)
--- First create the user in Supabase Dashboard, then run:
--- UPDATE auth.users 
--- SET raw_user_meta_data = raw_user_meta_data || '{"role": "operator"}'::jsonb
--- WHERE email = 'operator@test.com';
+-- Create index
+CREATE INDEX user_roles_user_id_idx ON user_roles(user_id);
+CREATE INDEX user_roles_role_idx ON user_roles(role);
 
--- Verify roles
-SELECT email, raw_user_meta_data->>'role' as role
+-- Enable RLS
+ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+
+-- Allow all operations (for development)
+CREATE POLICY "Allow all operations" ON user_roles
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Insert default admin role for existing test user
+-- Note: This will fail if user doesn't exist, which is fine
+INSERT INTO user_roles (user_id, role)
+SELECT id, 'admin'
 FROM auth.users
-WHERE email IN ('admin@test.com', 'operator@test.com');
+WHERE email = 'admin@test.com'
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Helper function to get user role
+CREATE OR REPLACE FUNCTION get_user_role(p_user_id UUID)
+RETURNS TEXT AS $$
+DECLARE
+  v_role TEXT;
+BEGIN
+  SELECT role INTO v_role
+  FROM user_roles
+  WHERE user_id = p_user_id;
+  
+  RETURN COALESCE(v_role, 'operator'); -- Default to operator if no role set
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to auto-update updated_at
+CREATE TRIGGER update_user_roles_updated_at
+  BEFORE UPDATE ON user_roles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 

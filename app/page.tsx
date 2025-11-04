@@ -14,13 +14,18 @@ export default function Home() {
             <Button size="lg">Login to Get Started</Button>
           </Link>
         </div>
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center flex-wrap">
           <Link href="/admin/dashboard">
-            <Button size="lg" variant="outline">Go to Admin Dashboard</Button>
+            <Button size="lg" variant="outline">Admin Dashboard</Button>
           </Link>
           <Link href="/admin/settings">
             <Button size="lg" variant="outline">
               Settings
+            </Button>
+          </Link>
+          <Link href="/operator">
+            <Button size="lg" variant="outline">
+              Operator Portal
             </Button>
           </Link>
         </div>
@@ -44,6 +49,12 @@ export default function Home() {
                 Settings
               </a>{' '}
               - Configure threshold and eligible merchants
+            </li>
+            <li>
+              <a href="/operator" className="text-blue-600 hover:underline">
+                Operator Portal
+              </a>{' '}
+              - Mobile-optimized pre-processing workflow
             </li>
           </ul>
         </div>

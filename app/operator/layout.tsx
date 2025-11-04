@@ -1,52 +1,23 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getCurrentUserRole } from '@/lib/roles';
-import { Loader2 } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function OperatorLayout({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    checkAccess();
-  }, []);
-
-  async function checkAccess() {
-    const role = await getCurrentUserRole();
-    
-    if (!role) {
-      router.push('/login');
-      return;
-    }
-
-    if (role !== 'operator' && role !== 'admin') {
-      alert('Access denied. Operator access required.');
-      router.push('/');
-      return;
-    }
-
-    setAuthorized(true);
-    setLoading(false);
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!authorized) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {children}
+      {/* Minimal Header */}
+      <header className="bg-white border-b sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <h1 className="text-xl font-bold">Pre-Processing</h1>
+          <Button variant="ghost" size="sm">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        {children}
+      </main>
     </div>
   );
 }

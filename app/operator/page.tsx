@@ -2,125 +2,95 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { BarcodeScanner } from '@/components/BarcodeScanner';
-import { Package, AlertCircle } from 'lucide-react';
-import { findTransferOrderByNumber } from '@/lib/operator';
-import type { TransferOrder } from '@/types/database';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { getTransferOrderByNumber } from '@/lib/operator';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 export default function OperatorPage() {
-  const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleScan(transferNumber: string) {
-    setError('');
     setLoading(true);
+    setError(null);
 
     try {
-      // Add # if not present
+      // Ensure transfer number has # prefix
       const formattedNumber = transferNumber.startsWith('#') 
         ? transferNumber 
         : `#${transferNumber}`;
 
-      const transferOrder = await findTransferOrderByNumber(formattedNumber);
+      const to = await getTransferOrderByNumber(formattedNumber);
 
-      if (!transferOrder) {
+      if (!to) {
         setError('Transfer Order not found. Please scan again.');
         setLoading(false);
         return;
       }
 
-      console.log('Scanned TO:', formattedNumber, 'Status:', transferOrder.preprocessing_status);
-
-      // Check status
-      if (transferOrder.preprocessing_status === 'not required') {
-        setError('This Transfer Order does not require pre-processing.');
+      // Check TO status
+      const status = to.preprocessing_status;
+      
+      if (status === 'not required') {
+        setError('This TO does not require pre-processing.');
         setLoading(false);
         return;
       }
 
-      if (transferOrder.preprocessing_status === 'completed') {
-        setError('This Transfer Order has already been completed.');
+      if (status === 'completed') {
+        setError('Pre-processing for this TO is already completed.');
         setLoading(false);
         return;
       }
 
-      if (transferOrder.preprocessing_status === 'in review') {
-        setError(`This Transfer Order has not been requested for pre-processing yet. Current status: ${transferOrder.preprocessing_status}`);
+      if (status === 'in review') {
+        setError('This TO has not been requested for pre-processing yet.');
         setLoading(false);
         return;
       }
 
-      // Valid statuses: "requested" or "in-progress"
-      if (transferOrder.preprocessing_status === 'requested' || 
-          transferOrder.preprocessing_status === 'in-progress') {
-        console.log('Valid TO! Navigating to scan items...');
-        console.log('URL:', `/operator/scan-items?to=${transferOrder.id}&num=${formattedNumber}`);
-        
-        // Use window.location for more reliable navigation
-        window.location.href = `/operator/scan-items?to=${transferOrder.id}&num=${encodeURIComponent(formattedNumber)}`;
-      } else {
-        setError(`Invalid Transfer Order status: ${transferOrder.preprocessing_status}`);
-        setLoading(false);
-      }
+      // Valid statuses: requested, in-progress
+      router.push(`/operator/${encodeURIComponent(formattedNumber)}`);
     } catch (error) {
-      console.error('Error scanning TO:', error);
-      setError('An error occurred. Please try again.');
+      console.error('Error fetching TO:', error);
+      setError('Failed to fetch Transfer Order. Please try again.');
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <Package className="h-16 w-16 text-blue-600" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Pre-Processing</h1>
-          <p className="text-gray-600">Scan Transfer Order to begin</p>
-        </div>
+    <div className="max-w-md mx-auto">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2">Scan Transfer Order</h2>
+              <p className="text-gray-600">Scan the TO barcode to begin</p>
+            </div>
 
-        {/* Scanner Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center">Scan Transfer Order</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarcodeScanner
-              onScan={handleScan}
-              placeholder="Scan TO barcode..."
-              label="Position barcode in scanner"
-            />
-          </CardContent>
-        </Card>
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-        {/* Error Message */}
-        {error && (
-          <Card className="border-red-300 bg-red-50">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-red-900">Error</p>
-                  <p className="text-red-700">{error}</p>
-                </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Loading */}
-        {loading && (
-          <div className="text-center text-gray-600">
-            <p>Processing...</p>
+            ) : (
+              <BarcodeScanner
+                onScan={handleScan}
+                placeholder="Scan or enter TO number"
+              />
+            )}
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,38 +1,88 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera, Keyboard } from 'lucide-react';
+import { Camera, X, Keyboard } from 'lucide-react';
 
 interface BarcodeScannerProps {
-  onScan: (barcode: string) => void;
+  onScan: (code: string) => void;
   placeholder?: string;
-  label?: string;
+  title?: string;
 }
 
-export function BarcodeScanner({ onScan, placeholder, label }: BarcodeScannerProps) {
+export function BarcodeScanner({ onScan, placeholder = 'Scan or enter code', title }: BarcodeScannerProps) {
   const [manualInput, setManualInput] = useState('');
-  const [scanMode, setScanMode] = useState<'auto' | 'manual'>('auto');
+  const [scanning, setScanning] = useState(false);
+  const [useManual, setUseManual] = useState(false);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input for external scanner
+  // Auto-focus input on mount for external scanner
   useEffect(() => {
-    if (scanMode === 'auto' && inputRef.current) {
+    if (!useManual && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [scanMode]);
+  }, [useManual]);
 
-  // Handle external scanner input (auto-submit on Enter)
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' && manualInput.trim()) {
-      e.preventDefault();
-      onScan(manualInput.trim());
-      setManualInput('');
+  // Handle external scanner input (keyboard wedge)
+  useEffect(() => {
+    function handleKeyPress(e: KeyboardEvent) {
+      if (!useManual && !scanning) {
+        // Auto-focus input when user starts typing
+        if (inputRef.current && document.activeElement !== inputRef.current) {
+          inputRef.current.focus();
+        }
+      }
+    }
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, [useManual, scanning]);
+
+  async function startCameraScanning() {
+    setScanning(true);
+    setUseManual(true);
+
+    try {
+      const scanner = new Html5Qrcode('reader');
+      scannerRef.current = scanner;
+
+      await scanner.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => {
+          stopScanning();
+          onScan(decodedText);
+        },
+        (error) => {
+          // Ignore errors during scanning
+        }
+      );
+    } catch (error) {
+      console.error('Error starting camera:', error);
+      alert('Failed to start camera. Please use manual input.');
+      setScanning(false);
     }
   }
 
-  function handleManualSubmit() {
+  function stopScanning() {
+    if (scannerRef.current) {
+      scannerRef.current.stop().then(() => {
+        scannerRef.current = null;
+        setScanning(false);
+      }).catch((err) => {
+        console.error('Error stopping camera:', err);
+      });
+    }
+  }
+
+  function handleManualSubmit(e: React.FormEvent) {
+    e.preventDefault();
     if (manualInput.trim()) {
       onScan(manualInput.trim());
       setManualInput('');
@@ -41,65 +91,58 @@ export function BarcodeScanner({ onScan, placeholder, label }: BarcodeScannerPro
 
   return (
     <div className="space-y-4">
-      {label && <p className="text-lg font-medium text-center">{label}</p>}
-      
-      {/* Mode Toggle */}
-      <div className="flex gap-2 justify-center">
-        <Button
-          variant={scanMode === 'auto' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setScanMode('auto')}
-        >
-          <Keyboard className="h-4 w-4 mr-2" />
-          Scanner
-        </Button>
-        <Button
-          variant={scanMode === 'manual' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setScanMode('manual')}
-        >
-          <Camera className="h-4 w-4 mr-2" />
-          Camera
-        </Button>
-      </div>
+      {title && <h2 className="text-2xl font-bold text-center">{title}</h2>}
 
-      {scanMode === 'auto' ? (
-        /* External Scanner Mode */
-        <div className="space-y-2">
-          <Input
-            ref={inputRef}
-            type="text"
-            value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder || 'Scan barcode...'}
-            className="text-xl h-16 text-center font-mono"
-            autoFocus
-          />
-          <p className="text-sm text-gray-500 text-center">
-            Use external scanner or type and press Enter
-          </p>
-        </div>
-      ) : (
-        /* Camera Scanner Mode */
-        <div className="space-y-2">
-          <Input
-            type="text"
-            value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
-            placeholder={placeholder || 'Enter barcode manually'}
-            className="text-xl h-16 text-center font-mono"
-          />
-          <Button 
-            onClick={handleManualSubmit} 
+      {!scanning && (
+        <>
+          {/* External Scanner / Manual Input */}
+          <form onSubmit={handleManualSubmit} className="space-y-3">
+            <Input
+              ref={inputRef}
+              type="text"
+              value={manualInput}
+              onChange={(e) => setManualInput(e.target.value)}
+              placeholder={placeholder}
+              className="text-lg h-14"
+              autoFocus
+            />
+            <Button type="submit" className="w-full h-14 text-lg" size="lg">
+              <Keyboard className="mr-2 h-5 w-5" />
+              Submit
+            </Button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">or</span>
+            </div>
+          </div>
+
+          {/* Camera Scan */}
+          <Button
+            onClick={startCameraScanning}
+            variant="outline"
             className="w-full h-14 text-lg"
-            disabled={!manualInput.trim()}
+            size="lg"
           >
-            Submit
+            <Camera className="mr-2 h-5 w-5" />
+            Use Camera
           </Button>
-          <p className="text-sm text-gray-500 text-center">
-            Camera scanning coming soon - use manual entry
-          </p>
+        </>
+      )}
+
+      {/* Camera Scanner View */}
+      {scanning && (
+        <div className="space-y-4">
+          <div id="reader" className="rounded-lg overflow-hidden"></div>
+          <Button onClick={stopScanning} variant="outline" className="w-full" size="lg">
+            <X className="mr-2 h-5 w-5" />
+            Cancel
+          </Button>
         </div>
       )}
     </div>
