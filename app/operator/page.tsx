@@ -33,6 +33,8 @@ export default function OperatorPage() {
         return;
       }
 
+      console.log('Scanned TO:', formattedNumber, 'Status:', transferOrder.preprocessing_status);
+
       // Check status
       if (transferOrder.preprocessing_status === 'not required') {
         setError('This Transfer Order does not require pre-processing.');
@@ -47,7 +49,7 @@ export default function OperatorPage() {
       }
 
       if (transferOrder.preprocessing_status === 'in review') {
-        setError('This Transfer Order has not been requested for pre-processing yet.');
+        setError(`This Transfer Order has not been requested for pre-processing yet. Current status: ${transferOrder.preprocessing_status}`);
         setLoading(false);
         return;
       }
@@ -55,10 +57,11 @@ export default function OperatorPage() {
       // Valid statuses: "requested" or "in-progress"
       if (transferOrder.preprocessing_status === 'requested' || 
           transferOrder.preprocessing_status === 'in-progress') {
+        console.log('Valid TO! Navigating to scan items...');
         // Navigate to scan items page
         router.push(`/operator/scan-items?to=${transferOrder.id}&num=${formattedNumber}`);
       } else {
-        setError('Invalid Transfer Order status.');
+        setError(`Invalid Transfer Order status: ${transferOrder.preprocessing_status}`);
         setLoading(false);
       }
     } catch (error) {
