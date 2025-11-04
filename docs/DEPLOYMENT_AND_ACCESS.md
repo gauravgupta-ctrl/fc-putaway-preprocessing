@@ -1,4 +1,4 @@
-# Deployment and User Access Guide
+chec# Deployment and User Access Guide
 
 This guide explains how to deploy your application and how your warehouse staff will access it.
 
