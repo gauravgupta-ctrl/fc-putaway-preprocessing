@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { scanItem, getCompletedItems, checkAllItemsCompleted } from '@/lib/operator';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Scan, AlertCircle, ArrowLeft, Tag } from 'lucide-react';
+import { Loader2, Scan, AlertCircle, ArrowLeft, Tag, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function OperatorScanItemPage({ params }: { params: { toId: string } }) {
