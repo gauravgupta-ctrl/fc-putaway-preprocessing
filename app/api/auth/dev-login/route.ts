@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 // Development-only: Create a test user session
 export async function POST() {
   try {
+    const supabase = createRouteHandlerClient({ cookies });
+
     // Sign up a test user (will fail if already exists, which is fine)
     await supabase.auth.signUp({
       email: 'admin@test.com',
@@ -23,6 +26,7 @@ export async function POST() {
     return NextResponse.json({ 
       success: true, 
       user: data.user,
+      session: data.session,
       message: 'Logged in as test user'
     });
   } catch (error) {

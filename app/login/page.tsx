@@ -20,16 +20,18 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Logged in successfully!');
-        router.push('/admin/dashboard');
-        router.refresh();
+        // Wait a moment for session to be established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Redirect to admin dashboard
+        window.location.href = '/admin/dashboard';
       } else {
         alert(`Login failed: ${data.error}`);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Login error:', error);
       alert('Failed to login');
-    } finally {
       setLoading(false);
     }
   }
