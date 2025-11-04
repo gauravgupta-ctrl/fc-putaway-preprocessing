@@ -94,6 +94,17 @@ export interface TransferOrderLineWithSku extends TransferOrderLine {
   sku_data: SkuAttribute;
 }
 
+// User roles
+export type UserRole = 'admin' | 'operator';
+
+export interface UserProfile {
+  id: string;
+  role: UserRole;
+  full_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Google Sheets data types
 export interface GoogleSheetTransferOrder {
   Transfer: string;

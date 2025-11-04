@@ -1,72 +1,61 @@
 import { supabase } from './supabase';
-import type { TransferOrder, TransferOrderLine, SkuAttribute } from '@/types/database';
+import type { TransferOrder, TransferOrderLine, SkuAttribute, PreprocessingStatus } from '@/types/database';
 
-export interface TOWithItems extends TransferOrder {
-  items: (TransferOrderLine & { sku_data: SkuAttribute })[];
-}
-
-// Get TO by transfer number
-export async function getTransferOrderByNumber(
-  transferNumber: string
-): Promise<TOWithItems | null> {
-  const { data: to, error } = await supabase
+// Find TO by transfer number (supports both "#T0303" and "T0303")
+export async function findTransferOrderByNumber(transferNumber: string) {
+  // Normalize: ensure it has # prefix
+  const normalized = transferNumber.startsWith('#') ? transferNumber : `#${transferNumber}`;
+  
+  const { data, error } = await supabase
     .from('transfer_orders')
     .select('*')
-    .eq('transfer_number', transferNumber)
+    .eq('transfer_number', normalized)
     .single();
 
-  if (error || !to) {
+  if (error) {
+    console.error('Error finding TO:', error);
     return null;
   }
 
-  // Get items with SKU data
-  const { data: items } = await supabase
-    .from('transfer_order_lines')
-    .select(`
-      *,
-      sku_data:sku_attributes(*)
-    `)
-    .eq('transfer_order_id', to.id);
-
-  return {
-    ...to,
-    items: items || [],
-  };
+  return data as TransferOrder;
 }
 
-// Get item by barcode for a specific TO
-export async function getItemByBarcode(
-  toId: string,
-  barcode: string
-): Promise<(TransferOrderLine & { sku_data: SkuAttribute }) | null> {
-  // First find SKU by barcode
-  const { data: sku } = await supabase
+// Find item by barcode
+export async function findItemByBarcode(barcode: string, transferOrderId: string) {
+  // First, find SKU by barcode
+  const { data: skuData, error: skuError } = await supabase
     .from('sku_attributes')
     .select('sku')
     .eq('barcode', barcode)
     .single();
 
-  if (!sku) {
+  if (skuError || !skuData) {
+    console.error('SKU not found for barcode:', barcode);
     return null;
   }
 
-  // Then find the item in the TO
-  const { data: item } = await supabase
+  // Then find the transfer order line
+  const { data: lineData, error: lineError } = await supabase
     .from('transfer_order_lines')
     .select(`
       *,
       sku_data:sku_attributes(*)
     `)
-    .eq('transfer_order_id', toId)
-    .eq('sku', sku.sku)
+    .eq('transfer_order_id', transferOrderId)
+    .eq('sku', skuData.sku)
     .single();
 
-  return item || null;
+  if (lineError || !lineData) {
+    console.error('Item not found in TO:', lineError);
+    return null;
+  }
+
+  return lineData;
 }
 
-// Complete preprocessing for an item
-export async function completeItemPreprocessing(
-  itemId: string,
+// Update item status after operator confirms action
+export async function confirmItemAction(
+  lineId: string,
   userId: string | null
 ): Promise<void> {
   const { error } = await supabase
@@ -75,93 +64,137 @@ export async function completeItemPreprocessing(
       preprocessing_status: 'completed',
       updated_at: new Date().toISOString(),
     })
-    .eq('id', itemId);
+    .eq('id', lineId);
 
   if (error) {
-    console.error('Error completing preprocessing:', error);
+    console.error('Error updating item status:', error);
     throw error;
   }
 
-  // Log audit trail (skip if no user)
+  // Log audit trail
   if (userId) {
     await supabase.from('audit_log').insert({
       user_id: userId,
       action: 'complete_preprocessing',
       entity_type: 'transfer_order_lines',
-      entity_id: itemId,
+      entity_id: lineId,
     });
   }
 }
 
-// Mark TO as in-progress (when operator starts working on it)
-export async function markTOInProgress(
-  toId: string,
+// Start processing an item (set to in-progress)
+export async function startItemProcessing(
+  lineId: string,
   userId: string | null
 ): Promise<void> {
-  // The trigger will auto-update TO status based on items
-  // But we can manually set it if needed
   const { error } = await supabase
-    .from('transfer_orders')
+    .from('transfer_order_lines')
     .update({
       preprocessing_status: 'in-progress',
       updated_at: new Date().toISOString(),
     })
-    .eq('id', toId);
+    .eq('id', lineId);
 
   if (error) {
-    console.error('Error marking TO in progress:', error);
+    console.error('Error starting item processing:', error);
     throw error;
   }
 
+  // Log audit trail
   if (userId) {
     await supabase.from('audit_log').insert({
       user_id: userId,
       action: 'start_preprocessing',
-      entity_type: 'transfer_orders',
-      entity_id: toId,
+      entity_type: 'transfer_order_lines',
+      entity_id: lineId,
     });
   }
 }
 
-// Get count of items needing preprocessing in a TO
-export function getPreprocessingCounts(items: TransferOrderLine[]) {
-  const requested = items.filter(item => item.preprocessing_status === 'requested').length;
-  const completed = items.filter(item => item.preprocessing_status === 'completed').length;
-  const total = items.filter(
-    item => item.preprocessing_status === 'requested' || item.preprocessing_status === 'completed'
-  ).length;
+// Get all items for a TO that need pre-processing
+export async function getPreprocessingItems(transferOrderId: string) {
+  const { data, error } = await supabase
+    .from('transfer_order_lines')
+    .select(`
+      *,
+      sku_data:sku_attributes(*)
+    `)
+    .eq('transfer_order_id', transferOrderId)
+    .in('preprocessing_status', ['requested', 'in-progress', 'completed']);
 
-  return { requested, completed, total };
+  if (error) {
+    console.error('Error fetching preprocessing items:', error);
+    return [];
+  }
+
+  return data;
 }
 
-// Check if TO preprocessing is complete
-export function isTOPreprocessingComplete(items: TransferOrderLine[]): boolean {
-  const { requested, total } = getPreprocessingCounts(items);
-  return total > 0 && requested === 0; // All requested items are now completed
+// Check if all requested items are completed
+export async function areAllItemsCompleted(transferOrderId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('transfer_order_lines')
+    .select('preprocessing_status')
+    .eq('transfer_order_id', transferOrderId)
+    .eq('preprocessing_status', 'requested');
+
+  if (error) {
+    console.error('Error checking completion:', error);
+    return false;
+  }
+
+  // If no items are still in "requested" status, all are done
+  return !data || data.length === 0;
 }
 
-// Log pallet label print
-export async function logPalletLabelPrint(
-  toId: string,
+// Get completed items for a TO (for label printing)
+export async function getCompletedItems(transferOrderId: string) {
+  const { data, error } = await supabase
+    .from('transfer_order_lines')
+    .select(`
+      *,
+      sku_data:sku_attributes(*)
+    `)
+    .eq('transfer_order_id', transferOrderId)
+    .eq('preprocessing_status', 'completed');
+
+  if (error) {
+    console.error('Error fetching completed items:', error);
+    return [];
+  }
+
+  return data;
+}
+
+// Log label print action
+export async function logLabelPrint(
+  transferOrderId: string,
   labelCount: number,
   userId: string | null
 ): Promise<void> {
-  // Create pallet label records
-  for (let i = 1; i <= labelCount; i++) {
-    await supabase.from('pallet_labels').insert({
-      transfer_order_id: toId,
-      label_number: i,
-      total_labels: labelCount,
-      generated_by: userId || undefined,
-    });
+  // Insert pallet labels
+  const labels = Array.from({ length: labelCount }, (_, i) => ({
+    transfer_order_id: transferOrderId,
+    label_number: i + 1,
+    total_labels: labelCount,
+    generated_by: userId,
+  }));
+
+  const { error } = await supabase.from('pallet_labels').insert(labels);
+
+  if (error) {
+    console.error('Error logging labels:', error);
+    throw error;
   }
 
+  // Log audit trail
   if (userId) {
     await supabase.from('audit_log').insert({
       user_id: userId,
       action: 'generate_label',
-      entity_type: 'pallet_labels',
-      details: { transfer_order_id: toId, count: labelCount },
+      entity_type: 'transfer_orders',
+      entity_id: transferOrderId,
+      details: { label_count: labelCount },
     });
   }
 }

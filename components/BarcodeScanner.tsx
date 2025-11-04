@@ -1,85 +1,70 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
-import { Camera, X, Keyboard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Camera, Keyboard } from 'lucide-react';
 
 interface BarcodeScannerProps {
   onScan: (code: string) => void;
   placeholder?: string;
-  title?: string;
+  label?: string;
+  autoFocus?: boolean;
 }
 
-export function BarcodeScanner({ onScan, placeholder = 'Scan or enter code', title }: BarcodeScannerProps) {
+export function BarcodeScanner({
+  onScan,
+  placeholder = 'Scan or enter code',
+  label,
+  autoFocus = true,
+}: BarcodeScannerProps) {
   const [manualInput, setManualInput] = useState('');
-  const [scanning, setScanning] = useState(false);
-  const [useManual, setUseManual] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const [scanMode, setScanMode] = useState<'bluetooth' | 'manual'>('bluetooth');
   const inputRef = useRef<HTMLInputElement>(null);
+  const bluetoothBufferRef = useRef('');
+  const bluetoothTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Auto-focus input on mount for external scanner
+  // Handle bluetooth scanner input (types like keyboard)
   useEffect(() => {
-    if (!useManual && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [useManual]);
+    if (scanMode !== 'bluetooth') return;
 
-  // Handle external scanner input (keyboard wedge)
-  useEffect(() => {
     function handleKeyPress(e: KeyboardEvent) {
-      if (!useManual && !scanning) {
-        // Auto-focus input when user starts typing
-        if (inputRef.current && document.activeElement !== inputRef.current) {
-          inputRef.current.focus();
-        }
+      // Ignore if user is typing in an input field
+      if (document.activeElement?.tagName === 'INPUT' && document.activeElement !== inputRef.current) {
+        return;
       }
+
+      // Enter key = end of scan
+      if (e.key === 'Enter' && bluetoothBufferRef.current) {
+        e.preventDefault();
+        const scannedCode = bluetoothBufferRef.current.trim();
+        bluetoothBufferRef.current = '';
+        
+        if (scannedCode) {
+          onScan(scannedCode);
+        }
+        return;
+      }
+
+      // Ignore special keys
+      if (e.key.length > 1 && e.key !== 'Enter') return;
+
+      // Add character to buffer
+      bluetoothBufferRef.current += e.key;
+
+      // Clear buffer after 100ms of no input (scanner types fast)
+      clearTimeout(bluetoothTimeoutRef.current);
+      bluetoothTimeoutRef.current = setTimeout(() => {
+        bluetoothBufferRef.current = '';
+      }, 100);
     }
 
     window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
-  }, [useManual, scanning]);
-
-  async function startCameraScanning() {
-    setScanning(true);
-    setUseManual(true);
-
-    try {
-      const scanner = new Html5Qrcode('reader');
-      scannerRef.current = scanner;
-
-      await scanner.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        (decodedText) => {
-          stopScanning();
-          onScan(decodedText);
-        },
-        (error) => {
-          // Ignore errors during scanning
-        }
-      );
-    } catch (error) {
-      console.error('Error starting camera:', error);
-      alert('Failed to start camera. Please use manual input.');
-      setScanning(false);
-    }
-  }
-
-  function stopScanning() {
-    if (scannerRef.current) {
-      scannerRef.current.stop().then(() => {
-        scannerRef.current = null;
-        setScanning(false);
-      }).catch((err) => {
-        console.error('Error stopping camera:', err);
-      });
-    }
-  }
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+      clearTimeout(bluetoothTimeoutRef.current);
+    };
+  }, [scanMode, onScan]);
 
   function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -91,59 +76,77 @@ export function BarcodeScanner({ onScan, placeholder = 'Scan or enter code', tit
 
   return (
     <div className="space-y-4">
-      {title && <h2 className="text-2xl font-bold text-center">{title}</h2>}
-
-      {!scanning && (
-        <>
-          {/* External Scanner / Manual Input */}
-          <form onSubmit={handleManualSubmit} className="space-y-3">
-            <Input
-              ref={inputRef}
-              type="text"
-              value={manualInput}
-              onChange={(e) => setManualInput(e.target.value)}
-              placeholder={placeholder}
-              className="text-lg h-14"
-              autoFocus
-            />
-            <Button type="submit" className="w-full h-14 text-lg" size="lg">
-              <Keyboard className="mr-2 h-5 w-5" />
-              Submit
-            </Button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or</span>
-            </div>
-          </div>
-
-          {/* Camera Scan */}
-          <Button
-            onClick={startCameraScanning}
-            variant="outline"
-            className="w-full h-14 text-lg"
-            size="lg"
-          >
-            <Camera className="mr-2 h-5 w-5" />
-            Use Camera
-          </Button>
-        </>
+      {label && (
+        <label className="block text-lg font-medium text-gray-900">
+          {label}
+        </label>
       )}
 
-      {/* Camera Scanner View */}
-      {scanning && (
-        <div className="space-y-4">
-          <div id="reader" className="rounded-lg overflow-hidden"></div>
-          <Button onClick={stopScanning} variant="outline" className="w-full" size="lg">
-            <X className="mr-2 h-5 w-5" />
-            Cancel
-          </Button>
+      {/* Mode Toggle */}
+      <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+        <button
+          type="button"
+          onClick={() => setScanMode('bluetooth')}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors ${
+            scanMode === 'bluetooth'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <Camera className="h-5 w-5" />
+          Scanner
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setScanMode('manual');
+            setTimeout(() => inputRef.current?.focus(), 100);
+          }}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors ${
+            scanMode === 'manual'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <Keyboard className="h-5 w-5" />
+          Manual
+        </button>
+      </div>
+
+      {/* Scanner Ready Indicator */}
+      {scanMode === 'bluetooth' && (
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center">
+          <Camera className="h-12 w-12 mx-auto mb-3 text-blue-600" />
+          <p className="text-lg font-medium text-blue-900 mb-1">
+            Scanner Ready
+          </p>
+          <p className="text-sm text-blue-700">
+            Scan barcode with your bluetooth scanner
+          </p>
         </div>
+      )}
+
+      {/* Manual Input */}
+      {scanMode === 'manual' && (
+        <form onSubmit={handleManualSubmit} className="space-y-3">
+          <Input
+            ref={inputRef}
+            type="text"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            placeholder={placeholder}
+            autoFocus={autoFocus}
+            className="text-lg h-14 text-center font-mono"
+          />
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full h-14 text-lg"
+            disabled={!manualInput.trim()}
+          >
+            Submit
+          </Button>
+        </form>
       )}
     </div>
   );

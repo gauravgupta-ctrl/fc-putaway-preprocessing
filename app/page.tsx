@@ -18,14 +18,12 @@ export default function Home() {
           <Link href="/admin/dashboard">
             <Button size="lg" variant="outline">Admin Dashboard</Button>
           </Link>
+          <Link href="/operator">
+            <Button size="lg" variant="outline">Operator Portal</Button>
+          </Link>
           <Link href="/admin/settings">
             <Button size="lg" variant="outline">
               Settings
-            </Button>
-          </Link>
-          <Link href="/operator">
-            <Button size="lg" variant="outline">
-              Operator Portal
             </Button>
           </Link>
         </div>
@@ -40,21 +38,21 @@ export default function Home() {
             </li>
             <li>
               <a href="/admin/dashboard" className="text-blue-600 hover:underline">
-                Transfer Orders Dashboard
+                Admin Dashboard
               </a>{' '}
               - View and manage transfer orders
+            </li>
+            <li>
+              <a href="/operator" className="text-blue-600 hover:underline">
+                Operator Portal
+              </a>{' '}
+              - Mobile-optimized interface for warehouse staff
             </li>
             <li>
               <a href="/admin/settings" className="text-blue-600 hover:underline">
                 Settings
               </a>{' '}
               - Configure threshold and eligible merchants
-            </li>
-            <li>
-              <a href="/operator" className="text-blue-600 hover:underline">
-                Operator Portal
-              </a>{' '}
-              - Mobile-optimized pre-processing workflow
             </li>
           </ul>
         </div>

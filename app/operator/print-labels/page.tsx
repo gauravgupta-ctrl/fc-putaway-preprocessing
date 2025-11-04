@@ -1,0 +1,230 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { logLabelPrint, getCompletedItems } from '@/lib/operator';
+import { supabase } from '@/lib/supabase';
+import { Printer, CheckCircle, Home } from 'lucide-react';
+
+export default function PrintLabelsPage() {
+  const [toNumber, setToNumber] = useState('');
+  const [labelCount, setLabelCount] = useState(1);
+  const [printing, setPrinting] = useState(false);
+  const [printed, setPrinted] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [completedItems, setCompletedItems] = useState<any[]>([]);
+  const [isAllCompleted, setIsAllCompleted] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const toId = searchParams.get('to');
+  const completed = searchParams.get('completed') === 'true';
+
+  useEffect(() => {
+    loadData();
+    checkAuth();
+    setIsAllCompleted(completed);
+  }, [toId, completed]);
+
+  async function checkAuth() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    setUserId(session?.user?.id || null);
+  }
+
+  async function loadData() {
+    if (!toId) return;
+
+    // Load TO info
+    const { data: toData } = await supabase
+      .from('transfer_orders')
+      .select('transfer_number')
+      .eq('id', toId)
+      .single();
+
+    if (toData) {
+      setToNumber(toData.transfer_number);
+    }
+
+    // Load completed items
+    const items = await getCompletedItems(toId);
+    setCompletedItems(items);
+  }
+
+  async function handlePrint() {
+    if (!toId) return;
+
+    setPrinting(true);
+
+    try {
+      await logLabelPrint(toId, labelCount, userId);
+
+      // Log to console (replace with actual printer integration later)
+      console.log('PRINTING PALLET LABELS:', {
+        transferOrder: toNumber,
+        labelCount,
+        completedItems: completedItems.length,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Show success
+      setPrinted(true);
+      setPrinting(false);
+
+      // Auto-redirect after 2 seconds if all completed
+      if (isAllCompleted) {
+        setTimeout(() => {
+          router.push('/operator');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error logging label print:', error);
+      alert('Failed to log label print. Please try again.');
+      setPrinting(false);
+    }
+  }
+
+  function handleContinue() {
+    if (isAllCompleted) {
+      router.push('/operator');
+    } else {
+      router.push(`/operator/scan-item?to=${toId}`);
+    }
+  }
+
+  if (printed && isAllCompleted) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            All Complete!
+          </h1>
+          <p className="text-lg text-gray-600 mb-6">
+            Pre-processing completed for {toNumber}
+          </p>
+          <p className="text-sm text-gray-500">
+            Redirecting...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col">
+      {/* TO Info Bar */}
+      <div className="bg-white border-b px-4 py-3">
+        <p className="text-sm text-gray-600">Transfer Order</p>
+        <p className="text-lg font-bold text-gray-900">{toNumber}</p>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col px-4 py-8">
+        {isAllCompleted && (
+          <div className="max-w-md mx-auto w-full mb-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <p className="font-semibold text-green-900">
+                All Items Completed
+              </p>
+              <p className="text-sm text-green-700 mt-1">
+                Pre-processing complete for this Transfer Order
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+            <Printer className="h-8 w-8 text-gray-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Print Pallet Labels
+          </h1>
+          <p className="text-gray-600">
+            {completedItems.length} item(s) completed
+          </p>
+        </div>
+
+        {/* Label Count Input */}
+        <div className="max-w-md mx-auto w-full mb-8">
+          <div className="bg-white rounded-lg border p-6">
+            <Label htmlFor="labelCount" className="text-base mb-3 block">
+              Number of labels to print
+            </Label>
+            <Input
+              id="labelCount"
+              type="number"
+              min="1"
+              max="10"
+              value={labelCount}
+              onChange={(e) => setLabelCount(Math.max(1, parseInt(e.target.value) || 1))}
+              className="text-2xl h-16 text-center font-bold"
+            />
+            <p className="text-sm text-gray-500 mt-3 text-center">
+              Labels will be numbered 1 of {labelCount}, 2 of {labelCount}, etc.
+            </p>
+          </div>
+        </div>
+
+        {/* Print Button */}
+        <div className="max-w-md mx-auto w-full space-y-3">
+          <Button
+            onClick={handlePrint}
+            disabled={printing || printed}
+            size="lg"
+            className="w-full h-16 text-xl font-semibold"
+          >
+            {printing ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                Printing...
+              </>
+            ) : printed ? (
+              <>
+                <CheckCircle className="h-6 w-6 mr-3" />
+                Printed {labelCount} Label(s)
+              </>
+            ) : (
+              <>
+                <Printer className="h-6 w-6 mr-3" />
+                Print {labelCount} Label(s)
+              </>
+            )}
+          </Button>
+
+          {printed && !isAllCompleted && (
+            <Button
+              onClick={handleContinue}
+              size="lg"
+              variant="outline"
+              className="w-full h-14 text-lg"
+            >
+              Continue Scanning Items
+            </Button>
+          )}
+
+          {printed && isAllCompleted && (
+            <Button
+              onClick={() => router.push('/operator')}
+              size="lg"
+              variant="outline"
+              className="w-full h-14 text-lg"
+            >
+              <Home className="h-5 w-5 mr-2" />
+              Scan New Transfer Order
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+

@@ -2,107 +2,106 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SimpleBarcodeInput } from '@/components/SimpleBarcodeInput';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { getTransferOrderByNumber } from '@/lib/operator';
-import { Loader2, AlertCircle, Camera } from 'lucide-react';
+import { BarcodeScanner } from '@/components/BarcodeScanner';
+import { findTransferOrderByNumber } from '@/lib/operator';
+import { AlertCircle, Package } from 'lucide-react';
+import type { TransferOrder } from '@/types/database';
 
-export default function OperatorPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+export default function OperatorHomePage() {
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  async function handleScan(transferNumber: string) {
-    setLoading(true);
+  async function handleScan(code: string) {
     setError(null);
+    setLoading(true);
 
     try {
-      // Ensure transfer number has # prefix
-      const formattedNumber = transferNumber.startsWith('#') 
-        ? transferNumber 
-        : `#${transferNumber}`;
+      const transferOrder = await findTransferOrderByNumber(code);
 
-      const to = await getTransferOrderByNumber(formattedNumber);
-
-      if (!to) {
+      if (!transferOrder) {
         setError('Transfer Order not found. Please scan again.');
         setLoading(false);
         return;
       }
 
-      // Check TO status
-      const status = to.preprocessing_status;
+      // Check status
+      const status = transferOrder.preprocessing_status;
       
       if (status === 'not required') {
-        setError('This TO does not require pre-processing.');
+        setError('This Transfer Order does not require pre-processing.');
         setLoading(false);
         return;
       }
 
       if (status === 'completed') {
-        setError('Pre-processing for this TO is already completed.');
+        setError('Pre-processing for this Transfer Order is already completed.');
         setLoading(false);
         return;
       }
 
       if (status === 'in review') {
-        setError('This TO has not been requested for pre-processing yet.');
+        setError('This Transfer Order has not been requested for pre-processing yet.');
         setLoading(false);
         return;
       }
 
-      // Valid statuses: requested, in-progress
-      router.push(`/operator/${encodeURIComponent(formattedNumber)}`);
+      // Status is "requested" or "in-progress" - proceed
+      router.push(`/operator/scan-item?to=${transferOrder.id}`);
     } catch (error) {
-      console.error('Error fetching TO:', error);
-      setError('Failed to fetch Transfer Order. Please try again.');
+      console.error('Error scanning TO:', error);
+      setError('An error occurred. Please try again.');
       setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
-      {/* Main Scan Section */}
-      <Card>
-        <CardContent className="pt-6 pb-6">
-          <div className="space-y-4">
-            <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold mb-1">Scan Transfer Order</h2>
-              <p className="text-lg text-gray-600">Ready to scan</p>
-            </div>
-
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <SimpleBarcodeInput
-                onScan={handleScan}
-                placeholder="Scan or enter TO number..."
-              />
-            )}
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col">
+      {/* Content Container */}
+      <div className="flex-1 flex flex-col px-4 py-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+            <Package className="h-8 w-8 text-gray-600" />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Camera Option - Text Link */}
-      {!loading && (
-        <div className="text-center">
-          <button className="text-gray-600 hover:text-gray-800 py-2 text-sm">
-            <Camera className="inline-block mr-2 h-4 w-4" />
-            Use camera to scan
-          </button>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Scan Transfer Order
+          </h1>
+          <p className="text-gray-600">
+            Scan the TO barcode to begin pre-processing
+          </p>
         </div>
-      )}
+
+        {/* Scanner */}
+        <div className="max-w-md mx-auto w-full">
+          <BarcodeScanner
+            onScan={handleScan}
+            placeholder="Enter TO number"
+            autoFocus
+          />
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-6 max-w-md mx-auto w-full">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-red-900">Error</p>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="mt-6 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-gray-900"></div>
+            <p className="text-sm text-gray-600 mt-2">Validating...</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
