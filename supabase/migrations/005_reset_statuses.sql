@@ -75,16 +75,16 @@ END $$;
 -- Verify results
 SELECT 
   'Transfer Orders' as table_name,
-  preprocessing_status,
+  preprocessing_status::TEXT as status,
   COUNT(*) as count
 FROM transfer_orders
 GROUP BY preprocessing_status
 UNION ALL
 SELECT 
   'Transfer Order Lines' as table_name,
-  preprocessing_status::TEXT,
+  preprocessing_status::TEXT as status,
   COUNT(*) as count
 FROM transfer_order_lines
 GROUP BY preprocessing_status
-ORDER BY table_name, preprocessing_status;
+ORDER BY table_name, status;
 
