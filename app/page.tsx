@@ -1,25 +1,43 @@
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="text-center">
+      <div className="text-center max-w-2xl">
         <h1 className="text-4xl font-bold mb-4">Putaway Preprocess</h1>
         <p className="text-lg text-gray-600 mb-8">
-          Welcome! Please follow the setup instructions in SETUP.md
+          Manage pre-processing workflows for warehouse operations
         </p>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
-          <h2 className="text-xl font-semibold mb-4 text-blue-900">
-            Next Steps:
-          </h2>
-          <ol className="list-decimal list-inside text-left space-y-2 text-blue-800">
-            <li>Install Node.js from nodejs.org</li>
-            <li>Create Supabase account at supabase.com</li>
-            <li>Create Resend account at resend.com</li>
-            <li>Add credentials to .env.local file</li>
-            <li>Run: npm install && npm run dev</li>
-          </ol>
+        <div className="flex gap-4 justify-center">
+          <Link href="/admin/dashboard">
+            <Button size="lg">Go to Admin Dashboard</Button>
+          </Link>
+          <Link href="/admin/settings">
+            <Button size="lg" variant="outline">
+              Settings
+            </Button>
+          </Link>
+        </div>
+        <div className="mt-12 p-6 bg-gray-50 rounded-lg text-left">
+          <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
+          <ul className="space-y-2 text-gray-700">
+            <li>
+              <a href="/admin/dashboard" className="text-blue-600 hover:underline">
+                Transfer Orders Dashboard
+              </a>{' '}
+              - View and manage transfer orders
+            </li>
+            <li>
+              <a href="/admin/settings" className="text-blue-600 hover:underline">
+                Settings
+              </a>{' '}
+              - Configure threshold and eligible merchants
+            </li>
+          </ul>
         </div>
       </div>
     </main>
-  )
+  );
 }
 
