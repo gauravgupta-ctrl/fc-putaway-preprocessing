@@ -58,8 +58,10 @@ export default function OperatorPage() {
       if (transferOrder.preprocessing_status === 'requested' || 
           transferOrder.preprocessing_status === 'in-progress') {
         console.log('Valid TO! Navigating to scan items...');
-        // Navigate to scan items page
-        router.push(`/operator/scan-items?to=${transferOrder.id}&num=${formattedNumber}`);
+        console.log('URL:', `/operator/scan-items?to=${transferOrder.id}&num=${formattedNumber}`);
+        
+        // Use window.location for more reliable navigation
+        window.location.href = `/operator/scan-items?to=${transferOrder.id}&num=${encodeURIComponent(formattedNumber)}`;
       } else {
         setError(`Invalid Transfer Order status: ${transferOrder.preprocessing_status}`);
         setLoading(false);
