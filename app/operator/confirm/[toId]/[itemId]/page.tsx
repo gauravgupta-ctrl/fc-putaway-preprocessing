@@ -92,50 +92,54 @@ export default function OperatorConfirmPage({
     : 'bg-green-500 text-white border-green-600';
 
   return (
-    <div className="p-4 min-h-[calc(100vh-80px)] flex flex-col">
+    <div className="p-6 min-h-[calc(100vh-80px)] flex flex-col">
       {/* Header */}
       <div className="mb-6">
         <Link
           href={`/operator/scan-item/${params.toId}`}
-          className="inline-flex items-center text-blue-600 text-lg mb-4"
+          className="inline-flex items-center text-blue-600 text-lg mb-4 hover:text-blue-700 transition-colors"
         >
           <ArrowLeft className="mr-2 h-5 w-5" />
           Back to Scan Item
         </Link>
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600 mb-1">Transfer Order</p>
-          <p className="text-2xl font-bold text-blue-900">{toNumber}</p>
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-5 shadow-lg">
+          <p className="text-sm text-blue-100 mb-1 font-medium">Transfer Order</p>
+          <p className="text-3xl font-bold text-white">{toNumber}</p>
         </div>
       </div>
 
       {/* Item Info */}
-      <Card className="p-6 mb-6">
+      <Card className="p-6 mb-6 shadow-lg border-0 bg-white/90 backdrop-blur">
         <div className="flex items-start gap-4">
-          <Package className="h-12 w-12 text-gray-400 flex-shrink-0" />
+          <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-3 rounded-xl">
+            <Package className="h-10 w-10 text-gray-600" />
+          </div>
           <div className="flex-1">
-            <p className="text-sm text-gray-600 mb-1">SKU</p>
-            <p className="text-2xl font-bold font-mono mb-3">{item?.sku}</p>
-            <p className="text-lg text-gray-700">{item?.sku_data?.description}</p>
-            <p className="text-base text-gray-500 mt-2">
-              Quantity: {item?.units_incoming?.toLocaleString()} units
-            </p>
+            <p className="text-sm text-gray-500 mb-1 font-medium">SKU</p>
+            <p className="text-2xl font-bold font-mono mb-2 text-gray-900">{item?.sku}</p>
+            <p className="text-lg text-gray-700 mb-2">{item?.sku_data?.description}</p>
+            <div className="inline-flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
+              <p className="text-base text-blue-700 font-medium">
+                Qty: {item?.units_incoming?.toLocaleString()} units
+              </p>
+            </div>
           </div>
         </div>
       </Card>
 
       {/* Action Card */}
-      <Card className="p-8 flex-1 flex flex-col justify-center">
+      <Card className="p-8 flex-1 flex flex-col justify-center shadow-xl border-0 bg-white/90 backdrop-blur">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold mb-4">Send this item to:</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-900">Send this item to:</h2>
           
           {/* Large Action Display */}
           <div
-            className={`${actionColor} rounded-2xl p-12 mb-8 border-4 shadow-xl`}
+            className={`${actionColor} rounded-3xl p-12 mb-6 shadow-2xl transform hover:scale-105 transition-transform`}
           >
-            <p className="text-5xl font-black tracking-wide">{actionText}</p>
+            <p className="text-5xl font-black tracking-wide drop-shadow-lg">{actionText}</p>
           </div>
 
-          <p className="text-lg text-gray-600 mb-2">
+          <p className="text-lg text-gray-600 px-4">
             {isRequested
               ? 'This item requires shelf storage'
               : 'This item goes to ASRS pick face'}
@@ -147,7 +151,7 @@ export default function OperatorConfirmPage({
           onClick={handleConfirm}
           disabled={confirming}
           size="lg"
-          className="w-full h-20 text-2xl bg-blue-600 hover:bg-blue-700"
+          className="w-full h-20 text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
         >
           {confirming ? (
             <>
@@ -157,7 +161,7 @@ export default function OperatorConfirmPage({
           ) : (
             <>
               <CheckCircle className="mr-3 h-8 w-8" />
-              Confirm
+              Confirm Action
             </>
           )}
         </Button>
@@ -167,7 +171,7 @@ export default function OperatorConfirmPage({
           <Button
             variant="outline"
             size="lg"
-            className="w-full h-16 text-xl border-2"
+            className="w-full h-16 text-xl border-2 hover:bg-gray-50 shadow-md transition-all"
             disabled={confirming}
           >
             Cancel

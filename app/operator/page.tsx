@@ -59,20 +59,24 @@ export default function OperatorScanTOPage() {
   }
 
   return (
-    <div className="p-4 min-h-[calc(100vh-80px)] flex flex-col">
+    <div className="p-6 min-h-[calc(100vh-80px)] flex flex-col">
       {/* Title */}
-      <div className="text-center mb-8 mt-8">
-        <Scan className="h-20 w-20 mx-auto mb-4 text-blue-600" />
-        <h2 className="text-3xl font-bold mb-2">Scan Transfer Order</h2>
-        <p className="text-lg text-gray-600">Scan the TO barcode to begin</p>
+      <div className="text-center mb-8 mt-4">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
+          <Scan className="h-10 w-10 text-white" />
+        </div>
+        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          Scan Transfer Order
+        </h2>
+        <p className="text-lg text-gray-600">Scan the TO barcode to begin pre-processing</p>
       </div>
 
       {/* Scan Form */}
-      <Card className="p-8 flex-1 flex flex-col justify-center">
+      <Card className="p-8 flex-1 flex flex-col justify-center shadow-xl border-0 bg-white/80 backdrop-blur">
         <form onSubmit={handleScan} className="space-y-6">
           {/* Input */}
           <div>
-            <label htmlFor="to-number" className="block text-xl font-medium mb-3">
+            <label htmlFor="to-number" className="block text-lg font-semibold mb-3 text-gray-700">
               Transfer Order Number
             </label>
             <Input
@@ -83,7 +87,7 @@ export default function OperatorScanTOPage() {
               onChange={(e) => setToNumber(e.target.value)}
               placeholder="Scan or enter TO number"
               disabled={loading}
-              className="text-2xl h-16 text-center font-mono"
+              className="text-2xl h-16 text-center font-mono border-2 focus:ring-4 focus:ring-blue-100 transition-all"
               autoComplete="off"
               autoFocus
             />
@@ -91,17 +95,23 @@ export default function OperatorScanTOPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
-              <p className="text-xl text-red-800 font-medium">{error}</p>
+            <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-5 flex items-start gap-3 shadow-sm">
+              <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-red-900 mb-1">Error</p>
+                <p className="text-lg text-red-800">{error}</p>
+              </div>
             </div>
           )}
 
           {/* Warning Message */}
           {warning && (
-            <div className="bg-yellow-50 border-2 border-yellow-500 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
-              <p className="text-xl text-yellow-800 font-medium">{warning}</p>
+            <div className="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-5 flex items-start gap-3 shadow-sm">
+              <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-amber-900 mb-1">Warning</p>
+                <p className="text-lg text-amber-800">{warning}</p>
+              </div>
             </div>
           )}
 
@@ -110,7 +120,7 @@ export default function OperatorScanTOPage() {
             type="submit"
             disabled={loading || !toNumber.trim()}
             size="lg"
-            className="w-full h-16 text-xl"
+            className="w-full h-16 text-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
           >
             {loading ? (
               <>
@@ -128,8 +138,11 @@ export default function OperatorScanTOPage() {
       </Card>
 
       {/* Instructions */}
-      <div className="mt-6 text-center text-gray-600">
-        <p className="text-lg">Place cursor in the field above and scan the barcode</p>
+      <div className="mt-6 text-center">
+        <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full border border-blue-100">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+          <p className="text-base text-gray-700 font-medium">Ready to scan</p>
+        </div>
       </div>
     </div>
   );

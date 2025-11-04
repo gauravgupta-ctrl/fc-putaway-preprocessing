@@ -82,41 +82,48 @@ export default function OperatorPrintPage({ params }: { params: { toId: string }
 
   if (printSuccess) {
     return (
-      <div className="p-4 min-h-[calc(100vh-80px)] flex flex-col items-center justify-center">
-        <div className="text-center">
-          <CheckCircle className="h-24 w-24 text-green-500 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-green-700 mb-4">
-            Labels Created Successfully!
+      <div className="p-6 min-h-[calc(100vh-80px)] flex flex-col items-center justify-center">
+        <Card className="p-12 text-center shadow-2xl border-0 bg-white/90 backdrop-blur max-w-lg">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mb-6 shadow-lg">
+            <CheckCircle className="h-14 w-14 text-white" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Labels Created!
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-600 mb-2">
             {labelCount} label{labelCount > 1 ? 's' : ''} ready for printing
           </p>
-          <p className="text-lg text-gray-500 mt-4">Returning to scan TO...</p>
-        </div>
+          <div className="mt-6 inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
+            <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+            <p className="text-base text-blue-700 font-medium">Returning to scan TO...</p>
+          </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="p-4 min-h-[calc(100vh-80px)] flex flex-col">
+    <div className="p-6 min-h-[calc(100vh-80px)] flex flex-col">
       {/* Header */}
       <div className="mb-6">
         <Link
           href={`/operator/scan-item/${params.toId}`}
-          className="inline-flex items-center text-blue-600 text-lg mb-4"
+          className="inline-flex items-center text-blue-600 text-lg mb-4 hover:text-blue-700 transition-colors"
         >
           <ArrowLeft className="mr-2 h-5 w-5" />
           Back to Scan Item
         </Link>
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600 mb-1">Transfer Order</p>
-          <p className="text-2xl font-bold text-blue-900">{toNumber}</p>
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-5 shadow-lg">
+          <p className="text-sm text-blue-100 mb-1 font-medium">Transfer Order</p>
+          <p className="text-3xl font-bold text-white">{toNumber}</p>
         </div>
       </div>
 
       {/* Title */}
       <div className="text-center mb-6">
-        <Printer className="h-16 w-16 mx-auto mb-3 text-blue-600" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-3 shadow-lg">
+          <Printer className="h-8 w-8 text-white" />
+        </div>
         <h2 className="text-2xl font-bold mb-2">Print Pallet Labels</h2>
         <p className="text-lg text-gray-600">
           {completedItems.length} item{completedItems.length > 1 ? 's' : ''} completed
@@ -124,35 +131,35 @@ export default function OperatorPrintPage({ params }: { params: { toId: string }
       </div>
 
       {/* Label Info Card */}
-      <Card className="p-6 mb-6">
-        <h3 className="text-xl font-bold mb-4">Label Information</h3>
-        <div className="space-y-3 text-lg">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Transfer Order:</span>
-            <span className="font-mono font-bold">{toNumber}</span>
+      <Card className="p-6 mb-6 shadow-lg border-0 bg-white/90 backdrop-blur">
+        <h3 className="text-xl font-bold mb-4 text-gray-900">Label Information</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <span className="text-gray-600 font-medium">Transfer Order</span>
+            <span className="font-mono font-bold text-gray-900 text-lg">{toNumber}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Date:</span>
-            <span className="font-medium">{new Date().toLocaleDateString()}</span>
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <span className="text-gray-600 font-medium">Date</span>
+            <span className="font-medium text-gray-900">{new Date().toLocaleDateString()}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Time:</span>
-            <span className="font-medium">{new Date().toLocaleTimeString()}</span>
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <span className="text-gray-600 font-medium">Time</span>
+            <span className="font-medium text-gray-900">{new Date().toLocaleTimeString()}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Items:</span>
-            <span className="font-medium">{completedItems.length}</span>
+          <div className="flex justify-between items-center py-2">
+            <span className="text-gray-600 font-medium">Items</span>
+            <span className="font-bold text-blue-600 text-lg">{completedItems.length}</span>
           </div>
         </div>
 
         {/* Items List */}
-        <div className="mt-6 pt-4 border-t">
-          <p className="text-sm text-gray-600 mb-2">Completed Items:</p>
-          <div className="space-y-2">
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-500 mb-3 font-semibold uppercase tracking-wide">Completed Items:</p>
+          <div className="space-y-2 max-h-40 overflow-y-auto">
             {completedItems.map((item, idx) => (
-              <div key={idx} className="bg-gray-50 p-3 rounded">
-                <p className="font-mono font-medium">{item.sku}</p>
-                <p className="text-sm text-gray-600">{item.sku_data?.description}</p>
+              <div key={idx} className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-100">
+                <p className="font-mono font-bold text-gray-900">{item.sku}</p>
+                <p className="text-sm text-gray-600 mt-1">{item.sku_data?.description}</p>
               </div>
             ))}
           </div>
@@ -160,9 +167,9 @@ export default function OperatorPrintPage({ params }: { params: { toId: string }
       </Card>
 
       {/* Label Count Input */}
-      <Card className="p-6 mb-6">
-        <Label htmlFor="label-count" className="text-xl font-medium mb-3 block">
-          Number of Labels
+      <Card className="p-6 mb-6 shadow-lg border-0 bg-white/90 backdrop-blur">
+        <Label htmlFor="label-count" className="text-lg font-semibold mb-3 block text-gray-700">
+          Number of Labels to Print
         </Label>
         <Input
           id="label-count"
@@ -171,10 +178,10 @@ export default function OperatorPrintPage({ params }: { params: { toId: string }
           max="10"
           value={labelCount}
           onChange={(e) => setLabelCount(parseInt(e.target.value) || 1)}
-          className="text-2xl h-16 text-center"
+          className="text-3xl h-16 text-center font-bold border-2 focus:ring-4 focus:ring-green-100"
         />
-        <p className="text-sm text-gray-600 mt-2 text-center">
-          Labels will be numbered 1 of {labelCount}, 2 of {labelCount}, etc.
+        <p className="text-sm text-gray-500 mt-3 text-center">
+          Labels will be numbered: <span className="font-semibold">1 of {labelCount}</span>, <span className="font-semibold">2 of {labelCount}</span>, etc.
         </p>
       </Card>
 
@@ -183,7 +190,7 @@ export default function OperatorPrintPage({ params }: { params: { toId: string }
         onClick={handlePrint}
         disabled={printing}
         size="lg"
-        className="w-full h-20 text-2xl bg-green-600 hover:bg-green-700 mb-4"
+        className="w-full h-20 text-2xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all mb-4"
       >
         {printing ? (
           <>
@@ -203,7 +210,7 @@ export default function OperatorPrintPage({ params }: { params: { toId: string }
         <Button
           variant="outline"
           size="lg"
-          className="w-full h-16 text-xl border-2"
+          className="w-full h-16 text-xl border-2 hover:bg-gray-50 shadow-md transition-all"
           disabled={printing}
         >
           End Transfer Order
