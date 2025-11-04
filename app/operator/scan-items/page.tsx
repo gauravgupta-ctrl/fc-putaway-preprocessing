@@ -114,7 +114,21 @@ function ScanItemsContent() {
       await completeItemProcessing(scannedItem.line.id, userId);
       
       // Reload counts
-      await loadCounts();
+      const [completed, requested] = await Promise.all([
+        getCompletedItemsCount(transferOrderId),
+        getRequestedItemsCount(transferOrderId),
+      ]);
+
+      setCompletedCount(completed);
+      setRequestedCount(requested);
+      
+      // Check if all requested items are now completed
+      if (requested > 0 && completed >= requested) {
+        // All items complete - navigate to print labels
+        console.log('All items complete! Navigating to print labels...');
+        window.location.href = `/operator/print-labels?to=${transferOrderId}&num=${transferNumber}`;
+        return;
+      }
       
       // Clear scanned item
       setScannedItem(null);
