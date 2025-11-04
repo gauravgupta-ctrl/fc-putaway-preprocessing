@@ -58,7 +58,7 @@ WHERE id IN (
 -- Verify the reset
 SELECT 
   'Transfer Orders' as table_name,
-  preprocessing_status,
+  preprocessing_status::text,
   COUNT(*) as count
 FROM transfer_orders
 GROUP BY preprocessing_status
@@ -67,7 +67,7 @@ UNION ALL
 
 SELECT 
   'Transfer Order Lines' as table_name,
-  preprocessing_status,
+  preprocessing_status::text,
   COUNT(*) as count
 FROM transfer_order_lines
 GROUP BY preprocessing_status
@@ -76,7 +76,7 @@ UNION ALL
 
 SELECT 
   'Pallet Labels' as table_name,
-  'N/A' as preprocessing_status,
+  'Total' as status,
   COUNT(*) as count
 FROM pallet_labels;
 
