@@ -57,7 +57,6 @@ export function TransferOrderItemsTable({
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleRequest(itemId: string) {
-    if (!userId) return;
     setLoading(itemId);
     try {
       await requestPreprocessing(itemId, userId);
@@ -71,7 +70,6 @@ export function TransferOrderItemsTable({
   }
 
   async function handleCancel(itemId: string) {
-    if (!userId) return;
     setLoading(itemId);
     try {
       await cancelPreprocessing(itemId, userId);
@@ -85,7 +83,6 @@ export function TransferOrderItemsTable({
   }
 
   async function handleRequestAll() {
-    if (!userId) return;
     const eligibleItems = data
       .filter((item) => item.preprocessing_status === 'in review')
       .map((item) => item.id);
@@ -108,7 +105,6 @@ export function TransferOrderItemsTable({
   }
 
   async function handleCancelAll() {
-    if (!userId) return;
     const eligibleItems = data
       .filter((item) => item.preprocessing_status === 'requested')
       .map((item) => item.id);
@@ -246,7 +242,7 @@ export function TransferOrderItemsTable({
               <Button
                 size="sm"
                 onClick={() => handleRequest(itemId)}
-                disabled={isLoading || !userId}
+                disabled={isLoading}
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Request'}
               </Button>
@@ -257,7 +253,7 @@ export function TransferOrderItemsTable({
                 size="sm"
                 variant="outline"
                 onClick={() => handleCancel(itemId)}
-                disabled={isLoading || !userId}
+                disabled={isLoading}
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Cancel'}
               </Button>
@@ -291,7 +287,7 @@ export function TransferOrderItemsTable({
       <div className="flex gap-2">
         <Button
           onClick={handleRequestAll}
-          disabled={inReviewCount === 0 || loading === 'all' || !userId}
+          disabled={inReviewCount === 0 || loading === 'all'}
         >
           {loading === 'all' ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -301,7 +297,7 @@ export function TransferOrderItemsTable({
         <Button
           variant="outline"
           onClick={handleCancelAll}
-          disabled={requestedCount === 0 || loading === 'all' || !userId}
+          disabled={requestedCount === 0 || loading === 'all'}
         >
           {loading === 'all' ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

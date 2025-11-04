@@ -59,8 +59,6 @@ export default function SettingsPage() {
   }
 
   async function saveThreshold() {
-    if (!userId) return;
-
     setSaving(true);
     try {
       await updateThreshold(threshold, userId);
@@ -74,7 +72,7 @@ export default function SettingsPage() {
   }
 
   async function handleAddMerchant() {
-    if (!newMerchant.trim() || !userId) return;
+    if (!newMerchant.trim()) return;
 
     try {
       await addEligibleMerchant(newMerchant.trim(), userId);
@@ -87,7 +85,6 @@ export default function SettingsPage() {
   }
 
   async function handleRemoveMerchant(merchant: EligibleMerchant) {
-    if (!userId) return;
     if (!confirm(`Remove ${merchant.merchant_name} from eligible merchants?`)) return;
 
     try {

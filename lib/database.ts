@@ -22,7 +22,7 @@ export async function getThreshold(): Promise<number> {
 
 export async function updateThreshold(
   value: number,
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const { error } = await supabase
     .from('settings')
@@ -38,13 +38,15 @@ export async function updateThreshold(
     throw error;
   }
 
-  // Log audit trail
-  await supabase.from('audit_log').insert({
-    user_id: userId,
-    action: 'update_threshold',
-    entity_type: 'settings',
-    details: { old_value: null, new_value: value },
-  });
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'update_threshold',
+      entity_type: 'settings',
+      details: { old_value: null, new_value: value },
+    });
+  }
 }
 
 // =====================================================
@@ -67,7 +69,7 @@ export async function getEligibleMerchants(): Promise<EligibleMerchant[]> {
 
 export async function addEligibleMerchant(
   merchantName: string,
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const { error } = await supabase.from('eligible_merchants').insert({
     merchant_name: merchantName,
@@ -79,19 +81,21 @@ export async function addEligibleMerchant(
     throw error;
   }
 
-  // Log audit trail
-  await supabase.from('audit_log').insert({
-    user_id: userId,
-    action: 'add_merchant',
-    entity_type: 'eligible_merchants',
-    details: { merchant_name: merchantName },
-  });
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'add_merchant',
+      entity_type: 'eligible_merchants',
+      details: { merchant_name: merchantName },
+    });
+  }
 }
 
 export async function removeEligibleMerchant(
   merchantId: string,
   merchantName: string,
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const { error } = await supabase
     .from('eligible_merchants')
@@ -103,14 +107,16 @@ export async function removeEligibleMerchant(
     throw error;
   }
 
-  // Log audit trail
-  await supabase.from('audit_log').insert({
-    user_id: userId,
-    action: 'remove_merchant',
-    entity_type: 'eligible_merchants',
-    entity_id: merchantId,
-    details: { merchant_name: merchantName },
-  });
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'remove_merchant',
+      entity_type: 'eligible_merchants',
+      entity_id: merchantId,
+      details: { merchant_name: merchantName },
+    });
+  }
 }
 
 // =====================================================
@@ -158,7 +164,7 @@ export async function getTransferOrderLines(transferOrderIds: string[]) {
 
 export async function requestPreprocessing(
   lineId: string,
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const { error } = await supabase
     .from('transfer_order_lines')
@@ -174,18 +180,20 @@ export async function requestPreprocessing(
     throw error;
   }
 
-  // Log audit trail
-  await supabase.from('audit_log').insert({
-    user_id: userId,
-    action: 'request_preprocessing',
-    entity_type: 'transfer_order_lines',
-    entity_id: lineId,
-  });
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'request_preprocessing',
+      entity_type: 'transfer_order_lines',
+      entity_id: lineId,
+    });
+  }
 }
 
 export async function cancelPreprocessing(
   lineId: string,
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const { error } = await supabase
     .from('transfer_order_lines')
@@ -201,18 +209,20 @@ export async function cancelPreprocessing(
     throw error;
   }
 
-  // Log audit trail
-  await supabase.from('audit_log').insert({
-    user_id: userId,
-    action: 'cancel_preprocessing',
-    entity_type: 'transfer_order_lines',
-    entity_id: lineId,
-  });
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'cancel_preprocessing',
+      entity_type: 'transfer_order_lines',
+      entity_id: lineId,
+    });
+  }
 }
 
 export async function requestAllPreprocessing(
   lineIds: string[],
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const { error} = await supabase
     .from('transfer_order_lines')
@@ -229,18 +239,20 @@ export async function requestAllPreprocessing(
     throw error;
   }
 
-  // Log audit trail
-  await supabase.from('audit_log').insert({
-    user_id: userId,
-    action: 'request_preprocessing',
-    entity_type: 'transfer_order_lines',
-    details: { count: lineIds.length },
-  });
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'request_preprocessing',
+      entity_type: 'transfer_order_lines',
+      details: { count: lineIds.length },
+    });
+  }
 }
 
 export async function cancelAllPreprocessing(
   lineIds: string[],
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const { error } = await supabase
     .from('transfer_order_lines')
@@ -257,12 +269,14 @@ export async function cancelAllPreprocessing(
     throw error;
   }
 
-  // Log audit trail
-  await supabase.from('audit_log').insert({
-    user_id: userId,
-    action: 'cancel_preprocessing',
-    entity_type: 'transfer_order_lines',
-    details: { count: lineIds.length },
-  });
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'cancel_preprocessing',
+      entity_type: 'transfer_order_lines',
+      details: { count: lineIds.length },
+    });
+  }
 }
 
