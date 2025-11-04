@@ -24,7 +24,7 @@ export default function Home() {
             </Button>
           </Link>
           <Link href="/operator">
-            <Button size="lg" variant="outline" className="border-green-500 text-green-700">
+            <Button size="lg" variant="outline">
               Operator Portal
             </Button>
           </Link>
@@ -51,10 +51,10 @@ export default function Home() {
               - Configure threshold and eligible merchants
             </li>
             <li>
-              <a href="/operator" className="text-green-600 hover:underline">
+              <a href="/operator" className="text-blue-600 hover:underline">
                 Operator Portal
               </a>{' '}
-              - Mobile-optimized interface for warehouse operators
+              - Mobile-optimized pre-processing workflow
             </li>
           </ul>
         </div>

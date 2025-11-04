@@ -1,34 +1,24 @@
-import { ArrowLeft, Package } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function OperatorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-white">
       {/* Mobile-optimized header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="flex items-center justify-between max-w-2xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-lg">
-              <Package className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Operator Portal</h1>
-              <p className="text-sm text-gray-500">Pre-processing Workflow</p>
-            </div>
+      <header className="sticky top-0 bg-white border-b shadow-sm z-50">
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/operator" className="flex items-center gap-2 text-gray-600">
+              <ArrowLeft className="h-6 w-6" />
+            </Link>
+            <h1 className="text-lg font-semibold">Pre-Processing</h1>
+            <div className="w-6" /> {/* Spacer for centering */}
           </div>
-          <Link
-            href="/"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="h-6 w-6 text-gray-600" />
-          </Link>
         </div>
       </header>
 
-      {/* Main content - mobile optimized */}
-      <main className="max-w-2xl mx-auto">
-        {children}
-      </main>
+      {/* Main Content - Full screen mobile optimized */}
+      <main className="pb-safe">{children}</main>
     </div>
   );
 }
