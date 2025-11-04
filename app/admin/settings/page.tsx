@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Loader2, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 import {
   getThreshold,
   updateThreshold,
@@ -22,7 +22,6 @@ export default function SettingsPage() {
   const [merchants, setMerchants] = useState<EligibleMerchant[]>([]);
   const [newMerchant, setNewMerchant] = useState('');
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -96,28 +95,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleSyncData() {
-    setSyncing(true);
-    try {
-      // TODO: Implement Google OAuth flow
-      alert('Google OAuth flow not yet implemented. Please set up OAuth credentials first.');
-      // const response = await fetch('/api/sync-sheets', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ accessToken: 'TOKEN_FROM_OAUTH' }),
-      // });
-      // if (response.ok) {
-      //   alert('Data synced successfully');
-      // } else {
-      //   alert('Failed to sync data');
-      // }
-    } catch (error) {
-      console.error('Error syncing data:', error);
-      alert('Failed to sync data');
-    } finally {
-      setSyncing(false);
-    }
-  }
 
   if (loading) {
     return (
@@ -133,31 +110,6 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold mb-2">Settings</h1>
         <p className="text-gray-600">Configure pre-processing rules and data synchronization</p>
       </div>
-
-      {/* Data Sync */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Data Synchronization</CardTitle>
-          <CardDescription>
-            Refresh data from Google Sheets to get the latest transfer orders and inventory levels
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleSyncData} disabled={syncing}>
-            {syncing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Syncing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh Data from Google Sheets
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
 
       {/* Days of Stock Threshold */}
       <Card className="mb-6">
