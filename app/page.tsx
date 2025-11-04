@@ -9,9 +9,14 @@ export default function Home() {
         <p className="text-lg text-gray-600 mb-8">
           Manage pre-processing workflows for warehouse operations
         </p>
+        <div className="flex gap-4 justify-center mb-8">
+          <Link href="/login">
+            <Button size="lg">Login to Get Started</Button>
+          </Link>
+        </div>
         <div className="flex gap-4 justify-center">
           <Link href="/admin/dashboard">
-            <Button size="lg">Go to Admin Dashboard</Button>
+            <Button size="lg" variant="outline">Go to Admin Dashboard</Button>
           </Link>
           <Link href="/admin/settings">
             <Button size="lg" variant="outline">
@@ -22,6 +27,12 @@ export default function Home() {
         <div className="mt-12 p-6 bg-gray-50 rounded-lg text-left">
           <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
           <ul className="space-y-2 text-gray-700">
+            <li>
+              <a href="/login" className="text-blue-600 hover:underline">
+                Login
+              </a>{' '}
+              - Login as test user first
+            </li>
             <li>
               <a href="/admin/dashboard" className="text-blue-600 hover:underline">
                 Transfer Orders Dashboard
