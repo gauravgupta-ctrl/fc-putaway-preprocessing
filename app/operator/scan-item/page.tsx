@@ -22,6 +22,16 @@ export default function ScanItemPage() {
   const searchParams = useSearchParams();
   const toId = searchParams.get('to');
 
+  function handleAbort() {
+    if (confirm('Are you sure you want to abort this Transfer Order?')) {
+      router.push('/operator');
+    }
+  }
+
+  function handlePrintLabel() {
+    router.push(`/operator/print-labels?to=${toId}`);
+  }
+
   useEffect(() => {
     if (toId) {
       loadToInfo();
@@ -81,21 +91,24 @@ export default function ScanItemPage() {
     }
   }
 
-  function handleAbort() {
-    if (confirm('Are you sure you want to abort this Transfer Order?')) {
-      router.push('/operator');
-    }
-  }
-
-  function handlePrintLabel() {
-    router.push(`/operator/print-labels?to=${toId}`);
-  }
-
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col">
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col relative">
+      {/* Abort Button - Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          onClick={handleAbort}
+          variant="outline"
+          size="sm"
+          className="bg-transparent border-gray-300"
+        >
+          <X className="h-4 w-4 mr-1" />
+          Abort
+        </Button>
+      </div>
+
       {/* TO Info Bar */}
       <div className="bg-white border-b px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pr-20">
           <div>
             <p className="text-sm text-gray-600">Transfer Order</p>
             <p className="text-lg font-bold text-gray-900">{toNumber}</p>
@@ -168,29 +181,20 @@ export default function ScanItemPage() {
         )}
       </div>
 
-      {/* Bottom Actions */}
-      <div className="border-t bg-white px-4 py-4 space-y-2">
-        {completedCount > 0 && (
+      {/* Bottom Actions - Print Label Only */}
+      {completedCount > 0 && (
+        <div className="px-4 py-6 flex justify-center">
           <Button
             onClick={handlePrintLabel}
             size="lg"
-            variant="outline"
-            className="w-full h-14 text-lg"
+            variant="ghost"
+            className="bg-transparent border-0 h-12 text-base text-gray-700 hover:text-gray-900"
           >
             <Printer className="h-5 w-5 mr-2" />
             Print Label
           </Button>
-        )}
-        <Button
-          onClick={handleAbort}
-          size="lg"
-          variant="ghost"
-          className="w-full h-14 text-lg text-gray-600"
-        >
-          <X className="h-5 w-5 mr-2" />
-          Abort Transfer Order
-        </Button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

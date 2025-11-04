@@ -8,7 +8,7 @@ export default function OperatorLayout({ children }: { children: React.ReactNode
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900">Putaway</h1>
+            <h1 className="text-xl font-bold text-gray-900">Putaway Pre-processing</h1>
             <Link
               href="/"
               className="p-2 -mr-2 text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg"

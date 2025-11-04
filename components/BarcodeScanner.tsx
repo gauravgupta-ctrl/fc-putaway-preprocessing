@@ -115,12 +115,12 @@ export function BarcodeScanner({
 
       {/* Scanner Ready Indicator */}
       {scanMode === 'bluetooth' && (
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center">
-          <Camera className="h-12 w-12 mx-auto mb-3 text-blue-600" />
-          <p className="text-lg font-medium text-blue-900 mb-1">
+        <div className="bg-gray-100 rounded-lg p-6 text-center">
+          <Camera className="h-12 w-12 mx-auto mb-3 text-gray-600" />
+          <p className="text-lg font-medium text-gray-900 mb-1">
             Scanner Ready
           </p>
-          <p className="text-sm text-blue-700">
+          <p className="text-sm text-gray-600">
             Scan barcode with your bluetooth scanner
           </p>
         </div>
