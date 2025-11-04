@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { BarcodeScanner } from '@/components/BarcodeScanner';
+import { SimpleBarcodeInput } from '@/components/SimpleBarcodeInput';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -214,75 +214,101 @@ export default function TOItemsPage() {
 
       {/* State: Scanning */}
       {state === 'scanning' && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2">Scan Item</h2>
-                <p className="text-gray-600">Scan the item barcode</p>
+        <div className="space-y-6">
+          {/* Main Scan Section */}
+          <Card>
+            <CardContent className="pt-6 pb-6">
+              <div className="space-y-4">
+                <div className="text-center mb-6">
+                  <h2 className="text-3xl font-bold mb-1">Scan Item Barcode</h2>
+                  <p className="text-lg text-gray-600">
+                    {counts.completed} of {counts.total} items processed
+                  </p>
+                </div>
+
+                {error && (
+                  <Alert variant={error.includes('Warning') ? 'default' : 'destructive'} className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Barcode Input - Primary */}
+                <SimpleBarcodeInput
+                  onScan={handleItemScan}
+                  placeholder="Scan or enter barcode..."
+                  disabled={loading}
+                />
               </div>
+            </CardContent>
+          </Card>
 
-              {error && (
-                <Alert variant={error.includes('Warning') ? 'default' : 'destructive'}>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {counts.completed > 0 && (
-                <Button
+          {/* Secondary Actions - Text Links */}
+          <div className="space-y-2 text-center mt-6">
+            {counts.completed > 0 && (
+              <div>
+                <button
                   onClick={() => setShowPrintDialog(true)}
-                  variant="outline"
-                  className="w-full"
-                  size="lg"
+                  className="text-blue-600 hover:text-blue-700 font-medium py-2 text-base"
                 >
-                  <Printer className="mr-2 h-5 w-5" />
-                  Print Labels ({counts.completed} items processed)
-                </Button>
-              )}
+                  <Printer className="inline-block mr-2 h-4 w-4" />
+                  Print Labels ({counts.completed} completed)
+                </button>
+              </div>
+            )}
 
-              <BarcodeScanner
-                onScan={handleItemScan}
-                placeholder="Scan or enter item barcode"
-              />
-
-              <Button onClick={handleAbort} variant="outline" className="w-full" size="lg">
-                <Home className="mr-2 h-5 w-5" />
-                Abort & Return
-              </Button>
+            <div>
+              <button
+                className="text-gray-500 hover:text-gray-700 py-2 text-sm"
+              >
+                <Camera className="inline-block mr-2 h-4 w-4" />
+                Use camera to scan
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Abort Button */}
+          <div className="mt-8">
+            <button
+              onClick={handleAbort}
+              className="w-full text-gray-600 hover:text-gray-700 py-3 text-base"
+            >
+              Abort & Scan New TO
+            </button>
+          </div>
+        </div>
       )}
 
       {/* State: Confirming */}
       {state === 'confirming' && currentItem && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              {/* Item Info */}
-              <div className="text-center space-y-2">
-                <p className="text-sm text-gray-600">Item</p>
-                <p className="text-xl font-bold">{currentItem.sku}</p>
-                <p className="text-gray-600">{currentItem.sku_data?.description}</p>
-              </div>
+        <div className="space-y-6">
+          {/* Item Info */}
+          <div className="text-center space-y-1">
+            <p className="text-sm text-gray-500 uppercase tracking-wide">Item</p>
+            <p className="text-2xl font-bold">{currentItem.sku}</p>
+            <p className="text-base text-gray-600">{currentItem.sku_data?.description}</p>
+          </div>
 
-              {/* Action Display */}
-              <div className="py-12">
-                {currentItem.preprocessing_status === 'requested' ? (
-                  <div className="bg-red-500 text-white rounded-lg p-8 text-center">
-                    <div className="text-6xl font-bold mb-2">TO SHELF</div>
-                    <p className="text-xl">Pre-process this item</p>
-                  </div>
-                ) : (
-                  <div className="bg-green-500 text-white rounded-lg p-8 text-center">
-                    <div className="text-6xl font-bold mb-2">TO PICK FACE</div>
-                    <p className="text-xl">Standard processing</p>
-                  </div>
-                )}
-              </div>
+          {/* Action Display - Primary */}
+          <Card className={currentItem.preprocessing_status === 'requested' ? 'border-red-500 border-2' : 'border-green-500 border-2'}>
+            <CardContent className="p-0">
+              {currentItem.preprocessing_status === 'requested' ? (
+                <div className="bg-red-500 text-white rounded-lg p-12 text-center">
+                  <div className="text-7xl font-bold mb-3">TO SHELF</div>
+                  <p className="text-2xl">Pre-process this item</p>
+                </div>
+              ) : (
+                <div className="bg-green-500 text-white rounded-lg p-12 text-center">
+                  <div className="text-7xl font-bold mb-3">TO PICK FACE</div>
+                  <p className="text-2xl">Standard processing</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-              {/* Confirm Button */}
+          {/* Confirm Button */}
+          <Card>
+            <CardContent className="p-4">
               <Button
                 onClick={handleConfirm}
                 disabled={loading}
@@ -296,96 +322,101 @@ export default function TOItemsPage() {
                 )}
                 Confirm
               </Button>
+            </CardContent>
+          </Card>
 
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                className="w-full"
-                size="lg"
-                disabled={loading}
-              >
-                <XCircle className="mr-2 h-5 w-5" />
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Cancel - Text Link */}
+          <div className="text-center">
+            <button
+              onClick={handleCancel}
+              className="text-gray-600 hover:text-gray-800 py-2"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
 
       {/* State: Completed */}
       {state === 'completed' && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-6 text-center">
-              <div className="flex justify-center">
-                <CheckCircle className="h-16 w-16 text-green-500" />
-              </div>
-              
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Pre-processing Complete!</h2>
-                <p className="text-gray-600">
-                  All items for {toNumber} have been processed
-                </p>
-              </div>
+        <div className="space-y-6">
+          {/* Success Message */}
+          <div className="text-center py-8">
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="h-20 w-20 text-green-500" />
+            </div>
+            <h2 className="text-3xl font-bold mb-2">Complete!</h2>
+            <p className="text-lg text-gray-600">
+              All items for {toNumber} processed
+            </p>
+          </div>
 
+          {/* Print Labels - Primary Action */}
+          <Card>
+            <CardContent className="p-4">
               <Button
                 onClick={() => setShowPrintDialog(true)}
-                className="w-full h-14"
+                className="w-full h-14 text-lg"
                 size="lg"
               >
                 <Printer className="mr-2 h-5 w-5" />
                 Print Pallet Labels
               </Button>
+            </CardContent>
+          </Card>
 
-              <Button
-                onClick={handleAbort}
-                variant="outline"
-                className="w-full"
-                size="lg"
-              >
-                <Home className="mr-2 h-5 w-5" />
-                Scan New TO
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Scan New TO - Text Link */}
+          <div className="text-center">
+            <button
+              onClick={handleAbort}
+              className="text-blue-600 hover:text-blue-700 py-3 text-base font-medium"
+            >
+              <Home className="inline-block mr-2 h-5 w-5" />
+              Scan New TO
+            </button>
+          </div>
+        </div>
       )}
 
-      {/* Print Dialog */}
+      {/* Print Dialog - Modal Overlay */}
       {showPrintDialog && (
-        <Card className="border-2 border-blue-500">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-center">Print Labels</h3>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Number of labels
-                </label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={labelCount}
-                  onChange={(e) => setLabelCount(parseInt(e.target.value) || 1)}
-                  className="text-lg h-12"
-                />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6 pb-6">
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-center">Print Labels</h3>
+                
+                <div>
+                  <label className="block text-base font-medium mb-3 text-center">
+                    How many labels?
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={labelCount}
+                    onChange={(e) => setLabelCount(parseInt(e.target.value) || 1)}
+                    className="text-2xl h-16 text-center"
+                  />
+                </div>
+
+                <Button onClick={handlePrintLabels} className="w-full h-14 text-lg" size="lg">
+                  <Printer className="mr-2 h-5 w-5" />
+                  Print {labelCount} Label{labelCount > 1 ? 's' : ''}
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    onClick={() => setShowPrintDialog(false)}
+                    className="text-gray-600 hover:text-gray-800 py-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-
-              <Button onClick={handlePrintLabels} className="w-full" size="lg">
-                <Printer className="mr-2 h-5 w-5" />
-                Print {labelCount} Label{labelCount > 1 ? 's' : ''}
-              </Button>
-
-              <Button
-                onClick={() => setShowPrintDialog(false)}
-                variant="outline"
-                className="w-full"
-              >
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

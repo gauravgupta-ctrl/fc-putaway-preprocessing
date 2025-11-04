@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarcodeScanner } from '@/components/BarcodeScanner';
+import { SimpleBarcodeInput } from '@/components/SimpleBarcodeInput';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getTransferOrderByNumber } from '@/lib/operator';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Camera } from 'lucide-react';
 
 export default function OperatorPage() {
   const router = useRouter();
@@ -62,17 +63,18 @@ export default function OperatorPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-md mx-auto space-y-6">
+      {/* Main Scan Section */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Scan Transfer Order</h2>
-              <p className="text-gray-600">Scan the TO barcode to begin</p>
+        <CardContent className="pt-6 pb-6">
+          <div className="space-y-4">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold mb-1">Scan Transfer Order</h2>
+              <p className="text-lg text-gray-600">Ready to scan</p>
             </div>
 
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="mb-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -83,14 +85,24 @@ export default function OperatorPage() {
                 <Loader2 className="h-8 w-8 animate-spin" />
               </div>
             ) : (
-              <BarcodeScanner
+              <SimpleBarcodeInput
                 onScan={handleScan}
-                placeholder="Scan or enter TO number"
+                placeholder="Scan or enter TO number..."
               />
             )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Camera Option - Text Link */}
+      {!loading && (
+        <div className="text-center">
+          <button className="text-gray-600 hover:text-gray-800 py-2 text-sm">
+            <Camera className="inline-block mr-2 h-4 w-4" />
+            Use camera to scan
+          </button>
+        </div>
+      )}
     </div>
   );
 }
