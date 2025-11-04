@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Printer, CheckCircle, Package } from 'lucide-react';
+import { Printer, CheckCircle, Package, Loader2 } from 'lucide-react';
 import { createPalletLabel, getCompletedItemsCount } from '@/lib/operator';
 import { supabase } from '@/lib/supabase';
 
-export default function PrintLabelsPage() {
+function PrintLabelsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const transferOrderId = searchParams.get('to');
@@ -202,6 +202,18 @@ export default function PrintLabelsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PrintLabelsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <PrintLabelsContent />
+    </Suspense>
   );
 }
 

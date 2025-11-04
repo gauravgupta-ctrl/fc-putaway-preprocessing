@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BarcodeScanner } from '@/components/BarcodeScanner';
-import { Package, AlertCircle, CheckCircle, ArrowLeft, Printer } from 'lucide-react';
+import { Package, AlertCircle, CheckCircle, ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import {
   findItemByBarcode,
   completeItemProcessing,
@@ -18,7 +18,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import type { TransferOrderLine, SkuAttribute } from '@/types/database';
 
-export default function ScanItemsPage() {
+function ScanItemsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const transferOrderId = searchParams.get('to');
@@ -304,6 +304,18 @@ export default function ScanItemsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ScanItemsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <ScanItemsContent />
+    </Suspense>
   );
 }
 
