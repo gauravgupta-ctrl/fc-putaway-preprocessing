@@ -109,9 +109,9 @@ export default function ScanItemPage() {
           <div className={`flex-1 flex ${completedCount === 0 ? 'justify-end' : 'justify-end'}`}>
             <Button
               onClick={handleAbort}
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="bg-transparent border-gray-300"
+              className="bg-transparent"
             >
               <X className="h-4 w-4 mr-1" />
               Abort
