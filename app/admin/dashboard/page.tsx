@@ -109,7 +109,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle>Transfer Orders</CardTitle>
           <CardDescription>
-            Select transfer orders to review items and request pre-processing for items with high days of stock
+            Select transfer orders to review items and request pre-processing to direct high-stock items to shelf storage
           </CardDescription>
         </CardHeader>
         <CardContent>
