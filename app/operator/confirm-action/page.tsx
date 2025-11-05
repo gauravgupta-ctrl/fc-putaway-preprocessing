@@ -92,7 +92,7 @@ export default function ConfirmActionPage() {
     );
   }
 
-  const action = item.preprocessing_status === 'requested' ? 'shelf' : 'pickface';
+  const action = item.preprocessing_status === 'requested' ? 'shelf' : 'reserve';
   const actionColor = action === 'shelf' ? 'red' : 'green';
 
   return (
@@ -135,10 +135,10 @@ export default function ConfirmActionPage() {
               Place this item in:
             </p>
             <p className="text-4xl font-bold mb-2">
-              {action === 'shelf' ? 'SHELF' : 'RESERVE'}
+              {action === 'shelf' ? 'SHELF' : 'PICK FACE'}
             </p>
             <p className="text-sm opacity-90">
-              {action === 'shelf' ? 'Store on shelves' : 'Send to reserve storage'}
+              {action === 'shelf' ? 'Store on shelves' : 'Send to ASRS pick face'}
             </p>
           </div>
         </div>
