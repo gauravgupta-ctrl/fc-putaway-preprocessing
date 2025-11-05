@@ -92,33 +92,31 @@ export default function ScanItemPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col relative">
-      {/* Abort Button - Top Right */}
-      <div className="absolute top-4 right-4 z-10">
-        <Button
-          onClick={handleAbort}
-          variant="outline"
-          size="sm"
-          className="bg-transparent border-gray-300"
-        >
-          <X className="h-4 w-4 mr-1" />
-          Abort
-        </Button>
-      </div>
-
-      {/* TO Info Bar */}
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col">
+      {/* TO Info Bar with Abort Button */}
       <div className="bg-white border-b px-4 py-3">
-        <div className="flex items-center justify-between pr-20">
-          <div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1">
             <p className="text-sm text-gray-600">Transfer Order</p>
             <p className="text-lg font-bold text-gray-900">{toNumber}</p>
           </div>
           {completedCount > 0 && (
-            <div className="text-right">
+            <div className="text-center">
               <p className="text-sm text-gray-600">Completed</p>
               <p className="text-lg font-bold text-green-600">{completedCount}</p>
             </div>
           )}
+          <div>
+            <Button
+              onClick={handleAbort}
+              variant="outline"
+              size="sm"
+              className="bg-transparent border-gray-300"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Abort
+            </Button>
+          </div>
         </div>
       </div>
 
