@@ -109,7 +109,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle>Transfer Orders</CardTitle>
           <CardDescription>
-            View all incoming transfer orders and their pre-processing status. Select one or more TOs to review individual items, check days of stock levels, and request items to be redirected to shelf storage instead of the ASRS pick face.
+            Select transfer orders to review items and request pre-processing for items with high days of stock
           </CardDescription>
         </CardHeader>
         <CardContent>
