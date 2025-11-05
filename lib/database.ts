@@ -232,7 +232,7 @@ export async function requestAllPreprocessing(
       requested_by: userId,
     })
     .in('id', lineIds)
-    .eq('preprocessing_status', 'in review');
+    .eq('preprocessing_status', 'no instruction');
 
   if (error) {
     console.error('Error requesting all preprocessing:', error);
