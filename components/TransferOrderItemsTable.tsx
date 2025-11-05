@@ -159,6 +159,28 @@ export function TransferOrderItemsTable({
         cell: ({ row }) => <div className="font-mono text-sm">{row.getValue('sku')}</div>,
       },
       {
+        accessorKey: 'sku_data.barcode',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            >
+              Barcode
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const skuData = row.original.sku_data;
+          return skuData?.barcode ? (
+            <div className="font-mono text-sm text-gray-700">{skuData.barcode}</div>
+          ) : (
+            '-'
+          );
+        },
+      },
+      {
         accessorKey: 'sku_data.description',
         header: 'Description',
         cell: ({ row }) => {
