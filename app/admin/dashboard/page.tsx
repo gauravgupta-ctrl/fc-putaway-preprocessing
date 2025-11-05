@@ -129,7 +129,7 @@ export default function DashboardPage() {
               Items in Selected Transfer Order{selectedTOs.length > 1 ? 's' : ''}
             </CardTitle>
             <CardDescription>
-              Review items with high days of stock and request pre-processing to redirect them to shelf storage. Items above the {threshold}-day threshold are highlighted. Use "Request" to mark items for operator pre-processing.
+              Items above the {threshold}-day threshold are automatically requested for pre-processing. Review and cancel individual items if needed, or manually request items below the threshold.
             </CardDescription>
           </CardHeader>
           <CardContent>

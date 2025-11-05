@@ -172,6 +172,8 @@ export async function requestPreprocessing(
       preprocessing_status: 'requested',
       requested_at: new Date().toISOString(),
       requested_by: userId,
+      manually_cancelled: false,
+      auto_requested: false,
     })
     .eq('id', lineId);
 
@@ -198,9 +200,10 @@ export async function cancelPreprocessing(
   const { error } = await supabase
     .from('transfer_order_lines')
     .update({
-      preprocessing_status: 'no instruction',
+      preprocessing_status: 'not needed',
       requested_at: null,
       requested_by: null,
+      manually_cancelled: true,
     })
     .eq('id', lineId);
 
@@ -230,9 +233,11 @@ export async function requestAllPreprocessing(
       preprocessing_status: 'requested',
       requested_at: new Date().toISOString(),
       requested_by: userId,
+      manually_cancelled: false,
+      auto_requested: false,
     })
     .in('id', lineIds)
-    .eq('preprocessing_status', 'no instruction');
+    .eq('preprocessing_status', 'not needed');
 
   if (error) {
     console.error('Error requesting all preprocessing:', error);
@@ -257,9 +262,10 @@ export async function cancelAllPreprocessing(
   const { error } = await supabase
     .from('transfer_order_lines')
     .update({
-      preprocessing_status: 'no instruction',
+      preprocessing_status: 'not needed',
       requested_at: null,
       requested_by: null,
+      manually_cancelled: true,
     })
     .in('id', lineIds)
     .eq('preprocessing_status', 'requested');

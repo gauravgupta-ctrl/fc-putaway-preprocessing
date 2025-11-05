@@ -34,7 +34,7 @@ export default function OperatorHomePage() {
         return;
       }
 
-      if (status === 'no instruction') {
+      if (status === 'not needed') {
         setError('This Transfer Order has not been requested for pre-processing yet.');
         setLoading(false);
         return;

@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
         id,
         sku,
         preprocessing_status,
+        manually_cancelled,
+        auto_requested,
         transfer_order_id,
         transfer_orders!inner(merchant),
         sku_attributes!inner(days_of_stock_pickface)
@@ -35,29 +37,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No data found' }, { status: 404 });
     }
 
-    // All items start as "no instruction" regardless of DOS or merchant
-    // This API doesn't need to recalculate anything anymore
-    // Statuses are only changed by admin (request/cancel) and operator (complete)
-    
-    // For now, we can use this to reset any orphaned statuses if needed
+    // Auto-request logic: Items above threshold are auto-requested
+    // unless admin has manually cancelled them
     const updates = [];
     
     for (const line of allLines as any[]) {
+      const merchant = line.transfer_orders.merchant;
+      const dos = line.sku_attributes.days_of_stock_pickface;
       const currentStatus = line.preprocessing_status;
+      const manuallyCancelled = line.manually_cancelled;
       
-      // Skip if already requested, in-progress, or completed
-      if (['requested', 'in-progress', 'completed'].includes(currentStatus)) {
+      // Skip if already in-progress or completed
+      if (['in-progress', 'completed'].includes(currentStatus)) {
         continue;
       }
 
-      // Ensure all others are "no instruction"
-      if (currentStatus !== 'no instruction') {
-        updates.push(
-          supabase
-            .from('transfer_order_lines')
-            .update({ preprocessing_status: 'no instruction' })
-            .eq('id', line.id)
-        );
+      // Skip if admin manually cancelled (preserve their decision)
+      if (manuallyCancelled) {
+        continue;
+      }
+
+      // Check if merchant is eligible
+      const isEligible = eligibleMerchantNames.includes(merchant);
+      
+      // Auto-request items above threshold
+      if (isEligible && dos > threshold) {
+        if (currentStatus !== 'requested') {
+          updates.push(
+            supabase
+              .from('transfer_order_lines')
+              .update({ 
+                preprocessing_status: 'requested',
+                auto_requested: true,
+                requested_at: new Date().toISOString(),
+              })
+              .eq('id', line.id)
+          );
+        }
+      } else {
+        // Items below threshold or not eligible
+        if (currentStatus !== 'not needed') {
+          updates.push(
+            supabase
+              .from('transfer_order_lines')
+              .update({ 
+                preprocessing_status: 'not needed',
+                auto_requested: false,
+                requested_at: null,
+                requested_by: null,
+              })
+              .eq('id', line.id)
+          );
+        }
       }
     }
 

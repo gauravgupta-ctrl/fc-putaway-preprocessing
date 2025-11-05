@@ -1,7 +1,7 @@
 // Database types for Supabase tables
 
 export type PreprocessingStatus =
-  | 'no instruction'
+  | 'not needed'
   | 'requested'
   | 'in-progress'
   | 'completed';
@@ -59,6 +59,8 @@ export interface TransferOrderLine {
   preprocessing_status: PreprocessingStatus;
   requested_at: string | null;
   requested_by: string | null;
+  auto_requested: boolean;
+  manually_cancelled: boolean;
   synced_at: string;
   created_at: string;
   updated_at: string;

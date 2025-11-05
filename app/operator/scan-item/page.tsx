@@ -80,8 +80,8 @@ export default function ScanItemPage() {
         setWarning('This item is currently being processed by another operator.');
       } else if (status === 'completed') {
         setWarning('This item has already been processed. You can reprocess it if needed.');
-      } else if (status === 'no instruction') {
-        setWarning('This item has no pre-processing instruction. It will go to PICK FACE.');
+      } else if (status === 'not needed') {
+        setWarning('This item is not requested for pre-processing. It will go to PICK FACE.');
       }
 
       // Always allow to proceed

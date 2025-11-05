@@ -98,7 +98,7 @@ export default function ConfirmActionPage() {
   }
 
   // requested or completed = TO RESERVE (red)
-  // no instruction = TO PICK FACE (green)
+  // not needed = TO PICK FACE (green)
   const toReserve = item.preprocessing_status === 'requested' || item.preprocessing_status === 'completed';
   const actionColor = toReserve ? 'red' : 'green';
   const actionText = toReserve ? 'RESERVE' : 'PICK FACE';

@@ -28,7 +28,7 @@ interface TransferOrdersTableProps {
 
 function getStatusColor(status: PreprocessingStatus): string {
   switch (status) {
-    case 'no instruction':
+    case 'not needed':
       return 'bg-gray-100 text-gray-800';
     case 'requested':
       return 'bg-blue-100 text-blue-800';

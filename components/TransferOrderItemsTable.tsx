@@ -30,7 +30,7 @@ interface TransferOrderItemsTableProps {
 
 function getStatusColor(status: PreprocessingStatus): string {
   switch (status) {
-    case 'no instruction':
+    case 'not needed':
       return 'bg-gray-100 text-gray-800';
     case 'requested':
       return 'bg-blue-100 text-blue-800';
@@ -81,11 +81,11 @@ export function TransferOrderItemsTable({
   }
 
   async function handleRequestAll() {
-    // Only request items that are "no instruction" AND above threshold
+    // Only request items that are "not needed" AND above threshold
     const eligibleItems = data
       .filter((item) => {
         const dos = item.sku_data?.days_of_stock_pickface || 0;
-        return item.preprocessing_status === 'no instruction' && dos > threshold;
+        return item.preprocessing_status === 'not needed' && dos > threshold;
       })
       .map((item) => item.id);
 
@@ -261,7 +261,7 @@ export function TransferOrderItemsTable({
           const itemId = row.original.id;
           const isLoading = loading === itemId;
 
-          if (status === 'no instruction') {
+          if (status === 'not needed') {
             return (
               <Button
                 size="sm"
@@ -312,27 +312,20 @@ export function TransferOrderItemsTable({
   return (
     <div className="space-y-4">
       {/* Bulk Actions */}
-      <div className="flex gap-2">
-        <Button
-          onClick={handleRequestAll}
-          disabled={aboveThresholdCount === 0 || loading === 'all'}
-        >
-          {loading === 'all' ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
-          Request All above Threshold ({aboveThresholdCount})
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleCancelAll}
-          disabled={requestedCount === 0 || loading === 'all'}
-        >
-          {loading === 'all' ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
-          Cancel All Requests ({requestedCount})
-        </Button>
-      </div>
+      {requestedCount > 0 && (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleCancelAll}
+            disabled={requestedCount === 0 || loading === 'all'}
+          >
+            {loading === 'all' ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            Cancel All Requests ({requestedCount})
+          </Button>
+        </div>
+      )}
 
       {/* Table */}
       <div className="rounded-md border">
