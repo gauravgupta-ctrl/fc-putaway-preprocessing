@@ -155,7 +155,7 @@ export default function PrintLabelsPage() {
 
         {/* Label Count Input */}
         <div className="max-w-md mx-auto w-full mb-8">
-          <div className="bg-white rounded-lg border p-6">
+          <div className="bg-gray-100 rounded-lg p-6">
             <Label htmlFor="labelCount" className="text-base mb-3 block">
               Number of labels to print
             </Label>
@@ -165,12 +165,21 @@ export default function PrintLabelsPage() {
               min="1"
               max="10"
               value={labelCount}
-              onChange={(e) => setLabelCount(Math.max(1, parseInt(e.target.value) || 1))}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '') {
+                  setLabelCount(1);
+                } else {
+                  setLabelCount(Math.max(1, Math.min(10, parseInt(val))));
+                }
+              }}
               className="text-2xl h-16 text-center font-bold"
             />
-            <p className="text-sm text-gray-500 mt-3 text-center">
-              Labels will be numbered 1 of {labelCount}, 2 of {labelCount}, etc.
-            </p>
+            {labelCount > 1 && (
+              <p className="text-sm text-gray-500 mt-3 text-center">
+                Labels will be numbered 1 of {labelCount}, 2 of {labelCount}, etc.
+              </p>
+            )}
           </div>
         </div>
 
