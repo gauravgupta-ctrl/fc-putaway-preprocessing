@@ -116,19 +116,31 @@ CREATE TRIGGER update_to_status_on_item_change
   AFTER INSERT OR UPDATE OR DELETE ON transfer_order_lines
   FOR EACH ROW EXECUTE FUNCTION update_to_preprocessing_status();
 
--- Step 12: Trigger update for all existing TOs
-DO $$
-DECLARE
-  to_record RECORD;
-BEGIN
-  FOR to_record IN SELECT DISTINCT id FROM transfer_orders
-  LOOP
-    PERFORM update_to_preprocessing_status() 
-    FROM transfer_order_lines 
-    WHERE transfer_order_id = to_record.id 
-    LIMIT 1;
-  END LOOP;
-END $$;
+-- Step 12: Manually update all TO statuses based on their items
+UPDATE transfer_orders t
+SET preprocessing_status = (
+  SELECT 
+    CASE
+      WHEN COUNT(*) FILTER (WHERE tol.preprocessing_status = 'in-progress'::preprocessing_status) > 0 
+           OR (COUNT(*) FILTER (WHERE tol.preprocessing_status = 'completed'::preprocessing_status) > 0 
+               AND COUNT(*) FILTER (WHERE tol.preprocessing_status = 'requested'::preprocessing_status) > 0)
+      THEN 'in-progress'::preprocessing_status
+      
+      WHEN COUNT(*) FILTER (WHERE tol.preprocessing_status = 'requested'::preprocessing_status) > 0 
+           AND COUNT(*) FILTER (WHERE tol.preprocessing_status = 'completed'::preprocessing_status) = 0
+      THEN 'requested'::preprocessing_status
+      
+      WHEN COUNT(*) FILTER (WHERE tol.preprocessing_status = 'completed'::preprocessing_status) > 0 
+           AND COUNT(*) FILTER (WHERE tol.preprocessing_status = 'requested'::preprocessing_status) = 0
+           AND COUNT(*) FILTER (WHERE tol.preprocessing_status = 'in-progress'::preprocessing_status) = 0
+      THEN 'completed'::preprocessing_status
+      
+      ELSE 'no instruction'::preprocessing_status
+    END
+  FROM transfer_order_lines tol
+  WHERE tol.transfer_order_id = t.id
+  GROUP BY tol.transfer_order_id
+);
 
 -- Step 13: Verify results
 SELECT 
