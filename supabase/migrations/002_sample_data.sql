@@ -50,32 +50,176 @@ UNION ALL
 SELECT id, '#T0303', 'SKU-12', 200, 200 FROM transfer_orders WHERE transfer_number = '#T0303';
 
 -- #T0312 lines (BABYBOO FASHION - Shipped, not received yet)
-INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming, units_received)
-SELECT id, '#T0312', 'SKU-21', 100, 0 FROM transfer_orders WHERE transfer_number = '#T0312'
+INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming, units_received, preprocessing_status)
+SELECT 
+  id, 
+  '#T0312', 
+  'SKU-21', 
+  100, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-21') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0312'
 UNION ALL
-SELECT id, '#T0312', 'SKU-22', 200, 0 FROM transfer_orders WHERE transfer_number = '#T0312'
+SELECT 
+  id, 
+  '#T0312', 
+  'SKU-22', 
+  200, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-22') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0312'
 UNION ALL
-SELECT id, '#T0312', 'SKU-23', 100, 0 FROM transfer_orders WHERE transfer_number = '#T0312'
+SELECT 
+  id, 
+  '#T0312', 
+  'SKU-23', 
+  100, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-23') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0312'
 UNION ALL
-SELECT id, '#T0312', 'SKU-24', 200, 0 FROM transfer_orders WHERE transfer_number = '#T0312'
+SELECT 
+  id, 
+  '#T0312', 
+  'SKU-24', 
+  200, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-24') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0312'
 UNION ALL
-SELECT id, '#T0312', 'SKU-25', 100, 0 FROM transfer_orders WHERE transfer_number = '#T0312';
+SELECT 
+  id, 
+  '#T0312', 
+  'SKU-25', 
+  100, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-25') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0312';
 
 -- #T0311 lines (BABYBOO FASHION - Putaway in progress, partially received)
-INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming, units_received)
-SELECT id, '#T0311', 'SKU-31', 100, 100 FROM transfer_orders WHERE transfer_number = '#T0311'
+INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming, units_received, preprocessing_status)
+SELECT 
+  id, 
+  '#T0311', 
+  'SKU-31', 
+  100, 
+  100,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-31') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0311'
 UNION ALL
-SELECT id, '#T0311', 'SKU-32', 200, 200 FROM transfer_orders WHERE transfer_number = '#T0311'
+SELECT 
+  id, 
+  '#T0311', 
+  'SKU-32', 
+  200, 
+  200,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-32') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0311'
 UNION ALL
-SELECT id, '#T0311', 'SKU-33', 100, 100 FROM transfer_orders WHERE transfer_number = '#T0311'
+SELECT 
+  id, 
+  '#T0311', 
+  'SKU-33', 
+  100, 
+  100,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-33') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0311'
 UNION ALL
-SELECT id, '#T0311', 'SKU-34', 200, 0 FROM transfer_orders WHERE transfer_number = '#T0311'
+SELECT 
+  id, 
+  '#T0311', 
+  'SKU-34', 
+  200, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-34') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0311'
 UNION ALL
-SELECT id, '#T0311', 'SKU-35', 100, 0 FROM transfer_orders WHERE transfer_number = '#T0311'
+SELECT 
+  id, 
+  '#T0311', 
+  'SKU-35', 
+  100, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-35') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0311'
 UNION ALL
-SELECT id, '#T0311', 'SKU-36', 200, 0 FROM transfer_orders WHERE transfer_number = '#T0311'
+SELECT 
+  id, 
+  '#T0311', 
+  'SKU-36', 
+  200, 
+  0,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-36') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0311'
 UNION ALL
-SELECT id, '#T0311', 'SKU-37', 200, 100 FROM transfer_orders WHERE transfer_number = '#T0311';
+SELECT 
+  id, 
+  '#T0311', 
+  'SKU-37', 
+  200, 
+  100,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM eligible_merchants WHERE merchant_name = 'BABYBOO FASHION')
+         AND (SELECT days_of_stock_pickface FROM sku_attributes WHERE sku = 'SKU-37') > 30
+    THEN 'in review'::preprocessing_status
+    ELSE 'not required'::preprocessing_status
+  END
+FROM transfer_orders WHERE transfer_number = '#T0311';
 
 -- #T0209 lines (WATERDROP ANZ - Shipped, not received yet)
 INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming, units_received)
