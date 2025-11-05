@@ -95,18 +95,18 @@ export default function ScanItemPage() {
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
       {/* TO Info Bar with Abort Button */}
       <div className="bg-white border-b px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
           <div className="flex-1">
             <p className="text-sm text-gray-600">Transfer Order</p>
             <p className="text-lg font-bold text-gray-900">{toNumber}</p>
           </div>
           {completedCount > 0 && (
-            <div className="text-center">
+            <div className="flex-1 text-center">
               <p className="text-sm text-gray-600">Completed</p>
               <p className="text-lg font-bold text-green-600">{completedCount}</p>
             </div>
           )}
-          <div>
+          <div className={completedCount === 0 ? 'ml-auto' : ''}>
             <Button
               onClick={handleAbort}
               variant="outline"
