@@ -135,10 +135,10 @@ export default function ConfirmActionPage() {
               Place this item in:
             </p>
             <p className="text-4xl font-bold mb-2">
-              {action === 'shelf' ? 'SHELF' : 'PICK FACE'}
+              {action === 'shelf' ? 'SHELF' : 'RESERVE'}
             </p>
             <p className="text-sm opacity-90">
-              {action === 'shelf' ? 'Store on shelves' : 'Send to ASRS'}
+              {action === 'shelf' ? 'Store on shelves' : 'Send to reserve storage'}
             </p>
           </div>
         </div>
