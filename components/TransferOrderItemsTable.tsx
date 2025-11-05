@@ -222,14 +222,13 @@ export function TransferOrderItemsTable({
         },
         cell: ({ row }) => {
           const dos = row.original.sku_data?.days_of_stock_pickface || 0;
-          const status = row.original.preprocessing_status;
-          const needsPreprocessing = status === 'in review' || status === 'requested' || status === 'in-progress' || status === 'completed';
+          const exceeds = dos > threshold;
           return (
             <div className="flex items-center gap-2">
-              <span className={needsPreprocessing ? 'font-semibold text-orange-600' : ''}>
+              <span className={exceeds ? 'font-semibold text-orange-600' : ''}>
                 {dos.toFixed(1)} days
               </span>
-              {needsPreprocessing && <Badge variant="outline" className="text-xs">Above threshold</Badge>}
+              {exceeds && <Badge variant="outline" className="text-xs">Above threshold</Badge>}
             </div>
           );
         },

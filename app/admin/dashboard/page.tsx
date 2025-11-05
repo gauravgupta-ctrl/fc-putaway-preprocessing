@@ -69,6 +69,9 @@ export default function DashboardPage() {
   }
 
   async function handleRefresh() {
+    // Recalculate statuses based on current threshold
+    await fetch('/api/recalculate-status', { method: 'POST' });
+    
     await loadData();
     if (selectedTOs.length > 0) {
       await loadItems();
