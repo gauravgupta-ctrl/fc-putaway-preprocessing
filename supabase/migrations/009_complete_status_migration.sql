@@ -118,8 +118,8 @@ CREATE TRIGGER update_to_status_on_item_change
 
 -- Step 12: Manually update all TO statuses based on their items
 UPDATE transfer_orders t
-SET preprocessing_status = (
-  SELECT 
+SET preprocessing_status = COALESCE(
+  (SELECT 
     CASE
       WHEN COUNT(*) FILTER (WHERE tol.preprocessing_status = 'in-progress'::preprocessing_status) > 0 
            OR (COUNT(*) FILTER (WHERE tol.preprocessing_status = 'completed'::preprocessing_status) > 0 
@@ -140,6 +140,8 @@ SET preprocessing_status = (
   FROM transfer_order_lines tol
   WHERE tol.transfer_order_id = t.id
   GROUP BY tol.transfer_order_id
+  ),
+  'no instruction'::preprocessing_status  -- Default for TOs with no items
 );
 
 -- Step 13: Verify results
