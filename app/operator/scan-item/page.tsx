@@ -101,12 +101,12 @@ export default function ScanItemPage() {
             <p className="text-lg font-bold text-gray-900">{toNumber}</p>
           </div>
           {completedCount > 0 && (
-            <div className="flex-1 flex flex-col items-center">
+            <div className="flex-1 flex flex-col items-center justify-center">
               <p className="text-sm text-gray-600">Completed</p>
               <p className="text-lg font-bold text-green-600">{completedCount}</p>
             </div>
           )}
-          <div className={completedCount === 0 ? 'ml-auto' : ''}>
+          <div className={`flex-1 flex ${completedCount === 0 ? 'justify-end' : 'justify-end'}`}>
             <Button
               onClick={handleAbort}
               variant="outline"
