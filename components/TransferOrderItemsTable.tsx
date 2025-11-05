@@ -215,7 +215,7 @@ export function TransferOrderItemsTable({
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             >
-              Days of Stock
+              Days of Stock in Pick Face
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           );
