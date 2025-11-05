@@ -30,10 +30,8 @@ interface TransferOrderItemsTableProps {
 
 function getStatusColor(status: PreprocessingStatus): string {
   switch (status) {
-    case 'not required':
+    case 'no instruction':
       return 'bg-gray-100 text-gray-800';
-    case 'in review':
-      return 'bg-yellow-100 text-yellow-800';
     case 'requested':
       return 'bg-blue-100 text-blue-800';
     case 'in-progress':
@@ -83,12 +81,16 @@ export function TransferOrderItemsTable({
   }
 
   async function handleRequestAll() {
+    // Only request items that are "no instruction" AND above threshold
     const eligibleItems = data
-      .filter((item) => item.preprocessing_status === 'in review')
+      .filter((item) => {
+        const dos = item.sku_data?.days_of_stock_pickface || 0;
+        return item.preprocessing_status === 'no instruction' && dos > threshold;
+      })
       .map((item) => item.id);
 
     if (eligibleItems.length === 0) {
-      alert('No items available for pre-processing request');
+      alert('No items above threshold available for pre-processing request');
       return;
     }
 
@@ -259,7 +261,7 @@ export function TransferOrderItemsTable({
           const itemId = row.original.id;
           const isLoading = loading === itemId;
 
-          if (status === 'in review') {
+          if (status === 'no instruction') {
             return (
               <Button
                 size="sm"
@@ -281,6 +283,7 @@ export function TransferOrderItemsTable({
               </Button>
             );
           } else {
+            // For in-progress and completed, no action
             return <span className="text-gray-400 text-sm">-</span>;
           }
         },
@@ -300,7 +303,10 @@ export function TransferOrderItemsTable({
     },
   });
 
-  const inReviewCount = data.filter((item) => item.preprocessing_status === 'in review').length;
+  const aboveThresholdCount = data.filter((item) => {
+    const dos = item.sku_data?.days_of_stock_pickface || 0;
+    return item.preprocessing_status === 'no instruction' && dos > threshold;
+  }).length;
   const requestedCount = data.filter((item) => item.preprocessing_status === 'requested').length;
 
   return (
@@ -309,12 +315,12 @@ export function TransferOrderItemsTable({
       <div className="flex gap-2">
         <Button
           onClick={handleRequestAll}
-          disabled={inReviewCount === 0 || loading === 'all'}
+          disabled={aboveThresholdCount === 0 || loading === 'all'}
         >
           {loading === 'all' ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : null}
-          Request All ({inReviewCount})
+          Request All above Threshold ({aboveThresholdCount})
         </Button>
         <Button
           variant="outline"
@@ -370,7 +376,7 @@ export function TransferOrderItemsTable({
 
       {/* Summary */}
       <div className="text-sm text-gray-600">
-        Showing {table.getRowModel().rows.length} item(s) • {inReviewCount} in review •{' '}
+        Showing {table.getRowModel().rows.length} item(s) • {aboveThresholdCount} above threshold •{' '}
         {requestedCount} requested
       </div>
     </div>

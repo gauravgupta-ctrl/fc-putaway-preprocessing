@@ -198,7 +198,7 @@ export async function cancelPreprocessing(
   const { error } = await supabase
     .from('transfer_order_lines')
     .update({
-      preprocessing_status: 'in review',
+      preprocessing_status: 'no instruction',
       requested_at: null,
       requested_by: null,
     })
@@ -257,7 +257,7 @@ export async function cancelAllPreprocessing(
   const { error } = await supabase
     .from('transfer_order_lines')
     .update({
-      preprocessing_status: 'in review',
+      preprocessing_status: 'no instruction',
       requested_at: null,
       requested_by: null,
     })

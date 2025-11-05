@@ -35,12 +35,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No data found' }, { status: 404 });
     }
 
-    // Recalculate status for each line (but only if not already requested/in-progress/completed)
+    // All items start as "no instruction" regardless of DOS or merchant
+    // This API doesn't need to recalculate anything anymore
+    // Statuses are only changed by admin (request/cancel) and operator (complete)
+    
+    // For now, we can use this to reset any orphaned statuses if needed
     const updates = [];
     
     for (const line of allLines as any[]) {
-      const merchant = line.transfer_orders.merchant;
-      const dos = line.sku_attributes.days_of_stock_pickface;
       const currentStatus = line.preprocessing_status;
       
       // Skip if already requested, in-progress, or completed
@@ -48,23 +50,21 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Calculate new status
-      const isEligible = eligibleMerchantNames.includes(merchant);
-      const newStatus = (isEligible && dos > threshold) ? 'in review' : 'not required';
-
-      // Update if different
-      if (newStatus !== currentStatus) {
+      // Ensure all others are "no instruction"
+      if (currentStatus !== 'no instruction') {
         updates.push(
           supabase
             .from('transfer_order_lines')
-            .update({ preprocessing_status: newStatus })
+            .update({ preprocessing_status: 'no instruction' })
             .eq('id', line.id)
         );
       }
     }
 
     // Execute all updates
-    await Promise.all(updates);
+    if (updates.length > 0) {
+      await Promise.all(updates);
+    }
 
     return NextResponse.json({
       success: true,

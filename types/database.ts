@@ -1,8 +1,7 @@
 // Database types for Supabase tables
 
 export type PreprocessingStatus =
-  | 'not required'
-  | 'in review'
+  | 'no instruction'
   | 'requested'
   | 'in-progress'
   | 'completed';

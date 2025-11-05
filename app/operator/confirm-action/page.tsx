@@ -60,14 +60,19 @@ export default function ConfirmActionPage() {
   }
 
   async function handleConfirm() {
-    if (!itemId || !toId) return;
+    if (!itemId || !toId || !item) return;
 
     setConfirming(true);
 
     try {
-      await confirmItemAction(itemId, userId);
+      // Only update status for "requested" items (TO RESERVE)
+      const toReserve = item.preprocessing_status === 'requested' || item.preprocessing_status === 'completed';
+      
+      if (toReserve) {
+        await confirmItemAction(itemId, userId);
+      }
 
-      // Check if all items are completed
+      // Check if all requested items are completed
       const allCompleted = await areAllItemsCompleted(toId);
 
       if (allCompleted) {
@@ -92,8 +97,12 @@ export default function ConfirmActionPage() {
     );
   }
 
-  const action = item.preprocessing_status === 'requested' ? 'shelf' : 'reserve';
-  const actionColor = action === 'shelf' ? 'red' : 'green';
+  // requested or completed = TO RESERVE (red)
+  // no instruction = TO PICK FACE (green)
+  const toReserve = item.preprocessing_status === 'requested' || item.preprocessing_status === 'completed';
+  const actionColor = toReserve ? 'red' : 'green';
+  const actionText = toReserve ? 'RESERVE' : 'PICK FACE';
+  const actionSubtext = toReserve ? 'Store in reserve area' : 'Send to ASRS pick face';
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
@@ -135,34 +144,56 @@ export default function ConfirmActionPage() {
               Place this item in:
             </p>
             <p className="text-4xl font-bold mb-2">
-              {action === 'shelf' ? 'SHELF' : 'PICK FACE'}
+              {actionText}
             </p>
             <p className="text-sm opacity-90">
-              {action === 'shelf' ? 'Store on shelves' : 'Send to ASRS pick face'}
+              {actionSubtext}
             </p>
           </div>
         </div>
 
-        {/* Confirm Button */}
+        {/* Action Button */}
         <div className="max-w-md mx-auto w-full">
-          <Button
-            onClick={handleConfirm}
-            disabled={confirming}
-            size="lg"
-            className="w-full h-16 text-xl font-semibold"
-          >
-            {confirming ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                Confirming...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="h-6 w-6 mr-3" />
-                Confirm Action
-              </>
-            )}
-          </Button>
+          {toReserve ? (
+            <Button
+              onClick={handleConfirm}
+              disabled={confirming}
+              size="lg"
+              className="w-full h-16 text-xl font-semibold"
+            >
+              {confirming ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                  Confirming...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-6 w-6 mr-3" />
+                  Confirm Action
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleConfirm}
+              disabled={confirming}
+              size="lg"
+              variant="ghost"
+              className="w-full h-16 text-xl font-semibold bg-transparent"
+            >
+              {confirming ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-900 border-t-transparent mr-3"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <ArrowRight className="h-6 w-6 mr-3" />
+                  Proceed
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </div>

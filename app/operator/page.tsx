@@ -28,19 +28,13 @@ export default function OperatorHomePage() {
       // Check status
       const status = transferOrder.preprocessing_status;
       
-      if (status === 'not required') {
-        setError('This Transfer Order does not require pre-processing.');
-        setLoading(false);
-        return;
-      }
-
       if (status === 'completed') {
         setError('Pre-processing for this Transfer Order is already completed.');
         setLoading(false);
         return;
       }
 
-      if (status === 'in review') {
+      if (status === 'no instruction') {
         setError('This Transfer Order has not been requested for pre-processing yet.');
         setLoading(false);
         return;
