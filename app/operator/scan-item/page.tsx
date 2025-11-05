@@ -101,7 +101,7 @@ export default function ScanItemPage() {
             <p className="text-lg font-bold text-gray-900">{toNumber}</p>
           </div>
           {completedCount > 0 && (
-            <div className="flex-1 text-center">
+            <div className="flex-1 flex flex-col items-center">
               <p className="text-sm text-gray-600">Completed</p>
               <p className="text-lg font-bold text-green-600">{completedCount}</p>
             </div>
