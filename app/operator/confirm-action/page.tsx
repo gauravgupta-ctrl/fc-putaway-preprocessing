@@ -149,18 +149,13 @@ export default function ConfirmActionPage() {
             {/* Item Info - Compact */}
             <div className="max-w-md mx-auto w-full mb-4">
               <div className="bg-white rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs text-gray-600 mb-1">Item</p>
-                    <p className="text-lg font-bold text-gray-900 font-mono">
-                      {item.sku}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-600 mb-1">Qty</p>
-                    <p className="text-lg font-bold text-gray-900">{item.units_incoming}</p>
-                  </div>
-                </div>
+                <p className="text-xs text-gray-600 mb-1">Item</p>
+                <p className="text-lg font-bold text-gray-900 font-mono mb-2">
+                  {item.sku}
+                </p>
+                <p className="text-sm text-gray-700">
+                  {item.sku_data?.description || 'No description'}
+                </p>
               </div>
             </div>
 
