@@ -95,7 +95,7 @@ export function PalletSelector({
         <label className="block text-sm font-medium text-gray-900 mb-2">
           Select Pallet(s)
         </label>
-        <div className="flex flex-wrap gap-2 items-start justify-center">
+        <div className="flex flex-wrap gap-2 items-start">
           {pallets.map((pallet, index) => (
             <div key={pallet.number} className="relative">
               <button
@@ -141,14 +141,9 @@ export function PalletSelector({
             .map((pallet) => (
               <div key={pallet.number} className="bg-white rounded-lg border px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center font-bold text-sm">
-                      {pallet.number}
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Pallet {pallet.number}
-                    </span>
-                  </div>
+                  <span className="text-sm font-medium text-gray-700 w-20">
+                    Pallet {pallet.number}
+                  </span>
                   <Input
                     type="number"
                     min="0"
