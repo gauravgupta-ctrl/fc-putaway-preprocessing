@@ -96,7 +96,7 @@ export function PalletSelector({
           Select Pallet(s)
         </label>
         <div className="flex flex-wrap gap-2 items-start justify-center">
-          {pallets.map((pallet) => (
+          {pallets.map((pallet, index) => (
             <div key={pallet.number} className="relative">
               <button
                 type="button"
@@ -109,11 +109,11 @@ export function PalletSelector({
               >
                 {pallet.number}
               </button>
-              {pallets.length > 1 && pallet.quantity === 0 && (
+              {pallets.length > 1 && index === pallets.length - 1 && pallet.quantity === 0 && (
                 <button
                   type="button"
                   onClick={() => deletePallet(pallet.number)}
-                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-gray-400 text-white rounded-full flex items-center justify-center hover:bg-gray-500"
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>
@@ -139,24 +139,29 @@ export function PalletSelector({
           {pallets
             .filter((p) => p.selected)
             .map((pallet) => (
-              <div key={pallet.number} className="flex items-center gap-2">
-                <div className="w-16 text-right">
-                  <span className="text-sm font-medium text-gray-700">
-                    #{pallet.number}:
-                  </span>
+              <div key={pallet.number} className="bg-white rounded-lg border px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center font-bold text-sm">
+                      {pallet.number}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Pallet {pallet.number}
+                    </span>
+                  </div>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={pallet.quantity || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateQuantity(pallet.number, val === '' ? 0 : parseFloat(val));
+                    }}
+                    placeholder="0"
+                    className="text-lg h-11 text-center font-semibold flex-1 border-gray-300"
+                  />
+                  <span className="text-sm text-gray-600">units</span>
                 </div>
-                <Input
-                  type="number"
-                  min="0"
-                  value={pallet.quantity || ''}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    updateQuantity(pallet.number, val === '' ? 0 : parseFloat(val));
-                  }}
-                  placeholder="0"
-                  className="text-base h-10 text-center font-semibold flex-1"
-                />
-                <span className="text-xs text-gray-600 w-12">units</span>
               </div>
             ))}
         </div>
