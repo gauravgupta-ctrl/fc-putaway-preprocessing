@@ -233,7 +233,7 @@ export default function ConfirmActionPage() {
               ) : (
                 <>
                   <CheckCircle className="h-6 w-6 mr-3" />
-                  Confirm Action
+                  Confirm
                 </>
               )}
             </Button>
