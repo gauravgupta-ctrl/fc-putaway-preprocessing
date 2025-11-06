@@ -95,13 +95,13 @@ export function PalletSelector({
         <label className="block text-sm font-medium text-gray-900 mb-2">
           Select Pallet(s)
         </label>
-        <div className="flex flex-wrap gap-3 items-start">
+        <div className="flex flex-wrap gap-2 items-start justify-center">
           {pallets.map((pallet) => (
             <div key={pallet.number} className="relative">
               <button
                 type="button"
                 onClick={() => togglePallet(pallet.number)}
-                className={`w-16 h-16 rounded-lg font-bold text-xl transition-all ${
+                className={`w-14 h-14 rounded-lg font-bold text-lg transition-all ${
                   pallet.selected
                     ? 'bg-black text-white'
                     : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
@@ -113,7 +113,7 @@ export function PalletSelector({
                 <button
                   type="button"
                   onClick={() => deletePallet(pallet.number)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>
@@ -123,9 +123,9 @@ export function PalletSelector({
           <button
             type="button"
             onClick={addPallet}
-            className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <Plus className="h-8 w-8" />
+            <Plus className="h-7 w-7" />
           </button>
         </div>
       </div>
