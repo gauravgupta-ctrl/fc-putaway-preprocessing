@@ -10,7 +10,7 @@ DROP FUNCTION IF EXISTS update_to_preprocessing_status() CASCADE;
 ALTER TABLE transfer_order_lines ADD COLUMN preprocessing_status_temp TEXT;
 ALTER TABLE transfer_orders ADD COLUMN preprocessing_status_temp TEXT;
 
--- Step 4: Copy and transform existing values
+-- Step, 4: Copy and transform existing values
 UPDATE transfer_order_lines
 SET preprocessing_status_temp = CASE preprocessing_status::TEXT
   WHEN 'not required' THEN 'no instruction'

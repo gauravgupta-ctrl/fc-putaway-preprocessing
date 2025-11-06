@@ -12,7 +12,7 @@ DELETE FROM eligible_merchants;
 INSERT INTO eligible_merchants (merchant_name) VALUES ('BABYBOO FASHION');
 
 -- Get current threshold
-DO $$
+DO $$and
 DECLARE
   current_threshold NUMERIC;
 BEGIN
