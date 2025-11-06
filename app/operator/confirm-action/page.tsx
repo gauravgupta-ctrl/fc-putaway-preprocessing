@@ -142,60 +142,85 @@ export default function ConfirmActionPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col px-4 py-8">
-        {/* Item Info */}
-        <div className="max-w-md mx-auto w-full mb-8">
-          <div className="bg-white rounded-lg border p-6">
-            <p className="text-sm text-gray-600 mb-1">Item</p>
-            <p className="text-xl font-bold text-gray-900 mb-4 font-mono">
-              {item.sku}
-            </p>
-            <p className="text-gray-700">
-              {item.sku_data?.description || 'No description'}
-            </p>
-            <div className="mt-4 flex items-center justify-between text-sm">
-              <span className="text-gray-600">Quantity:</span>
-              <span className="font-semibold">{item.units_incoming}</span>
+      <div className="flex-1 flex flex-col px-4 py-6">
+        {toReserve ? (
+          /* Compact layout for TO RESERVE - fits in one screen */
+          <>
+            {/* Item Info - Compact */}
+            <div className="max-w-md mx-auto w-full mb-4">
+              <div className="bg-white rounded-lg border p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-600 mb-1">Item</p>
+                    <p className="text-lg font-bold text-gray-900 font-mono">
+                      {item.sku}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-600 mb-1">Qty</p>
+                    <p className="text-lg font-bold text-gray-900">{item.units_incoming}</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Action Indicator */}
-        <div className="max-w-md mx-auto w-full mb-8">
-          <div
-            className={`${
-              actionColor === 'red'
-                ? 'bg-red-500'
-                : 'bg-green-500'
-            } rounded-2xl p-8 text-white text-center shadow-lg`}
-          >
-            <p className="text-sm font-medium mb-2 opacity-90">
-              Place this item in:
-            </p>
-            <p className="text-4xl font-bold mb-2">
-              {actionText}
-            </p>
-            <p className="text-sm opacity-90">
-              {actionSubtext}
-            </p>
-          </div>
-        </div>
-
-        {/* Pallet Assignment (only for TO RESERVE items) */}
-        {toReserve && (
-          <div className="max-w-md mx-auto w-full mb-8">
-            <div className="bg-white rounded-lg border p-6">
-              <PalletSelector
-                totalExpected={item.units_incoming || 0}
-                initialAssignments={initialAssignments}
-                onAssignmentsChange={setPalletAssignments}
-              />
+            {/* Action Indicator - Compact */}
+            <div className="max-w-md mx-auto w-full mb-4">
+              <div className="bg-red-500 rounded-xl p-6 text-white text-center">
+                <p className="text-2xl font-bold">TO RESERVE</p>
+              </div>
             </div>
-          </div>
+
+            {/* Pallet Assignment */}
+            <div className="max-w-md mx-auto w-full mb-4">
+              <div className="bg-gray-100 rounded-lg p-4">
+                <PalletSelector
+                  totalExpected={item.units_incoming || 0}
+                  initialAssignments={initialAssignments}
+                  onAssignmentsChange={setPalletAssignments}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Original layout for TO PICK FACE */
+          <>
+            {/* Item Info */}
+            <div className="max-w-md mx-auto w-full mb-8">
+              <div className="bg-white rounded-lg border p-6">
+                <p className="text-sm text-gray-600 mb-1">Item</p>
+                <p className="text-xl font-bold text-gray-900 mb-4 font-mono">
+                  {item.sku}
+                </p>
+                <p className="text-gray-700">
+                  {item.sku_data?.description || 'No description'}
+                </p>
+                <div className="mt-4 flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Quantity:</span>
+                  <span className="font-semibold">{item.units_incoming}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Indicator */}
+            <div className="max-w-md mx-auto w-full mb-8">
+              <div className="bg-green-500 rounded-2xl p-8 text-white text-center shadow-lg">
+                <p className="text-sm font-medium mb-2 opacity-90">
+                  Place this item in:
+                </p>
+                <p className="text-4xl font-bold mb-2">
+                  PICK FACE
+                </p>
+                <p className="text-sm opacity-90">
+                  Send to ASRS pick face
+                </p>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Action Button */}
-        <div className="max-w-md mx-auto w-full">
+        <div className="max-w-md mx-auto w-full mt-auto">
           {toReserve ? (
             <Button
               onClick={handleConfirm}

@@ -92,7 +92,7 @@ export function PalletSelector({
     <div className="space-y-6">
       {/* Pallet Squares */}
       <div>
-        <label className="block text-base font-medium text-gray-900 mb-3">
+        <label className="block text-sm font-medium text-gray-900 mb-2">
           Select Pallet(s)
         </label>
         <div className="flex flex-wrap gap-3 items-start">
@@ -101,10 +101,10 @@ export function PalletSelector({
               <button
                 type="button"
                 onClick={() => togglePallet(pallet.number)}
-                className={`w-16 h-16 rounded-lg border-2 font-bold text-xl transition-all ${
+                className={`w-16 h-16 rounded-lg font-bold text-xl transition-all ${
                   pallet.selected
-                    ? 'bg-blue-500 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                    ? 'bg-black text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
                 }`}
               >
                 {pallet.number}
@@ -132,17 +132,17 @@ export function PalletSelector({
 
       {/* Quantity Inputs for Selected Pallets */}
       {pallets.some((p) => p.selected) && (
-        <div className="space-y-3">
-          <label className="block text-base font-medium text-gray-900">
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-900">
             Assign Quantities
           </label>
           {pallets
             .filter((p) => p.selected)
             .map((pallet) => (
-              <div key={pallet.number} className="flex items-center gap-3">
-                <div className="w-20 text-right">
+              <div key={pallet.number} className="flex items-center gap-2">
+                <div className="w-16 text-right">
                   <span className="text-sm font-medium text-gray-700">
-                    Pallet {pallet.number}:
+                    #{pallet.number}:
                   </span>
                 </div>
                 <Input
@@ -154,9 +154,9 @@ export function PalletSelector({
                     updateQuantity(pallet.number, val === '' ? 0 : parseFloat(val));
                   }}
                   placeholder="0"
-                  className="text-lg h-12 text-center font-semibold flex-1"
+                  className="text-base h-10 text-center font-semibold flex-1"
                 />
-                <span className="text-sm text-gray-600 w-16">units</span>
+                <span className="text-xs text-gray-600 w-12">units</span>
               </div>
             ))}
         </div>
@@ -164,42 +164,32 @@ export function PalletSelector({
 
       {/* Progress Bar */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium text-gray-700">Progress</span>
           <span
             className={`text-sm font-bold ${
               isOverAllocated
-                ? 'text-red-600'
+                ? 'text-red-500'
                 : isUnderAllocated
-                ? 'text-orange-600'
+                ? 'text-orange-500'
                 : 'text-green-600'
             }`}
           >
             {totalAssigned} / {totalExpected} ({Math.round(progress)}%)
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ${
               isOverAllocated
-                ? 'bg-red-500'
+                ? 'bg-red-300'
                 : isUnderAllocated
-                ? 'bg-orange-500'
-                : 'bg-green-500'
+                ? 'bg-orange-300'
+                : 'bg-green-300'
             }`}
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
-        {isOverAllocated && (
-          <p className="text-sm text-red-600 mt-2">
-            ⚠️ Over-allocated by {totalAssigned - totalExpected} units
-          </p>
-        )}
-        {isUnderAllocated && totalAssigned > 0 && (
-          <p className="text-sm text-orange-600 mt-2">
-            ⚠️ Under-allocated by {totalExpected - totalAssigned} units
-          </p>
-        )}
       </div>
     </div>
   );
