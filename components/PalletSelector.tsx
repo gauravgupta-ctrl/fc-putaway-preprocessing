@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Check } from 'lucide-react';
 
 interface PalletData {
   number: number;
   quantity: number;
-  selected: boolean;
 }
 
 interface PalletSelectorProps {
@@ -22,9 +21,10 @@ export function PalletSelector({
   initialAssignments = [],
   onAssignmentsChange,
 }: PalletSelectorProps) {
-  const [pallets, setPallets] = useState<PalletData[]>([
-    { number: 1, quantity: 0, selected: true },
-  ]);
+  const [pallets, setPallets] = useState<PalletData[]>([{ number: 1, quantity: 0 }]);
+  const [editingPallet, setEditingPallet] = useState<number | null>(1);
+  const [tempQuantity, setTempQuantity] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Load initial assignments
   useEffect(() => {
@@ -37,39 +37,66 @@ export function PalletSelector({
         newPallets.push({
           number: i,
           quantity: assignment?.quantity || 0,
-          selected: !!assignment,
         });
       }
 
       setPallets(newPallets);
+      setEditingPallet(null);
     }
   }, [initialAssignments]);
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (editingPallet !== null) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [editingPallet]);
 
   // Notify parent of changes
   useEffect(() => {
     const assignments = pallets
-      .filter((p) => p.selected && p.quantity > 0)
+      .filter((p) => p.quantity > 0)
       .map((p) => ({ palletNumber: p.number, quantity: p.quantity }));
     onAssignmentsChange(assignments);
   }, [pallets, onAssignmentsChange]);
 
   function addPallet() {
     const nextNumber = pallets.length + 1;
-    setPallets([...pallets, { number: nextNumber, quantity: 0, selected: false }]);
+    setPallets([...pallets, { number: nextNumber, quantity: 0 }]);
+    setEditingPallet(nextNumber);
+    setTempQuantity('');
   }
 
-  function togglePallet(number: number) {
-    setPallets(
-      pallets.map((p) =>
-        p.number === number
-          ? { ...p, selected: !p.selected, quantity: p.selected ? 0 : p.quantity }
-          : p
-      )
-    );
+  function handlePalletClick(number: number) {
+    const pallet = pallets.find((p) => p.number === number);
+    if (!pallet) return;
+
+    if (pallet.quantity > 0) {
+      // Deselect: remove quantity
+      if (confirm('Remove quantity from this pallet?')) {
+        setPallets(pallets.map((p) => (p.number === number ? { ...p, quantity: 0 } : p)));
+      }
+    } else {
+      // Start editing
+      setEditingPallet(number);
+      setTempQuantity('');
+    }
   }
 
-  function updateQuantity(number: number, quantity: number) {
-    setPallets(pallets.map((p) => (p.number === number ? { ...p, quantity } : p)));
+  function saveQuantity() {
+    if (editingPallet === null) return;
+    
+    const qty = parseFloat(tempQuantity) || 0;
+    if (qty > 0) {
+      setPallets(pallets.map((p) => (p.number === editingPallet ? { ...p, quantity: qty } : p)));
+    }
+    setEditingPallet(null);
+    setTempQuantity('');
+  }
+
+  function cancelEdit() {
+    setEditingPallet(null);
+    setTempQuantity('');
   }
 
   function deletePallet(number: number) {
@@ -79,37 +106,72 @@ export function PalletSelector({
       return;
     }
     setPallets(pallets.filter((p) => p.number !== number));
+    if (editingPallet === number) {
+      setEditingPallet(null);
+    }
   }
 
-  const totalAssigned = pallets
-    .filter((p) => p.selected)
-    .reduce((sum, p) => sum + p.quantity, 0);
+  const totalAssigned = pallets.reduce((sum, p) => sum + p.quantity, 0);
   const progress = (totalAssigned / totalExpected) * 100;
   const isOverAllocated = totalAssigned > totalExpected;
   const isUnderAllocated = totalAssigned < totalExpected;
 
   return (
-    <div className="space-y-6">
-      {/* Pallet Squares */}
+    <div className="space-y-4">
+      {/* Pallet Squares with Inline Editing */}
       <div>
-        <label className="block text-sm font-medium text-gray-900 mb-2">
-          Select Pallet(s)
+        <label className="block text-sm font-medium text-gray-900 mb-3">
+          Assign to Pallets
         </label>
-        <div className="flex flex-wrap gap-2 items-start">
+        <div className="flex flex-wrap gap-2">
           {pallets.map((pallet, index) => (
             <div key={pallet.number} className="relative">
-              <button
-                type="button"
-                onClick={() => togglePallet(pallet.number)}
-                className={`w-14 h-14 rounded-lg font-bold text-lg transition-all ${
-                  pallet.selected
-                    ? 'bg-black text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                {pallet.number}
-              </button>
-              {pallets.length > 1 && index === pallets.length - 1 && pallet.quantity === 0 && (
+              {editingPallet === pallet.number ? (
+                /* Editing Mode - Input Field */
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-14 h-14 rounded-lg border-2 border-black bg-white flex flex-col items-center justify-center">
+                    <Input
+                      ref={inputRef}
+                      type="number"
+                      min="0"
+                      value={tempQuantity}
+                      onChange={(e) => setTempQuantity(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveQuantity();
+                        if (e.key === 'Escape') cancelEdit();
+                      }}
+                      placeholder="0"
+                      className="w-12 h-8 text-center text-sm font-bold border-0 p-0 focus-visible:ring-0"
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={saveQuantity}
+                      className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600"
+                    >
+                      <Check className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Display Mode - Pallet Square */
+                <button
+                  type="button"
+                  onClick={() => handlePalletClick(pallet.number)}
+                  className={`w-14 h-14 rounded-lg font-bold transition-all ${
+                    pallet.quantity > 0
+                      ? 'bg-black text-white'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="text-lg">{pallet.number}</div>
+                  {pallet.quantity > 0 && (
+                    <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
+                  )}
+                </button>
+              )}
+              {pallets.length > 1 && index === pallets.length - 1 && pallet.quantity === 0 && editingPallet !== pallet.number && (
                 <button
                   type="button"
                   onClick={() => deletePallet(pallet.number)}
@@ -120,47 +182,17 @@ export function PalletSelector({
               )}
             </div>
           ))}
-          <button
-            type="button"
-            onClick={addPallet}
-            className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <Plus className="h-7 w-7" />
-          </button>
+          {editingPallet === null && (
+            <button
+              type="button"
+              onClick={addPallet}
+              className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <Plus className="h-7 w-7" />
+            </button>
+          )}
         </div>
       </div>
-
-      {/* Quantity Inputs for Selected Pallets */}
-      {pallets.some((p) => p.selected) && (
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-900">
-            Assign Quantities
-          </label>
-          {pallets
-            .filter((p) => p.selected)
-            .map((pallet) => (
-              <div key={pallet.number} className="bg-white rounded-lg border px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700 w-20">
-                    Pallet {pallet.number}
-                  </span>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={pallet.quantity || ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      updateQuantity(pallet.number, val === '' ? 0 : parseFloat(val));
-                    }}
-                    placeholder="0"
-                    className="text-lg h-11 text-center font-semibold flex-1 border-gray-300"
-                  />
-                  <span className="text-sm text-gray-600">units</span>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
 
       {/* Progress Bar */}
       <div>
