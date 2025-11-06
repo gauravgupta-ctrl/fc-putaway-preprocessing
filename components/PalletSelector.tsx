@@ -157,15 +157,13 @@ export function PalletSelector({
               )}
             </div>
           ))}
-          {editingPallet === null && (
-            <button
-              type="button"
-              onClick={addPallet}
-              className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <Plus className="h-7 w-7" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={addPallet}
+            className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <Plus className="h-7 w-7" />
+          </button>
         </div>
       </div>
 
@@ -188,7 +186,7 @@ export function PalletSelector({
             }}
             placeholder="0"
             disabled={editingPallet === null}
-            className="text-lg h-12 text-center font-semibold flex-1"
+            className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-2 focus-visible:ring-gray-400"
           />
           <button
             type="button"
