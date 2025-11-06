@@ -118,7 +118,7 @@ export function PalletSelector({
 
   return (
     <div className="space-y-4">
-      {/* Pallet Squares with Inline Editing */}
+      {/* Pallet Squares */}
       <div>
         <label className="block text-sm font-medium text-gray-900 mb-3">
           Assign to Pallets
@@ -126,55 +126,29 @@ export function PalletSelector({
         <div className="flex flex-wrap gap-2">
           {pallets.map((pallet, index) => (
             <div key={pallet.number} className="relative">
-              {editingPallet === pallet.number ? (
-                /* Editing Mode - Input Field */
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-14 h-14 rounded-lg border-2 border-black bg-white flex flex-col items-center justify-center">
-                    <Input
-                      ref={inputRef}
-                      type="number"
-                      min="0"
-                      value={tempQuantity}
-                      onChange={(e) => setTempQuantity(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') saveQuantity();
-                        if (e.key === 'Escape') cancelEdit();
-                      }}
-                      placeholder="0"
-                      className="w-12 h-8 text-center text-sm font-bold border-0 p-0 focus-visible:ring-0"
-                    />
-                  </div>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={saveQuantity}
-                      className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600"
-                    >
-                      <Check className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Display Mode - Pallet Square */
-                <button
-                  type="button"
-                  onClick={() => handlePalletClick(pallet.number)}
-                  className={`w-14 h-14 rounded-lg font-bold transition-all ${
-                    pallet.quantity > 0
-                      ? 'bg-black text-white'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="text-lg">{pallet.number}</div>
-                  {pallet.quantity > 0 && (
-                    <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
-                  )}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => handlePalletClick(pallet.number)}
+                className={`w-14 h-14 rounded-lg font-bold transition-all ${
+                  editingPallet === pallet.number
+                    ? 'bg-black text-white border-2 border-blue-500'
+                    : pallet.quantity > 0
+                    ? 'bg-black text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <div className="text-lg">{pallet.number}</div>
+                {pallet.quantity > 0 && (
+                  <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
+                )}
+              </button>
               {pallets.length > 1 && index === pallets.length - 1 && pallet.quantity === 0 && editingPallet !== pallet.number && (
                 <button
                   type="button"
-                  onClick={() => deletePallet(pallet.number)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deletePallet(pallet.number);
+                  }}
                   className="absolute -top-2 -right-2 w-5 h-5 bg-gray-400 text-white rounded-full flex items-center justify-center hover:bg-gray-500"
                 >
                   <Trash2 className="h-3 w-3" />
@@ -193,6 +167,44 @@ export function PalletSelector({
           )}
         </div>
       </div>
+
+      {/* Quantity Input Bar (shows when editing a pallet) */}
+      {editingPallet !== null && (
+        <div className="bg-white rounded-lg border-2 border-blue-500 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-gray-900">
+              Pallet {editingPallet}
+            </span>
+            <span className="text-xs text-gray-600">
+              Tap quantity and confirm
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Input
+              ref={inputRef}
+              type="number"
+              min="0"
+              value={tempQuantity}
+              onChange={(e) => setTempQuantity(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveQuantity();
+                if (e.key === 'Escape') cancelEdit();
+              }}
+              placeholder="Enter quantity"
+              className="text-lg h-12 text-center font-semibold flex-1"
+            />
+            <Button
+              type="button"
+              onClick={saveQuantity}
+              size="lg"
+              className="h-12"
+            >
+              <Check className="h-5 w-5 mr-2" />
+              Confirm
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Progress Bar */}
       <div>
