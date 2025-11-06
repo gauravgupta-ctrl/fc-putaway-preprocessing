@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       const dos = line.sku_attributes.days_of_stock_pickface;
       const currentStatus = line.preprocessing_status;
       const manuallyCancelled = line.manually_cancelled;
+      const autoRequested = line.auto_requested;
       
       // Skip if already in-progress or completed
       if (['in-progress', 'completed'].includes(currentStatus)) {
@@ -54,6 +55,12 @@ export async function POST(request: NextRequest) {
 
       // Skip if admin manually cancelled (preserve their decision)
       if (manuallyCancelled) {
+        continue;
+      }
+
+      // Skip if admin manually requested (preserve their decision)
+      // Manual requests have status 'requested' but auto_requested = false
+      if (currentStatus === 'requested' && !autoRequested) {
         continue;
       }
 
@@ -76,7 +83,21 @@ export async function POST(request: NextRequest) {
         }
       } else {
         // Items below threshold or not eligible
-        if (currentStatus !== 'not needed') {
+        // Only change to 'not needed' if it was auto-requested
+        if (currentStatus === 'requested' && autoRequested) {
+          updates.push(
+            supabase
+              .from('transfer_order_lines')
+              .update({ 
+                preprocessing_status: 'not needed',
+                auto_requested: false,
+                requested_at: null,
+                requested_by: null,
+              })
+              .eq('id', line.id)
+          );
+        } else if (currentStatus !== 'not needed' && currentStatus !== 'requested') {
+          // For other statuses, set to 'not needed'
           updates.push(
             supabase
               .from('transfer_order_lines')
