@@ -71,17 +71,9 @@ export function PalletSelector({
     const pallet = pallets.find((p) => p.number === number);
     if (!pallet) return;
 
-    if (pallet.quantity > 0) {
-      // Deselect: remove quantity
-      if (confirm('Remove quantity from this pallet?')) {
-        setPallets(pallets.map((p) => (p.number === number ? { ...p, quantity: 0 } : p)));
-        setEditingPallet(null);
-      }
-    } else {
-      // Select for editing
-      setEditingPallet(number);
-      setTempQuantity('');
-    }
+    // Select for editing (whether it has quantity or not)
+    setEditingPallet(number);
+    setTempQuantity(pallet.quantity > 0 ? String(pallet.quantity) : '');
   }
 
   function saveQuantity() {
@@ -124,7 +116,7 @@ export function PalletSelector({
         <label className="block text-sm font-medium text-gray-900 mb-3">
           Assign to Pallets
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" style={{ marginLeft: '2px', marginRight: '2px' }}>
           {pallets.map((pallet, index) => (
             <div key={pallet.number} className="relative">
               <button
@@ -160,7 +152,7 @@ export function PalletSelector({
           <button
             type="button"
             onClick={addPallet}
-            className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            className="w-14 h-14 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
           >
             <Plus className="h-7 w-7" />
           </button>
@@ -186,7 +178,7 @@ export function PalletSelector({
             }}
             placeholder="0"
             disabled={editingPallet === null}
-            className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
           />
           <button
             type="button"
