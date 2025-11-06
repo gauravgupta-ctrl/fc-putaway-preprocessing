@@ -75,9 +75,10 @@ export function PalletSelector({
       // Deselect: remove quantity
       if (confirm('Remove quantity from this pallet?')) {
         setPallets(pallets.map((p) => (p.number === number ? { ...p, quantity: 0 } : p)));
+        setEditingPallet(null);
       }
     } else {
-      // Start editing
+      // Select for editing
       setEditingPallet(number);
       setTempQuantity('');
     }
@@ -130,11 +131,11 @@ export function PalletSelector({
                 type="button"
                 onClick={() => handlePalletClick(pallet.number)}
                 className={`w-14 h-14 rounded-lg font-bold transition-all ${
-                  editingPallet === pallet.number
-                    ? 'bg-black text-white border-2 border-blue-500'
-                    : pallet.quantity > 0
-                    ? 'bg-black text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+                  pallet.quantity > 0
+                    ? 'bg-gray-200 text-gray-800'
+                    : editingPallet === pallet.number
+                    ? 'bg-white text-gray-700 border-[3px] border-gray-400'
+                    : 'bg-white text-gray-700 hover:border-[3px] hover:border-gray-300'
                 }`}
               >
                 <div className="text-lg">{pallet.number}</div>
@@ -168,43 +169,37 @@ export function PalletSelector({
         </div>
       </div>
 
-      {/* Quantity Input Bar (shows when editing a pallet) */}
-      {editingPallet !== null && (
-        <div className="bg-white rounded-lg border-2 border-blue-500 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-gray-900">
-              Pallet {editingPallet}
-            </span>
-            <span className="text-xs text-gray-600">
-              Tap quantity and confirm
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Input
-              ref={inputRef}
-              type="number"
-              min="0"
-              value={tempQuantity}
-              onChange={(e) => setTempQuantity(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') saveQuantity();
-                if (e.key === 'Escape') cancelEdit();
-              }}
-              placeholder="Enter quantity"
-              className="text-lg h-12 text-center font-semibold flex-1"
-            />
-            <Button
-              type="button"
-              onClick={saveQuantity}
-              size="lg"
-              className="h-12"
-            >
-              <Check className="h-5 w-5 mr-2" />
-              Confirm
-            </Button>
-          </div>
+      {/* Quantity Input Bar (always visible, shows selected pallet) */}
+      <div className="bg-gray-100 rounded-lg p-4">
+        <p className="text-sm text-gray-600 mb-3">
+          {editingPallet !== null 
+            ? `Enter quantity for Pallet ${editingPallet}`
+            : 'Select a pallet above to assign quantity'}
+        </p>
+        <div className="flex items-center gap-3">
+          <Input
+            ref={inputRef}
+            type="number"
+            min="0"
+            value={tempQuantity}
+            onChange={(e) => setTempQuantity(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveQuantity();
+            }}
+            placeholder="0"
+            disabled={editingPallet === null}
+            className="text-lg h-12 text-center font-semibold flex-1"
+          />
+          <button
+            type="button"
+            onClick={saveQuantity}
+            disabled={editingPallet === null || !tempQuantity}
+            className="w-12 h-12 bg-gray-200 text-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Check className="h-5 w-5" />
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Progress Bar */}
       <div>
