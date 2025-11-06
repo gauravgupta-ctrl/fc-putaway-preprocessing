@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { logLabelPrint, getCompletedItems } from '@/lib/operator';
+import { getPalletCount } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
 import { Printer, CheckCircle, Home, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -52,6 +53,10 @@ export default function PrintLabelsPage() {
     // Load completed items
     const items = await getCompletedItems(toId);
     setCompletedItems(items);
+
+    // Get pallet count from assignments
+    const palletCount = await getPalletCount(toId);
+    setLabelCount(palletCount || 1); // Default to 1 if no pallets
   }
 
   async function handlePrint() {
@@ -153,39 +158,20 @@ export default function PrintLabelsPage() {
           </p>
         </div>
 
-        {/* Label Count Input */}
+        {/* Label Count Display */}
         <div className="max-w-md mx-auto w-full mb-8">
-          <div className="bg-gray-100 rounded-lg p-6">
-            <Label className="text-base mb-4 block text-center">
-              Number of labels to print
+          <div className="bg-gray-100 rounded-lg p-6 text-center">
+            <Label className="text-base mb-4 block">
+              Labels to Print
             </Label>
-            <div className="flex items-center justify-center gap-4">
-              <Button
-                type="button"
-                size="lg"
-                variant="outline"
-                onClick={() => setLabelCount(Math.max(1, labelCount - 1))}
-                disabled={labelCount <= 1}
-                className="h-16 w-16 p-0"
-              >
-                <ChevronLeft className="h-8 w-8" />
-              </Button>
-              <div className="text-5xl font-bold text-gray-900 w-24 text-center">
-                {labelCount}
-              </div>
-              <Button
-                type="button"
-                size="lg"
-                variant="outline"
-                onClick={() => setLabelCount(Math.min(10, labelCount + 1))}
-                disabled={labelCount >= 10}
-                className="h-16 w-16 p-0"
-              >
-                <ChevronRight className="h-8 w-8" />
-              </Button>
+            <div className="text-5xl font-bold text-gray-900 mb-2">
+              {labelCount}
             </div>
+            <p className="text-sm text-gray-600">
+              Based on {labelCount} pallet{labelCount !== 1 ? 's' : ''} used
+            </p>
             {labelCount > 1 && (
-              <p className="text-sm text-gray-500 mt-4 text-center">
+              <p className="text-sm text-gray-500 mt-3">
                 Labels will be numbered 1 of {labelCount}, 2 of {labelCount}, etc.
               </p>
             )}

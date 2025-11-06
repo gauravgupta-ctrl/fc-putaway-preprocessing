@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { confirmItemAction, areAllItemsCompleted } from '@/lib/operator';
+import { getItemPalletAssignments, savePalletAssignments } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
 import { ArrowRight, CheckCircle } from 'lucide-react';
+import { PalletSelector } from '@/components/PalletSelector';
 import type { TransferOrderLineWithSku } from '@/types/database';
 
 export default function ConfirmActionPage() {
@@ -13,6 +15,12 @@ export default function ConfirmActionPage() {
   const [toNumber, setToNumber] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [palletAssignments, setPalletAssignments] = useState<
+    { palletNumber: number; quantity: number }[]
+  >([]);
+  const [initialAssignments, setInitialAssignments] = useState<
+    { palletNumber: number; quantity: number }[]
+  >([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const toId = searchParams.get('to');
@@ -56,6 +64,16 @@ export default function ConfirmActionPage() {
 
     if (itemData) {
       setItem(itemData as TransferOrderLineWithSku);
+      
+      // Load existing pallet assignments for this item
+      const existingAssignments = await getItemPalletAssignments(toId, itemData.sku);
+      if (existingAssignments.length > 0) {
+        const assignments = existingAssignments.map((a) => ({
+          palletNumber: a.pallet_number,
+          quantity: a.quantity,
+        }));
+        setInitialAssignments(assignments);
+      }
     }
   }
 
@@ -65,9 +83,20 @@ export default function ConfirmActionPage() {
     setConfirming(true);
 
     try {
-      // Only update status for "requested" items (TO RESERVE)
       const toReserve = item.preprocessing_status === 'requested' || item.preprocessing_status === 'completed';
       
+      // Save pallet assignments for TO RESERVE items
+      if (toReserve && palletAssignments.length > 0) {
+        await savePalletAssignments(
+          toId,
+          itemId,
+          item.sku,
+          palletAssignments,
+          userId
+        );
+      }
+      
+      // Update status for "requested" items
       if (toReserve) {
         await confirmItemAction(itemId, userId);
       }
@@ -151,6 +180,19 @@ export default function ConfirmActionPage() {
             </p>
           </div>
         </div>
+
+        {/* Pallet Assignment (only for TO RESERVE items) */}
+        {toReserve && (
+          <div className="max-w-md mx-auto w-full mb-8">
+            <div className="bg-white rounded-lg border p-6">
+              <PalletSelector
+                totalExpected={item.units_incoming || 0}
+                initialAssignments={initialAssignments}
+                onAssignmentsChange={setPalletAssignments}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Action Button */}
         <div className="max-w-md mx-auto w-full">

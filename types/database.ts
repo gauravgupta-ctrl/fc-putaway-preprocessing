@@ -74,6 +74,19 @@ export interface PalletLabel {
   generated_at: string;
   generated_by: string;
   printed_at: string | null;
+  has_items: boolean;
+}
+
+export interface PalletAssignment {
+  id: string;
+  transfer_order_id: string;
+  transfer_order_line_id: string;
+  pallet_number: number;
+  sku: string;
+  quantity: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuditLog {
