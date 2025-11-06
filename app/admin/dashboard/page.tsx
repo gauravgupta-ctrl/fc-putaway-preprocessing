@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import type { TransferOrder, TransferOrderLineWithSku } from '@/types/database';
 import { TransferOrdersTable } from '@/components/TransferOrdersTable';
 import { TransferOrderItemsTable } from '@/components/TransferOrderItemsTable';
+import { TOReviewSidepanel } from '@/components/TOReviewSidepanel';
 
 export default function DashboardPage() {
   const [transferOrders, setTransferOrders] = useState<TransferOrder[]>([]);
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   const [loadingItems, setLoadingItems] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [threshold, setThreshold] = useState(30);
+  const [reviewingTO, setReviewingTO] = useState<TransferOrder | null>(null);
 
   useEffect(() => {
     loadData();
@@ -117,6 +119,7 @@ export default function DashboardPage() {
             data={transferOrders}
             selectedTOs={selectedTOs}
             onSelectionChange={setSelectedTOs}
+            onReviewClick={setReviewingTO}
           />
         </CardContent>
       </Card>
@@ -155,6 +158,14 @@ export default function DashboardPage() {
             Select one or more transfer orders above to view items
           </CardContent>
         </Card>
+      )}
+
+      {/* Review Sidepanel */}
+      {reviewingTO && (
+        <TOReviewSidepanel
+          transferOrder={reviewingTO}
+          onClose={() => setReviewingTO(null)}
+        />
       )}
     </div>
   );

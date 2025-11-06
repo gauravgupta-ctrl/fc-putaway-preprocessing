@@ -24,6 +24,7 @@ interface TransferOrdersTableProps {
   data: TransferOrder[];
   selectedTOs: string[];
   onSelectionChange: (selectedIds: string[]) => void;
+  onReviewClick?: (to: TransferOrder) => void;
 }
 
 function getStatusColor(status: PreprocessingStatus): string {
@@ -41,7 +42,7 @@ function getStatusColor(status: PreprocessingStatus): string {
   }
 }
 
-export function TransferOrdersTable({ data, selectedTOs, onSelectionChange }: TransferOrdersTableProps) {
+export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onReviewClick }: TransferOrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'estimated_arrival', desc: true }, // Default: newest first
   ]);
@@ -183,8 +184,29 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange }: Tr
           return <Badge className={getStatusColor(status)}>{status}</Badge>;
         },
       },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => {
+          const status = row.original.preprocessing_status;
+          if (status !== 'completed') return null;
+          return (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReviewClick?.(row.original);
+              }}
+            >
+              Review
+            </Button>
+          );
+        },
+        enableSorting: false,
+      },
     ],
-    []
+    [onReviewClick]
   );
 
   const table = useReactTable({
