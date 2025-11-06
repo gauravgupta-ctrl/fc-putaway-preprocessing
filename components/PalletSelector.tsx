@@ -80,9 +80,8 @@ export function PalletSelector({
     if (editingPallet === null) return;
     
     const qty = parseFloat(tempQuantity) || 0;
-    if (qty > 0) {
-      setPallets(pallets.map((p) => (p.number === editingPallet ? { ...p, quantity: qty } : p)));
-    }
+    // Update quantity (including 0, which deselects the pallet)
+    setPallets(pallets.map((p) => (p.number === editingPallet ? { ...p, quantity: qty } : p)));
     setEditingPallet(null);
     setTempQuantity('');
   }
