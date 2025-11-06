@@ -134,8 +134,8 @@ export function PalletSelector({
                   pallet.quantity > 0
                     ? 'bg-gray-200 text-gray-800'
                     : editingPallet === pallet.number
-                    ? 'bg-white text-gray-700 border-[3px] border-gray-400'
-                    : 'bg-white text-gray-700 hover:border-[3px] hover:border-gray-300'
+                    ? 'bg-white text-gray-700 border border-gray-400'
+                    : 'bg-white text-gray-700 hover:border hover:border-gray-300'
                 }`}
               >
                 <div className="text-lg">{pallet.number}</div>
@@ -168,7 +168,7 @@ export function PalletSelector({
       </div>
 
       {/* Quantity Input Bar (always visible, shows selected pallet) */}
-      <div className="bg-gray-100 rounded-lg p-4">
+      <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
         <p className="text-sm text-gray-600 mb-3">
           {editingPallet !== null 
             ? `Enter quantity for Pallet ${editingPallet}`
