@@ -197,7 +197,7 @@ export function PalletSelector({
           <span
             className={`text-sm font-bold ${
               isOverAllocated
-                ? 'text-red-500'
+                ? 'text-blue-600'
                 : isUnderAllocated
                 ? 'text-orange-500'
                 : 'text-green-600'
@@ -210,7 +210,7 @@ export function PalletSelector({
           <div
             className={`h-full transition-all duration-300 ${
               isOverAllocated
-                ? 'bg-red-300'
+                ? 'bg-blue-300'
                 : isUnderAllocated
                 ? 'bg-orange-300'
                 : 'bg-green-300'
