@@ -1,24 +1,29 @@
--- Add inventory tracking fields to sku_attributes table
+-- Update sku_attributes table to use consistent column names
+-- The original schema has: daily_units_sold, units_pickface, units_reserve
+-- We need to rename to: average_daily_sales, units_on_hand_pickface
 
--- Add units_on_hand_pickface column
-ALTER TABLE sku_attributes
-ADD COLUMN IF NOT EXISTS units_on_hand_pickface DECIMAL(10, 2) DEFAULT 0;
+-- First, drop the generated column temporarily
+ALTER TABLE sku_attributes DROP COLUMN IF EXISTS days_of_stock_pickface;
 
--- Add average_daily_sales column
-ALTER TABLE sku_attributes
-ADD COLUMN IF NOT EXISTS average_daily_sales DECIMAL(10, 2) DEFAULT 0;
+-- Rename columns for clarity
+ALTER TABLE sku_attributes RENAME COLUMN units_pickface TO units_on_hand_pickface;
+ALTER TABLE sku_attributes RENAME COLUMN daily_units_sold TO average_daily_sales;
+
+-- Recreate the generated column with the new column names
+ALTER TABLE sku_attributes ADD COLUMN days_of_stock_pickface NUMERIC GENERATED ALWAYS AS (
+  CASE 
+    WHEN average_daily_sales > 0 THEN units_on_hand_pickface / average_daily_sales
+    ELSE 0
+  END
+) STORED;
 
 -- Add comments for documentation
 COMMENT ON COLUMN sku_attributes.units_on_hand_pickface IS 'Current units available in pick face';
 COMMENT ON COLUMN sku_attributes.average_daily_sales IS 'Average daily sales for calculating days of stock';
-
--- Update days_of_stock_pickface to be calculated from the new fields if needed
--- Note: days_of_stock_pickface = units_on_hand_pickface / average_daily_sales
--- This can be calculated on-the-fly or stored
+COMMENT ON COLUMN sku_attributes.days_of_stock_pickface IS 'Calculated: units_on_hand_pickface / average_daily_sales';
 
 -- Verify the changes
-SELECT column_name, data_type, is_nullable
+SELECT column_name, data_type, is_nullable, is_generated
 FROM information_schema.columns
 WHERE table_name = 'sku_attributes'
 ORDER BY ordinal_position;
-
