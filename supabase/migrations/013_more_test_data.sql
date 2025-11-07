@@ -2,8 +2,8 @@
 -- This migration adds transfer orders with various scenarios
 
 -- Insert more SKU attributes
--- Note: days_of_stock_pickface is a calculated field and will be computed automatically
-INSERT INTO sku_attributes (sku, description, barcode, inventory_on_hand, average_daily_sales) VALUES
+-- Note: days_of_stock_pickface is a calculated field (units_pickface / daily_units_sold)
+INSERT INTO sku_attributes (sku, description, barcode, units_pickface, daily_units_sold) VALUES
 ('SKU-101', 'Premium Wireless Headphones', 'BAR101', 450, 10),    -- ~45 days
 ('SKU-102', 'USB-C Charging Cable 2m', 'BAR102', 80, 10),         -- ~8 days
 ('SKU-103', 'Bluetooth Speaker Portable', 'BAR103', 520, 10),     -- ~52 days
