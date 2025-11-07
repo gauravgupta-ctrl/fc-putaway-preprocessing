@@ -172,30 +172,42 @@ DO $$
 DECLARE
   threshold_value NUMERIC;
   eligible_merchants TEXT[];
+  updated_count INTEGER;
 BEGIN
   -- Get current threshold
   SELECT value::NUMERIC INTO threshold_value
   FROM settings
   WHERE key = 'dos_threshold';
 
+  RAISE NOTICE 'Threshold value: %', threshold_value;
+
   -- Get eligible merchants
   SELECT ARRAY_AGG(merchant_name) INTO eligible_merchants
   FROM eligible_merchants;
 
+  RAISE NOTICE 'Eligible merchants: %', eligible_merchants;
+
   -- Auto-request items that are above threshold and from eligible merchants
+  WITH items_to_update AS (
+    SELECT tol.id
+    FROM transfer_order_lines tol
+    JOIN transfer_orders tor ON tol.transfer_order_id = tor.id
+    JOIN sku_attributes sa ON tol.sku = sa.sku
+    WHERE 
+      tor.merchant = ANY(eligible_merchants)
+      AND sa.days_of_stock_pickface > threshold_value
+      AND tol.preprocessing_status IN ('not needed'::preprocessing_status, 'no instruction'::preprocessing_status)
+      AND COALESCE(tol.manually_cancelled, false) = false
+  )
   UPDATE transfer_order_lines
   SET 
     preprocessing_status = 'requested'::preprocessing_status,
     auto_requested = true,
     requested_at = NOW()
-  FROM transfer_orders tor, sku_attributes sa
-  WHERE 
-    transfer_order_lines.transfer_order_id = tor.id
-    AND transfer_order_lines.sku = sa.sku
-    AND tor.merchant = ANY(eligible_merchants)
-    AND sa.days_of_stock_pickface > threshold_value
-    AND transfer_order_lines.preprocessing_status = 'not needed'::preprocessing_status
-    AND transfer_order_lines.manually_cancelled = false;
+  WHERE id IN (SELECT id FROM items_to_update);
+
+  GET DIAGNOSTICS updated_count = ROW_COUNT;
+  RAISE NOTICE 'Auto-requested % items', updated_count;
 
 END $$;
 
