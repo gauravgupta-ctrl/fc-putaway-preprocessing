@@ -183,7 +183,7 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
                       </p>
                       <p
                         className={`font-bold text-sm ${
-                          variance.variance > 0 ? 'text-orange-600' : 'text-red-600'
+                          variance.variance > 0 ? 'text-blue-600' : 'text-red-600'
                         }`}
                       >
                         {variance.variance > 0 ? '+' : ''}{variance.variance} units
