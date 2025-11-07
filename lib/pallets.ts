@@ -45,34 +45,40 @@ export async function savePalletAssignments(
   assignments: { palletNumber: number; quantity: number }[],
   userId: string | null
 ): Promise<void> {
-  // First, delete existing assignments for this item
-  await supabase
-    .from('pallet_assignments')
-    .delete()
-    .eq('transfer_order_id', transferOrderId)
-    .eq('sku', sku);
-
-  // Insert new assignments (only non-zero quantities)
+  // Filter only non-zero quantities
   const validAssignments = assignments.filter((a) => a.quantity > 0);
 
   if (validAssignments.length === 0) {
     return; // No assignments to save
   }
 
-  const records = validAssignments.map((a) => ({
-    transfer_order_id: transferOrderId,
-    transfer_order_line_id: transferOrderLineId,
-    pallet_number: a.palletNumber,
-    sku,
-    quantity: a.quantity,
-    created_by: userId,
-  }));
+  // Upsert each assignment (update if exists, insert if not)
+  const upsertPromises = validAssignments.map((a) => {
+    return supabase
+      .from('pallet_assignments')
+      .upsert(
+        {
+          transfer_order_id: transferOrderId,
+          transfer_order_line_id: transferOrderLineId,
+          pallet_number: a.palletNumber,
+          sku,
+          quantity: a.quantity,
+          created_by: userId,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'transfer_order_id,pallet_number,sku',
+        }
+      );
+  });
 
-  const { error } = await supabase.from('pallet_assignments').insert(records);
-
-  if (error) {
-    console.error('Error saving pallet assignments:', error);
-    throw error;
+  const results = await Promise.all(upsertPromises);
+  
+  // Check for errors
+  const errors = results.filter((r) => r.error);
+  if (errors.length > 0) {
+    console.error('Error saving pallet assignments:', errors);
+    throw new Error('Failed to save pallet assignments');
   }
 
   // Log audit trail
