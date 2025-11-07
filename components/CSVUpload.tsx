@@ -34,6 +34,12 @@ export function CSVUpload({ userId, onUploadComplete }: CSVUploadProps) {
       // Parse CSV
       const rows = parseCSV(text);
       
+      if (rows.length === 0) {
+        setErrors([{ row: 0, field: 'file', message: 'No data rows found in CSV' }]);
+        setUploading(false);
+        return;
+      }
+
       // Validate
       const validationErrors = validateCSV(rows);
       if (validationErrors.length > 0) {
@@ -55,6 +61,7 @@ export function CSVUpload({ userId, onUploadComplete }: CSVUploadProps) {
         setErrors([{ row: 0, field: 'upload', message: result.message }]);
       }
     } catch (error) {
+      console.error('CSV Upload Error:', error);
       setErrors([
         {
           row: 0,

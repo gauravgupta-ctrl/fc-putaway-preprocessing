@@ -28,7 +28,10 @@ export interface ParsedData {
 }
 
 export function parseCSV(csvText: string): CSVRow[] {
-  const lines = csvText.trim().split('\n');
+  // Handle different line endings (Windows, Unix, Mac)
+  const normalizedText = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = normalizedText.trim().split('\n').filter(line => line.trim() !== '');
+  
   if (lines.length < 2) {
     throw new Error('CSV file is empty or has no data rows');
   }
