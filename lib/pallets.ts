@@ -107,6 +107,56 @@ export async function getPalletCount(transferOrderId: string): Promise<number> {
   return uniquePallets.size;
 }
 
+// Get the highest pallet number used in a TO
+export async function getMaxPalletNumber(transferOrderId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('pallet_assignments')
+    .select('pallet_number')
+    .eq('transfer_order_id', transferOrderId)
+    .order('pallet_number', { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    return 0;
+  }
+
+  return data[0].pallet_number;
+}
+
+// Get all pallets with their quantities for a TO (grouped by pallet number)
+export async function getAllTOPallets(transferOrderId: string): Promise<
+  { palletNumber: number; totalQuantity: number; items: { sku: string; quantity: number }[] }[]
+> {
+  const { data, error } = await supabase
+    .from('pallet_assignments')
+    .select('pallet_number, sku, quantity')
+    .eq('transfer_order_id', transferOrderId)
+    .order('pallet_number', { ascending: true });
+
+  if (error || !data) {
+    return [];
+  }
+
+  // Group by pallet number
+  const palletMap = new Map<number, { sku: string; quantity: number }[]>();
+  
+  data.forEach((assignment) => {
+    if (!palletMap.has(assignment.pallet_number)) {
+      palletMap.set(assignment.pallet_number, []);
+    }
+    palletMap.get(assignment.pallet_number)!.push({
+      sku: assignment.sku,
+      quantity: assignment.quantity,
+    });
+  });
+
+  return Array.from(palletMap.entries()).map(([palletNumber, items]) => ({
+    palletNumber,
+    totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+    items,
+  }));
+}
+
 // Get pallet summary (which items on which pallets)
 export async function getPalletSummary(transferOrderId: string) {
   const { data, error } = await supabase

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { confirmItemAction, areAllItemsCompleted } from '@/lib/operator';
-import { getItemPalletAssignments, savePalletAssignments } from '@/lib/pallets';
+import { getItemPalletAssignments, savePalletAssignments, getAllTOPallets } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { PalletSelector } from '@/components/PalletSelector';
@@ -20,6 +20,9 @@ export default function ConfirmActionPage() {
   >([]);
   const [initialAssignments, setInitialAssignments] = useState<
     { palletNumber: number; quantity: number }[]
+  >([]);
+  const [allTOPallets, setAllTOPallets] = useState<
+    { palletNumber: number; totalQuantity: number; items: { sku: string; quantity: number }[] }[]
   >([]);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,6 +67,10 @@ export default function ConfirmActionPage() {
 
     if (itemData) {
       setItem(itemData as TransferOrderLineWithSku);
+      
+      // Load all pallets for this TO (to preserve across items)
+      const toPallets = await getAllTOPallets(toId);
+      setAllTOPallets(toPallets);
       
       // Load existing pallet assignments for this item
       const existingAssignments = await getItemPalletAssignments(toId, itemData.sku);
@@ -174,6 +181,8 @@ export default function ConfirmActionPage() {
                 <PalletSelector
                   totalExpected={item.units_incoming || 0}
                   initialAssignments={initialAssignments}
+                  allTOPallets={allTOPallets}
+                  currentSku={item.sku}
                   onAssignmentsChange={setPalletAssignments}
                 />
               </div>

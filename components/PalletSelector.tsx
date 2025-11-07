@@ -13,12 +13,16 @@ interface PalletData {
 interface PalletSelectorProps {
   totalExpected: number;
   initialAssignments?: { palletNumber: number; quantity: number }[];
+  allTOPallets?: { palletNumber: number; totalQuantity: number; items: { sku: string; quantity: number }[] }[];
+  currentSku?: string;
   onAssignmentsChange: (assignments: { palletNumber: number; quantity: number }[]) => void;
 }
 
 export function PalletSelector({
   totalExpected,
   initialAssignments = [],
+  allTOPallets = [],
+  currentSku = '',
   onAssignmentsChange,
 }: PalletSelectorProps) {
   const [pallets, setPallets] = useState<PalletData[]>([{ number: 1, quantity: 0 }]);
@@ -26,24 +30,31 @@ export function PalletSelector({
   const [tempQuantity, setTempQuantity] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load initial assignments
+  // Load pallets from TO (preserve across items)
   useEffect(() => {
-    if (initialAssignments.length > 0) {
-      const maxPallet = Math.max(...initialAssignments.map((a) => a.palletNumber));
-      const newPallets: PalletData[] = [];
+    // Determine max pallet number from either all TO pallets or initial assignments
+    const maxFromTO = allTOPallets.length > 0 
+      ? Math.max(...allTOPallets.map((p) => p.palletNumber))
+      : 0;
+    const maxFromInitial = initialAssignments.length > 0
+      ? Math.max(...initialAssignments.map((a) => a.palletNumber))
+      : 0;
+    const maxPallet = Math.max(maxFromTO, maxFromInitial, 1);
 
-      for (let i = 1; i <= maxPallet; i++) {
-        const assignment = initialAssignments.find((a) => a.palletNumber === i);
-        newPallets.push({
-          number: i,
-          quantity: assignment?.quantity || 0,
-        });
-      }
+    const newPallets: PalletData[] = [];
 
-      setPallets(newPallets);
-      setEditingPallet(null);
+    for (let i = 1; i <= maxPallet; i++) {
+      // Get quantity for current item from initial assignments
+      const assignment = initialAssignments.find((a) => a.palletNumber === i);
+      newPallets.push({
+        number: i,
+        quantity: assignment?.quantity || 0,
+      });
     }
-  }, [initialAssignments]);
+
+    setPallets(newPallets);
+    setEditingPallet(null);
+  }, [initialAssignments, allTOPallets]);
 
   // Focus input when editing starts
   useEffect(() => {
@@ -93,10 +104,20 @@ export function PalletSelector({
 
   function deletePallet(number: number) {
     const pallet = pallets.find((p) => p.number === number);
+    
+    // Check if current item has quantity on this pallet
     if (pallet && pallet.quantity > 0) {
-      alert('Cannot delete pallet with assigned quantity');
+      alert('Cannot delete pallet with assigned quantity for this item');
       return;
     }
+
+    // Check if any other item in the TO has quantity on this pallet
+    const toPallet = allTOPallets.find((p) => p.palletNumber === number);
+    if (toPallet && toPallet.totalQuantity > 0) {
+      alert('Cannot delete pallet - it has items from other SKUs');
+      return;
+    }
+
     setPallets(pallets.filter((p) => p.number !== number));
     if (editingPallet === number) {
       setEditingPallet(null);
