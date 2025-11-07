@@ -11,6 +11,7 @@ import type { TransferOrder, TransferOrderLineWithSku } from '@/types/database';
 import { TransferOrdersTable } from '@/components/TransferOrdersTable';
 import { TransferOrderItemsTable } from '@/components/TransferOrderItemsTable';
 import { TOReviewSidepanel } from '@/components/TOReviewSidepanel';
+import { CSVUpload } from '@/components/CSVUpload';
 
 export default function DashboardPage() {
   const [transferOrders, setTransferOrders] = useState<TransferOrder[]>([]);
@@ -104,6 +105,11 @@ export default function DashboardPage() {
           <Loader2 className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
+      </div>
+
+      {/* CSV Upload Section */}
+      <div className="mb-6">
+        <CSVUpload userId={userId} onUploadComplete={handleRefresh} />
       </div>
 
       {/* Transfer Orders Table */}
