@@ -183,19 +183,19 @@ BEGIN
   FROM eligible_merchants;
 
   -- Auto-request items that are above threshold and from eligible merchants
-  UPDATE transfer_order_lines tol
+  UPDATE transfer_order_lines
   SET 
     preprocessing_status = 'requested'::preprocessing_status,
     auto_requested = true,
     requested_at = NOW()
-  FROM transfer_orders tor
-  JOIN sku_attributes sa ON sa.sku = tol.sku
+  FROM transfer_orders tor, sku_attributes sa
   WHERE 
-    tol.transfer_order_id = tor.id
+    transfer_order_lines.transfer_order_id = tor.id
+    AND transfer_order_lines.sku = sa.sku
     AND tor.merchant = ANY(eligible_merchants)
     AND sa.days_of_stock_pickface > threshold_value
-    AND tol.preprocessing_status = 'not needed'::preprocessing_status
-    AND tol.manually_cancelled = false;
+    AND transfer_order_lines.preprocessing_status = 'not needed'::preprocessing_status
+    AND transfer_order_lines.manually_cancelled = false;
 
 END $$;
 
