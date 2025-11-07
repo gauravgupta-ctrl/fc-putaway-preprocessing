@@ -53,7 +53,13 @@ export function PalletSelector({
     }
 
     setPallets(newPallets);
-    setEditingPallet(null);
+    
+    // Auto-select first pallet if it's the first item (no existing assignments)
+    if (initialAssignments.length === 0 && allTOPallets.length === 0) {
+      setEditingPallet(1);
+    } else {
+      setEditingPallet(null);
+    }
   }, [initialAssignments, allTOPallets]);
 
   // Focus input when editing starts
