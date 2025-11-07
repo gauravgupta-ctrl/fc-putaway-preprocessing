@@ -124,6 +124,38 @@ BEGIN
 
 END $$;
 
--- Note: Preprocessing status will be automatically calculated by triggers
--- based on merchant eligibility and days of stock threshold
+-- Apply auto-request logic: Items above threshold should be auto-requested
+DO $$
+DECLARE
+  threshold_value NUMERIC;
+  eligible_merchants TEXT[];
+BEGIN
+  -- Get current threshold
+  SELECT value::NUMERIC INTO threshold_value
+  FROM settings
+  WHERE key = 'dos_threshold';
+
+  -- Get eligible merchants
+  SELECT ARRAY_AGG(merchant_name) INTO eligible_merchants
+  FROM eligible_merchants;
+
+  -- Auto-request items that are above threshold and from eligible merchants
+  UPDATE transfer_order_lines tol
+  SET 
+    preprocessing_status = 'requested'::preprocessing_status,
+    auto_requested = true,
+    requested_at = NOW()
+  FROM transfer_orders tor
+  JOIN sku_attributes sa ON sa.sku = tol.sku
+  WHERE 
+    tol.transfer_order_id = tor.id
+    AND tor.merchant = ANY(eligible_merchants)
+    AND sa.days_of_stock_pickface > threshold_value
+    AND tol.preprocessing_status = 'not needed'::preprocessing_status
+    AND tol.manually_cancelled = false;
+
+END $$;
+
+-- Note: Preprocessing status is automatically calculated and applied above
+-- Items above threshold from eligible merchants are auto-requested
 
