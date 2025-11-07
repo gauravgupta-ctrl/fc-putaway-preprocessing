@@ -125,7 +125,14 @@ export function PalletSelector({
       return;
     }
 
-    setPallets(pallets.filter((p) => p.number !== number));
+    // Remove the pallet and renumber remaining pallets
+    const filteredPallets = pallets.filter((p) => p.number !== number);
+    const renumberedPallets = filteredPallets.map((p, index) => ({
+      ...p,
+      number: index + 1,
+    }));
+
+    setPallets(renumberedPallets);
     if (editingPallet === number) {
       setEditingPallet(null);
     }
