@@ -1,29 +1,16 @@
 -- Update sku_attributes table to use consistent column names
--- The original schema has: daily_units_sold, units_pickface, units_reserve
--- We need to rename to: average_daily_sales, units_on_hand_pickface
+-- Handle case where columns may already exist from previous migration attempts
 
 -- First, drop the generated column temporarily
 ALTER TABLE sku_attributes DROP COLUMN IF EXISTS days_of_stock_pickface;
 
--- Rename columns only if they exist with old names
+-- Drop old columns if they exist (we'll use the new names)
+ALTER TABLE sku_attributes DROP COLUMN IF EXISTS units_pickface;
+ALTER TABLE sku_attributes DROP COLUMN IF EXISTS daily_units_sold;
+
+-- Ensure new columns exist with correct names
 DO $$
 BEGIN
-  -- Rename units_pickface to units_on_hand_pickface if it exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'sku_attributes' AND column_name = 'units_pickface'
-  ) THEN
-    ALTER TABLE sku_attributes RENAME COLUMN units_pickface TO units_on_hand_pickface;
-  END IF;
-
-  -- Rename daily_units_sold to average_daily_sales if it exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'sku_attributes' AND column_name = 'daily_units_sold'
-  ) THEN
-    ALTER TABLE sku_attributes RENAME COLUMN daily_units_sold TO average_daily_sales;
-  END IF;
-
   -- Add units_on_hand_pickface if it doesn't exist
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns 
