@@ -72,7 +72,9 @@ export function PalletSelector({
   }, [pallets, onAssignmentsChange]);
 
   function addPallet() {
-    const nextNumber = pallets.length + 1;
+    // Find the next available pallet number (max + 1)
+    const maxNumber = pallets.length > 0 ? Math.max(...pallets.map(p => p.number)) : 0;
+    const nextNumber = maxNumber + 1;
     setPallets([...pallets, { number: nextNumber, quantity: 0 }]);
     setEditingPallet(nextNumber);
     setTempQuantity('');
@@ -112,8 +114,15 @@ export function PalletSelector({
 
     // Check if any other item in the TO has quantity on this pallet
     const toPallet = allTOPallets.find((p) => p.palletNumber === number);
-    if (toPallet && toPallet.totalQuantity > 0) {
-      return false;
+    if (toPallet) {
+      // Check if there's any quantity from other items (not current SKU)
+      const otherItemsQuantity = toPallet.items
+        .filter(item => item.sku !== currentSku)
+        .reduce((sum, item) => sum + item.quantity, 0);
+      
+      if (otherItemsQuantity > 0) {
+        return false;
+      }
     }
 
     return true;
@@ -125,14 +134,8 @@ export function PalletSelector({
       return;
     }
 
-    // Remove the pallet and renumber remaining pallets
-    const filteredPallets = pallets.filter((p) => p.number !== number);
-    const renumberedPallets = filteredPallets.map((p, index) => ({
-      ...p,
-      number: index + 1,
-    }));
-
-    setPallets(renumberedPallets);
+    // Remove the pallet (keep original numbering, no renumbering)
+    setPallets(pallets.filter((p) => p.number !== number));
     if (editingPallet === number) {
       setEditingPallet(null);
     }
