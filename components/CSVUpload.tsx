@@ -56,7 +56,10 @@ export function CSVUpload({ userId, onUploadComplete }: CSVUploadProps) {
 
       if (result.success) {
         setSuccess({ message: result.message, stats: result.stats });
-        onUploadComplete();
+        // Delay the refresh to let user see the success message
+        setTimeout(() => {
+          onUploadComplete();
+        }, 2000);
       } else {
         setErrors([{ row: 0, field: 'upload', message: result.message }]);
       }
