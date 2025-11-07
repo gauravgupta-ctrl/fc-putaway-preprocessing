@@ -56,10 +56,8 @@ export function CSVUpload({ userId, onUploadComplete }: CSVUploadProps) {
 
       if (result.success) {
         setSuccess({ message: result.message, stats: result.stats });
-        // Delay the refresh to let user see the success message
-        setTimeout(() => {
-          onUploadComplete();
-        }, 2000);
+        // Refresh data in background without clearing the success message
+        onUploadComplete();
       } else {
         setErrors([{ row: 0, field: 'upload', message: result.message }]);
       }
@@ -143,14 +141,12 @@ T0102,Merchant B,2025-11-20,,Warehouse 2,In Transit,SKU-003,200,Gadget C,4567891
           <Alert className="bg-green-50 border-green-200">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              <p className="font-semibold mb-2">✅ {success.message}</p>
-              <div className="space-y-1 text-sm">
-                <p>📦 <strong>{success.stats.transferOrders}</strong> Transfer Orders</p>
-                <p>📋 <strong>{success.stats.transferOrderLines}</strong> Items</p>
-                <p>🏷️ <strong>{success.stats.skuAttributes}</strong> SKUs</p>
-                <p className="mt-2 text-xs text-green-700 italic">
-                  Auto-request logic has been applied. Items above threshold are automatically requested for pre-processing.
-                </p>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="font-semibold">✅ {success.message}</span>
+                <span>📦 {success.stats.transferOrders} TOs</span>
+                <span>📋 {success.stats.transferOrderLines} Items</span>
+                <span>🏷️ {success.stats.skuAttributes} SKUs</span>
+                <span className="text-xs text-green-700 italic ml-auto">Auto-request applied</span>
               </div>
             </AlertDescription>
           </Alert>
