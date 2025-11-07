@@ -15,6 +15,12 @@ interface PalletAssignment {
   sku_description?: string;
 }
 
+interface ExpectedQuantity {
+  sku: string;
+  expected: number;
+  sku_description?: string;
+}
+
 interface TOReviewSidepanelProps {
   transferOrder: TransferOrder;
   onClose: () => void;
@@ -22,15 +28,18 @@ interface TOReviewSidepanelProps {
 
 export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelProps) {
   const [palletAssignments, setPalletAssignments] = useState<PalletAssignment[]>([]);
+  const [expectedQuantities, setExpectedQuantities] = useState<ExpectedQuantity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadPalletAssignments();
+    loadData();
   }, [transferOrder.id]);
 
-  async function loadPalletAssignments() {
+  async function loadData() {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // Load pallet assignments
+    const { data: assignmentsData, error: assignmentsError } = await supabase
       .from('pallet_assignments')
       .select(`
         id,
@@ -43,8 +52,8 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
       .order('pallet_number', { ascending: true })
       .order('sku', { ascending: true });
 
-    if (data && !error) {
-      const assignments = data.map((item: any) => ({
+    if (assignmentsData && !assignmentsError) {
+      const assignments = assignmentsData.map((item: any) => ({
         id: item.id,
         pallet_number: item.pallet_number,
         sku: item.sku,
@@ -53,6 +62,27 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
       }));
       setPalletAssignments(assignments);
     }
+
+    // Load expected quantities from transfer order lines
+    const { data: linesData, error: linesError } = await supabase
+      .from('transfer_order_lines')
+      .select(`
+        sku,
+        units_incoming,
+        sku_data:sku_attributes(description)
+      `)
+      .eq('transfer_order_id', transferOrder.id)
+      .eq('preprocessing_status', 'completed');
+
+    if (linesData && !linesError) {
+      const expected = linesData.map((item: any) => ({
+        sku: item.sku,
+        expected: item.units_incoming || 0,
+        sku_description: item.sku_data?.description || '',
+      }));
+      setExpectedQuantities(expected);
+    }
+
     setLoading(false);
   }
 
@@ -68,6 +98,21 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
     acc[assignment.pallet_number].push(assignment);
     return acc;
   }, {} as Record<number, PalletAssignment[]>);
+
+  // Calculate quantity variances by SKU
+  const quantityVariances = expectedQuantities.map((expected) => {
+    const assigned = palletAssignments
+      .filter((a) => a.sku === expected.sku)
+      .reduce((sum, a) => sum + a.quantity, 0);
+    const variance = assigned - expected.expected;
+    return {
+      sku: expected.sku,
+      sku_description: expected.sku_description,
+      expected: expected.expected,
+      assigned,
+      variance,
+    };
+  }).filter((v) => v.variance !== 0); // Only show items with variance
 
   return (
     <>
@@ -113,6 +158,42 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
               </div>
             </div>
           </div>
+
+          {/* Quantity Variances */}
+          {!loading && quantityVariances.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Quantity Variances</h3>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 space-y-2">
+                {quantityVariances.map((variance) => (
+                  <div
+                    key={variance.sku}
+                    className="flex items-center justify-between bg-white rounded px-3 py-2"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono font-semibold text-xs text-gray-900">
+                        {variance.sku}
+                      </p>
+                      <p className="text-xs text-gray-600 truncate">
+                        {variance.sku_description || 'No description'}
+                      </p>
+                    </div>
+                    <div className="text-right ml-3 flex-shrink-0">
+                      <p className="text-xs text-gray-600">
+                        Expected: {variance.expected} • Assigned: {variance.assigned}
+                      </p>
+                      <p
+                        className={`font-bold text-sm ${
+                          variance.variance > 0 ? 'text-orange-600' : 'text-red-600'
+                        }`}
+                      >
+                        {variance.variance > 0 ? '+' : ''}{variance.variance} units
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Pallet Assignments */}
           <div>
