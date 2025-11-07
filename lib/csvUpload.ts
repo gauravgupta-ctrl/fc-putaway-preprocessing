@@ -254,6 +254,7 @@ export async function uploadCSVData(
 
       return {
         transfer_order_id: toId,
+        transfer_number: line.transfer_number, // Include transfer_number
         sku: line.sku,
         units_incoming: line.units_incoming,
         // Preserve manual choices if they exist
