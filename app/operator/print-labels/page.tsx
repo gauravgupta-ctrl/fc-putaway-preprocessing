@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { logLabelPrint, getCompletedItems } from '@/lib/operator';
-import { getPalletCount } from '@/lib/pallets';
+import { getPalletCount, cleanupAndResequencePallets } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
 import { Printer, CheckCircle, Home, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -54,7 +54,12 @@ export default function PrintLabelsPage() {
     const items = await getCompletedItems(toId);
     setCompletedItems(items);
 
-    // Get pallet count from assignments
+    // If all items are completed, cleanup and resequence pallets
+    if (completed) {
+      await cleanupAndResequencePallets(toId, userId);
+    }
+
+    // Get pallet count from assignments (after cleanup)
     const palletCount = await getPalletCount(toId);
     setLabelCount(palletCount || 1); // Default to 1 if no pallets
   }

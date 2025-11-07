@@ -179,3 +179,90 @@ export async function getPalletSummary(transferOrderId: string) {
   return data || [];
 }
 
+// Cleanup and resequence pallets for a TO (remove empty pallets, renumber sequentially)
+export async function cleanupAndResequencePallets(
+  transferOrderId: string,
+  userId: string | null
+): Promise<void> {
+  // Get all pallet assignments for this TO
+  const { data: assignments, error: fetchError } = await supabase
+    .from('pallet_assignments')
+    .select('*')
+    .eq('transfer_order_id', transferOrderId)
+    .order('pallet_number', { ascending: true });
+
+  if (fetchError || !assignments) {
+    console.error('Error fetching pallet assignments:', fetchError);
+    return;
+  }
+
+  // Group by pallet number and calculate total quantity per pallet
+  const palletMap = new Map<number, typeof assignments>();
+  assignments.forEach((assignment) => {
+    if (!palletMap.has(assignment.pallet_number)) {
+      palletMap.set(assignment.pallet_number, []);
+    }
+    palletMap.get(assignment.pallet_number)!.push(assignment);
+  });
+
+  // Filter out empty pallets and get non-empty pallets sorted by number
+  const nonEmptyPallets = Array.from(palletMap.entries())
+    .filter(([_, items]) => items.reduce((sum, item) => sum + item.quantity, 0) > 0)
+    .sort(([a], [b]) => a - b);
+
+  if (nonEmptyPallets.length === 0) {
+    return; // No pallets to resequence
+  }
+
+  // Create mapping from old pallet numbers to new sequential numbers
+  const palletNumberMap = new Map<number, number>();
+  nonEmptyPallets.forEach(([oldNumber], index) => {
+    palletNumberMap.set(oldNumber, index + 1);
+  });
+
+  // Update all assignments with new pallet numbers
+  const updates = assignments
+    .filter((a) => palletNumberMap.has(a.pallet_number))
+    .map((assignment) => {
+      const newPalletNumber = palletNumberMap.get(assignment.pallet_number)!;
+      return supabase
+        .from('pallet_assignments')
+        .update({ pallet_number: newPalletNumber })
+        .eq('id', assignment.id);
+    });
+
+  // Delete assignments for empty pallets
+  const emptyPalletNumbers = Array.from(palletMap.keys()).filter(
+    (num) => !palletNumberMap.has(num)
+  );
+
+  if (emptyPalletNumbers.length > 0) {
+    updates.push(
+      supabase
+        .from('pallet_assignments')
+        .delete()
+        .eq('transfer_order_id', transferOrderId)
+        .in('pallet_number', emptyPalletNumbers)
+    );
+  }
+
+  // Execute all updates
+  if (updates.length > 0) {
+    await Promise.all(updates);
+  }
+
+  // Log audit trail
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'cleanup_pallets',
+      entity_type: 'pallet_assignments',
+      details: {
+        transfer_order_id: transferOrderId,
+        removed_empty_pallets: emptyPalletNumbers.length,
+        final_pallet_count: nonEmptyPallets.length,
+      },
+    });
+  }
+}
+
