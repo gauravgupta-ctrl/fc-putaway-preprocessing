@@ -177,7 +177,7 @@ export function PalletSelector({
                   <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
                 )}
               </button>
-              {pallets.length > 1 && canDeletePallet(pallet.number) && editingPallet !== pallet.number && (
+              {pallets.length > 1 && canDeletePallet(pallet.number) && (
                 <button
                   type="button"
                   onClick={(e) => {
@@ -206,7 +206,7 @@ export function PalletSelector({
         <p className="text-sm text-gray-600 mb-3">
           {editingPallet !== null 
             ? `Enter quantity for Pallet ${editingPallet}`
-            : 'Select a pallet above to assign quantity'}
+            : 'Tap a pallet above to assign quantity'}
         </p>
         <div className="flex items-center gap-3">
           <Input
