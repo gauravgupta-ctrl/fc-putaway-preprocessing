@@ -10,13 +10,18 @@ import { parseCSV, validateCSV, transformCSVData, uploadCSVData, type Validation
 interface CSVUploadProps {
   userId: string | null;
   onUploadComplete: () => void;
+  externalSuccess?: { message: string; stats: any } | null;
+  onSuccessChange?: (success: { message: string; stats: any } | null) => void;
 }
 
-export function CSVUpload({ userId, onUploadComplete }: CSVUploadProps) {
+export function CSVUpload({ userId, onUploadComplete, externalSuccess, onSuccessChange }: CSVUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<ValidationError[]>([]);
-  const [success, setSuccess] = useState<{ message: string; stats: any } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Use external success state if provided, otherwise use local state
+  const success = externalSuccess !== undefined ? externalSuccess : null;
+  const setSuccess = onSuccessChange || (() => {});
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

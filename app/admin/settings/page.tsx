@@ -25,6 +25,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<{ message: string; stats: any } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -114,7 +115,12 @@ export default function SettingsPage() {
 
       {/* CSV Upload Section */}
       <div className="mb-6">
-        <CSVUpload userId={userId} onUploadComplete={loadData} />
+        <CSVUpload 
+          userId={userId} 
+          onUploadComplete={loadData}
+          externalSuccess={uploadSuccess}
+          onSuccessChange={setUploadSuccess}
+        />
       </div>
 
       {/* Days of Stock Threshold */}
