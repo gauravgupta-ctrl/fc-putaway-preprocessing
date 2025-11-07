@@ -127,8 +127,8 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Transfer Order Details</h2>
-            <p className="text-sm text-gray-600 mt-1">Pre-processing review</p>
+            <h2 className="text-2xl font-bold text-gray-900">Pre-processed Pallets</h2>
+            <p className="text-sm text-gray-600 mt-1">Review pallet assignments and quantities for this transfer order</p>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-6 w-6" />
