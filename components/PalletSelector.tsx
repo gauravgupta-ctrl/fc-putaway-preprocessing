@@ -72,9 +72,8 @@ export function PalletSelector({
   }, [pallets, onAssignmentsChange]);
 
   function addPallet() {
-    // Find the next available pallet number (max + 1)
-    const maxNumber = pallets.length > 0 ? Math.max(...pallets.map(p => p.number)) : 0;
-    const nextNumber = maxNumber + 1;
+    // Next pallet number is always length + 1 (sequential)
+    const nextNumber = pallets.length + 1;
     setPallets([...pallets, { number: nextNumber, quantity: 0 }]);
     setEditingPallet(nextNumber);
     setTempQuantity('');
@@ -134,8 +133,14 @@ export function PalletSelector({
       return;
     }
 
-    // Remove the pallet (keep original numbering, no renumbering)
-    setPallets(pallets.filter((p) => p.number !== number));
+    // Remove the pallet and renumber sequentially
+    const filteredPallets = pallets.filter((p) => p.number !== number);
+    const renumberedPallets = filteredPallets.map((p, index) => ({
+      ...p,
+      number: index + 1,
+    }));
+
+    setPallets(renumberedPallets);
     if (editingPallet === number) {
       setEditingPallet(null);
     }
