@@ -102,19 +102,26 @@ export function PalletSelector({
     setTempQuantity('');
   }
 
-  function deletePallet(number: number) {
+  function canDeletePallet(number: number): boolean {
     const pallet = pallets.find((p) => p.number === number);
     
     // Check if current item has quantity on this pallet
     if (pallet && pallet.quantity > 0) {
-      alert('Cannot delete pallet with assigned quantity for this item');
-      return;
+      return false;
     }
 
     // Check if any other item in the TO has quantity on this pallet
     const toPallet = allTOPallets.find((p) => p.palletNumber === number);
     if (toPallet && toPallet.totalQuantity > 0) {
-      alert('Cannot delete pallet - it has items from other SKUs');
+      return false;
+    }
+
+    return true;
+  }
+
+  function deletePallet(number: number) {
+    if (!canDeletePallet(number)) {
+      alert('Cannot delete pallet - it has assigned quantities');
       return;
     }
 
@@ -155,7 +162,7 @@ export function PalletSelector({
                   <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
                 )}
               </button>
-              {pallets.length > 1 && index === pallets.length - 1 && pallet.quantity === 0 && editingPallet !== pallet.number && (
+              {pallets.length > 1 && canDeletePallet(pallet.number) && editingPallet !== pallet.number && (
                 <button
                   type="button"
                   onClick={(e) => {
