@@ -140,10 +140,15 @@ T0102,Merchant B,2025-11-20,,Warehouse 2,In Transit,SKU-003,200,Gadget C,4567891
           <Alert className="bg-green-50 border-green-200">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              <p className="font-semibold">{success.message}</p>
-              <p className="text-sm mt-1">
-                Imported: {success.stats.transferOrders} Transfer Orders, {success.stats.transferOrderLines} Items, {success.stats.skuAttributes} SKUs
-              </p>
+              <p className="font-semibold mb-2">✅ {success.message}</p>
+              <div className="space-y-1 text-sm">
+                <p>📦 <strong>{success.stats.transferOrders}</strong> Transfer Orders</p>
+                <p>📋 <strong>{success.stats.transferOrderLines}</strong> Items</p>
+                <p>🏷️ <strong>{success.stats.skuAttributes}</strong> SKUs</p>
+                <p className="mt-2 text-xs text-green-700 italic">
+                  Auto-request logic has been applied. Items above threshold are automatically requested for pre-processing.
+                </p>
+              </div>
             </AlertDescription>
           </Alert>
         )}

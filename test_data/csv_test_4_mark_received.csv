@@ -1,0 +1,9 @@
+transfer_number,merchant,estimated_arrival,receipt_time,destination,transfer_status,sku,units_incoming,sku_description,barcode,units_on_hand_pickface,average_daily_sales
+T0201,Merchant A,2025-11-20,2025-11-20 10:30:00,Warehouse 1,Received,SKU-101,150,Red Widget,BAR101,1500,20
+T0201,Merchant A,2025-11-20,2025-11-20 10:30:00,Warehouse 1,Received,SKU-102,200,Blue Widget,BAR102,200,25
+T0202,Merchant B,2025-11-22,,Warehouse 2,Scheduled,SKU-103,100,Green Gadget,BAR103,600,30
+T0202,Merchant B,2025-11-22,,Warehouse 2,Scheduled,SKU-104,75,Yellow Gadget,BAR104,150,50
+T0203,Merchant A,2025-11-25,,Warehouse 1,Scheduled,SKU-105,300,Purple Tool,BAR105,1000,15
+T0204,Merchant B,2025-11-28,,Warehouse 2,Scheduled,SKU-106,500,Orange Device,BAR106,2000,40
+T0204,Merchant B,2025-11-28,,Warehouse 2,Scheduled,SKU-107,250,Pink Device,BAR107,100,10
+
