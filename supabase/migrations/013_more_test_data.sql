@@ -1,7 +1,7 @@
 -- Add more diverse test data for testing
 -- This migration adds transfer orders with various scenarios
 
--- Insert more SKU attributes
+-- Insert more SKU attributes (skip if already exists)
 -- Note: days_of_stock_pickface is a calculated field (units_pickface / daily_units_sold)
 INSERT INTO sku_attributes (sku, description, barcode, units_pickface, daily_units_sold) VALUES
 ('SKU-101', 'Premium Wireless Headphones', 'BAR101', 450, 10),    -- ~45 days
@@ -23,9 +23,10 @@ INSERT INTO sku_attributes (sku, description, barcode, units_pickface, daily_uni
 ('SKU-117', 'Tablet Stand Adjustable', 'BAR117', 90, 10),         -- ~9 days
 ('SKU-118', 'Cable Organizer Set', 'BAR118', 60, 10),             -- ~6 days
 ('SKU-119', 'Laptop Sleeve 15 inch', 'BAR119', 330, 10),          -- ~33 days
-('SKU-120', 'Wireless Earbuds Pro', 'BAR120', 610, 10);           -- ~61 days
+('SKU-120', 'Wireless Earbuds Pro', 'BAR120', 610, 10)           -- ~61 days
+ON CONFLICT (sku) DO NOTHING;
 
--- Insert more Transfer Orders with different scenarios
+-- Insert more Transfer Orders with different scenarios (skip if already exists)
 INSERT INTO transfer_orders (transfer_number, merchant, transfer_status, estimated_arrival, destination) VALUES
 -- TechZone orders (eligible merchant) - mix of items above/below threshold
 ('T0505', 'TechZone', 'In Transit', '2025-11-10', 'Warehouse A'),
@@ -41,7 +42,8 @@ INSERT INTO transfer_orders (transfer_number, merchant, transfer_status, estimat
 
 -- SmartTech orders (NOT eligible - not in whitelist) - should all be "not needed"
 ('T0511', 'SmartTech', 'Confirmed', '2025-11-16', 'Warehouse A'),
-('T0512', 'SmartTech', 'In Transit', '2025-11-18', 'Warehouse C');
+('T0512', 'SmartTech', 'In Transit', '2025-11-18', 'Warehouse C')
+ON CONFLICT (transfer_number) DO NOTHING;
 
 -- Get the IDs of the newly created transfer orders
 DO $$
