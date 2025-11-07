@@ -16,6 +16,7 @@ import {
 } from '@/lib/database';
 import { supabase } from '@/lib/supabase';
 import type { EligibleMerchant } from '@/types/database';
+import { CSVUpload } from '@/components/CSVUpload';
 
 export default function SettingsPage() {
   const [threshold, setThreshold] = useState(30);
@@ -109,6 +110,11 @@ export default function SettingsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Settings</h1>
         <p className="text-gray-600">Configure pre-processing rules and data synchronization</p>
+      </div>
+
+      {/* CSV Upload Section */}
+      <div className="mb-6">
+        <CSVUpload userId={userId} onUploadComplete={loadData} />
       </div>
 
       {/* Days of Stock Threshold */}
