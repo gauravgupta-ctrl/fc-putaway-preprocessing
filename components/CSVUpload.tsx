@@ -22,9 +22,8 @@ export function CSVUpload({ userId, onUploadComplete }: CSVUploadProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Reset states
+    // Reset error state only (keep success visible until new upload)
     setErrors([]);
-    setSuccess(null);
     setUploading(true);
 
     try {
@@ -55,14 +54,19 @@ export function CSVUpload({ userId, onUploadComplete }: CSVUploadProps) {
       const result = await uploadCSVData(data, userId);
 
       if (result.success) {
+        // Set success first
         setSuccess({ message: result.message, stats: result.stats });
-        // Refresh data in background without clearing the success message
-        onUploadComplete();
+        // Then refresh data after a brief moment
+        setTimeout(() => {
+          onUploadComplete();
+        }, 100);
       } else {
+        setSuccess(null);
         setErrors([{ row: 0, field: 'upload', message: result.message }]);
       }
     } catch (error) {
       console.error('CSV Upload Error:', error);
+      setSuccess(null);
       setErrors([
         {
           row: 0,
