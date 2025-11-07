@@ -161,7 +161,7 @@ export function transformCSVData(rows: CSVRow[]): ParsedData {
     if (!skuAttributes.has(row.sku)) {
       const unitsOnHand = parseFloat(row.units_on_hand_pickface);
       const avgDailySales = parseFloat(row.average_daily_sales);
-      const daysOfStock = avgDailySales > 0 ? unitsOnHand / avgDailySales : 0;
+      // Note: days_of_stock_pickface is a generated column, don't include it in insert
 
       skuAttributes.set(row.sku, {
         sku: row.sku,
@@ -169,7 +169,7 @@ export function transformCSVData(rows: CSVRow[]): ParsedData {
         barcode: row.barcode,
         units_on_hand_pickface: unitsOnHand,
         average_daily_sales: avgDailySales,
-        days_of_stock_pickface: daysOfStock,
+        // days_of_stock_pickface is calculated by the database
       });
     }
 
