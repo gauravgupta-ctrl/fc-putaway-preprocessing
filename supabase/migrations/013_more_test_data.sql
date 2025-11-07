@@ -65,62 +65,62 @@ BEGIN
   SELECT id INTO to_512_id FROM transfer_orders WHERE transfer_number = 'T0512';
 
   -- T0505: TechZone - Mix of above and below threshold
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_505_id, 'SKU-101', 150),  -- 45 days - above threshold
-  (to_505_id, 'SKU-102', 80),   -- 8 days - below threshold
-  (to_505_id, 'SKU-103', 200),  -- 52 days - above threshold
-  (to_505_id, 'SKU-104', 100),  -- 12 days - below threshold
-  (to_505_id, 'SKU-105', 250);  -- 65 days - above threshold
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_505_id, 'T0505', 'SKU-101', 150),  -- 45 days - above threshold
+  (to_505_id, 'T0505', 'SKU-102', 80),   -- 8 days - below threshold
+  (to_505_id, 'T0505', 'SKU-103', 200),  -- 52 days - above threshold
+  (to_505_id, 'T0505', 'SKU-104', 100),  -- 12 days - below threshold
+  (to_505_id, 'T0505', 'SKU-105', 250);  -- 65 days - above threshold
 
   -- T0506: TechZone - Mostly above threshold
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_506_id, 'SKU-106', 50),   -- 5 days - below threshold
-  (to_506_id, 'SKU-107', 120),  -- 38 days - above threshold
-  (to_506_id, 'SKU-109', 180),  -- 48 days - above threshold
-  (to_506_id, 'SKU-111', 300);  -- 72 days - above threshold
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_506_id, 'T0506', 'SKU-106', 50),   -- 5 days - below threshold
+  (to_506_id, 'T0506', 'SKU-107', 120),  -- 38 days - above threshold
+  (to_506_id, 'T0506', 'SKU-109', 180),  -- 48 days - above threshold
+  (to_506_id, 'T0506', 'SKU-111', 300);  -- 72 days - above threshold
 
   -- T0507: TechZone - All below threshold
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_507_id, 'SKU-102', 60),   -- 8 days - below threshold
-  (to_507_id, 'SKU-106', 40),   -- 5 days - below threshold
-  (to_507_id, 'SKU-112', 30),   -- 3 days - below threshold
-  (to_507_id, 'SKU-118', 25);   -- 6 days - below threshold
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_507_id, 'T0507', 'SKU-102', 60),   -- 8 days - below threshold
+  (to_507_id, 'T0507', 'SKU-106', 40),   -- 5 days - below threshold
+  (to_507_id, 'T0507', 'SKU-112', 30),   -- 3 days - below threshold
+  (to_507_id, 'T0507', 'SKU-118', 25);   -- 6 days - below threshold
 
   -- T0508: ElectroMart - Large quantities, mixed
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_508_id, 'SKU-108', 200),  -- 22 days - below threshold
-  (to_508_id, 'SKU-110', 150),  -- 15 days - below threshold
-  (to_508_id, 'SKU-114', 400),  -- 55 days - above threshold
-  (to_508_id, 'SKU-116', 300),  -- 42 days - above threshold
-  (to_508_id, 'SKU-120', 500);  -- 61 days - above threshold
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_508_id, 'T0508', 'SKU-108', 200),  -- 22 days - below threshold
+  (to_508_id, 'T0508', 'SKU-110', 150),  -- 15 days - below threshold
+  (to_508_id, 'T0508', 'SKU-114', 400),  -- 55 days - above threshold
+  (to_508_id, 'T0508', 'SKU-116', 300),  -- 42 days - above threshold
+  (to_508_id, 'T0508', 'SKU-120', 500);  -- 61 days - above threshold
 
   -- T0509: ElectroMart - Small quantities
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_509_id, 'SKU-113', 80),   -- 28 days - below threshold
-  (to_509_id, 'SKU-115', 60),   -- 18 days - below threshold
-  (to_509_id, 'SKU-117', 40);   -- 9 days - below threshold
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_509_id, 'T0509', 'SKU-113', 80),   -- 28 days - below threshold
+  (to_509_id, 'T0509', 'SKU-115', 60),   -- 18 days - below threshold
+  (to_509_id, 'T0509', 'SKU-117', 40);   -- 9 days - below threshold
 
   -- T0510: GadgetWorld - All above threshold, large quantities
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_510_id, 'SKU-101', 500),  -- 45 days - above threshold
-  (to_510_id, 'SKU-103', 600),  -- 52 days - above threshold
-  (to_510_id, 'SKU-105', 800),  -- 65 days - above threshold
-  (to_510_id, 'SKU-111', 1000), -- 72 days - above threshold
-  (to_510_id, 'SKU-114', 700),  -- 55 days - above threshold
-  (to_510_id, 'SKU-120', 900);  -- 61 days - above threshold
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_510_id, 'T0510', 'SKU-101', 500),  -- 45 days - above threshold
+  (to_510_id, 'T0510', 'SKU-103', 600),  -- 52 days - above threshold
+  (to_510_id, 'T0510', 'SKU-105', 800),  -- 65 days - above threshold
+  (to_510_id, 'T0510', 'SKU-111', 1000), -- 72 days - above threshold
+  (to_510_id, 'T0510', 'SKU-114', 700),  -- 55 days - above threshold
+  (to_510_id, 'T0510', 'SKU-120', 900);  -- 61 days - above threshold
 
   -- T0511: SmartTech (NOT eligible) - Should all be "not needed"
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_511_id, 'SKU-101', 200),  -- 45 days but merchant not eligible
-  (to_511_id, 'SKU-103', 250),  -- 52 days but merchant not eligible
-  (to_511_id, 'SKU-105', 300);  -- 65 days but merchant not eligible
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_511_id, 'T0511', 'SKU-101', 200),  -- 45 days but merchant not eligible
+  (to_511_id, 'T0511', 'SKU-103', 250),  -- 52 days but merchant not eligible
+  (to_511_id, 'T0511', 'SKU-105', 300);  -- 65 days but merchant not eligible
 
   -- T0512: SmartTech (NOT eligible) - Mix of DOS
-  INSERT INTO transfer_order_lines (transfer_order_id, sku, units_incoming) VALUES
-  (to_512_id, 'SKU-102', 100),  -- 8 days - merchant not eligible
-  (to_512_id, 'SKU-108', 150),  -- 22 days - merchant not eligible
-  (to_512_id, 'SKU-111', 400),  -- 72 days - merchant not eligible
-  (to_512_id, 'SKU-120', 350);  -- 61 days - merchant not eligible
+  INSERT INTO transfer_order_lines (transfer_order_id, transfer_number, sku, units_incoming) VALUES
+  (to_512_id, 'T0512', 'SKU-102', 100),  -- 8 days - merchant not eligible
+  (to_512_id, 'T0512', 'SKU-108', 150),  -- 22 days - merchant not eligible
+  (to_512_id, 'T0512', 'SKU-111', 400),  -- 72 days - merchant not eligible
+  (to_512_id, 'T0512', 'SKU-120', 350);  -- 61 days - merchant not eligible
 
 END $$;
 
