@@ -254,6 +254,26 @@ export function TransferOrderItemsTable({
         },
       },
       {
+        id: 'storage_destination',
+        header: 'Storage Destination',
+        cell: ({ row }) => {
+          const status = row.original.preprocessing_status;
+          const reserveDest = (row.original as any).reserve_destination;
+          
+          if (status === 'not needed') {
+            return <span className="text-sm text-gray-600">To Pick Face</span>;
+          } else if (['requested', 'in-progress', 'completed'].includes(status)) {
+            return (
+              <span className="text-sm text-gray-900">
+                To Reserve{reserveDest ? ` - ${reserveDest}` : ''}
+              </span>
+            );
+          }
+          return <span className="text-sm text-gray-400">-</span>;
+        },
+        enableSorting: false,
+      },
+      {
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => {

@@ -149,6 +149,12 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
                 <p className="font-semibold text-gray-900">{transferOrder.merchant}</p>
               </div>
               <div>
+                <p className="text-xs text-gray-600 mb-1">Storage Destination</p>
+                <p className="font-semibold text-gray-900">
+                  To Reserve{(transferOrder as any).reserve_destination ? ` - ${(transferOrder as any).reserve_destination}` : ''}
+                </p>
+              </div>
+              <div>
                 <p className="text-xs text-gray-600 mb-1">Unique Items</p>
                 <p className="font-semibold text-gray-900">{uniqueItems}</p>
               </div>
