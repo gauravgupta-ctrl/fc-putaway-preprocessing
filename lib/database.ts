@@ -69,10 +69,12 @@ export async function getEligibleMerchants(): Promise<EligibleMerchant[]> {
 
 export async function addEligibleMerchant(
   merchantName: string,
+  reserveDestination: string | null,
   userId: string | null
 ): Promise<void> {
   const { error } = await supabase.from('eligible_merchants').insert({
     merchant_name: merchantName,
+    reserve_destination: reserveDestination,
     created_by: userId,
   });
 
@@ -87,7 +89,34 @@ export async function addEligibleMerchant(
       user_id: userId,
       action: 'add_merchant',
       entity_type: 'eligible_merchants',
-      details: { merchant_name: merchantName },
+      details: { merchant_name: merchantName, reserve_destination: reserveDestination },
+    });
+  }
+}
+
+export async function updateMerchantDestination(
+  merchantId: string,
+  reserveDestination: string | null,
+  userId: string | null
+): Promise<void> {
+  const { error } = await supabase
+    .from('eligible_merchants')
+    .update({ reserve_destination: reserveDestination })
+    .eq('id', merchantId);
+
+  if (error) {
+    console.error('Error updating merchant destination:', error);
+    throw error;
+  }
+
+  // Log audit trail
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'update_merchant_destination',
+      entity_type: 'eligible_merchants',
+      entity_id: merchantId,
+      details: { reserve_destination: reserveDestination },
     });
   }
 }

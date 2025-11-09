@@ -12,6 +12,7 @@ import {
   updateThreshold,
   getEligibleMerchants,
   addEligibleMerchant,
+  updateMerchantDestination,
   removeEligibleMerchant,
 } from '@/lib/database';
 import { supabase } from '@/lib/supabase';
@@ -22,6 +23,9 @@ export default function SettingsPage() {
   const [threshold, setThreshold] = useState(30);
   const [merchants, setMerchants] = useState<EligibleMerchant[]>([]);
   const [newMerchant, setNewMerchant] = useState('');
+  const [newDestination, setNewDestination] = useState('');
+  const [editingMerchant, setEditingMerchant] = useState<string | null>(null);
+  const [editDestination, setEditDestination] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -76,12 +80,25 @@ export default function SettingsPage() {
     if (!newMerchant.trim()) return;
 
     try {
-      await addEligibleMerchant(newMerchant.trim(), userId);
+      await addEligibleMerchant(newMerchant.trim(), newDestination.trim() || null, userId);
       setNewMerchant('');
+      setNewDestination('');
       await loadData();
     } catch (error) {
       console.error('Error adding merchant:', error);
       alert('Failed to add merchant. It may already exist.');
+    }
+  }
+
+  async function handleUpdateDestination(merchantId: string) {
+    try {
+      await updateMerchantDestination(merchantId, editDestination.trim() || null, userId);
+      setEditingMerchant(null);
+      setEditDestination('');
+      await loadData();
+    } catch (error) {
+      console.error('Error updating destination:', error);
+      alert('Failed to update destination');
     }
   }
 
@@ -176,19 +193,28 @@ export default function SettingsPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Add Merchant */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Enter merchant name"
-                value={newMerchant}
-                onChange={(e) => setNewMerchant(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddMerchant();
-                }}
-              />
-              <Button onClick={handleAddMerchant} disabled={!newMerchant.trim()}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add
-              </Button>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Merchant name"
+                  value={newMerchant}
+                  onChange={(e) => setNewMerchant(e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Reserve destination (optional)"
+                  value={newDestination}
+                  onChange={(e) => setNewDestination(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAddMerchant();
+                  }}
+                  className="flex-1"
+                />
+                <Button onClick={handleAddMerchant} disabled={!newMerchant.trim()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
             </div>
 
             {/* Merchant List */}
@@ -199,15 +225,55 @@ export default function SettingsPage() {
                 </div>
               ) : (
                 merchants.map((merchant) => (
-                  <div key={merchant.id} className="p-3 flex items-center justify-between">
-                    <span className="font-medium">{merchant.merchant_name}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveMerchant(merchant)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                  <div key={merchant.id} className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">{merchant.merchant_name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveMerchant(merchant)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                    {editingMerchant === merchant.id ? (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Reserve destination"
+                          value={editDestination}
+                          onChange={(e) => setEditDestination(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleUpdateDestination(merchant.id);
+                            if (e.key === 'Escape') setEditingMerchant(null);
+                          }}
+                          className="text-sm"
+                          autoFocus
+                        />
+                        <Button size="sm" onClick={() => handleUpdateDestination(merchant.id)}>
+                          Save
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditingMerchant(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">
+                          Destination: {merchant.reserve_destination || 'Not set'}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingMerchant(merchant.id);
+                            setEditDestination(merchant.reserve_destination || '');
+                          }}
+                          className="text-xs"
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
