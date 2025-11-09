@@ -67,6 +67,20 @@ export async function getEligibleMerchants(): Promise<EligibleMerchant[]> {
   return data || [];
 }
 
+export async function getMerchantDestination(merchantName: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('eligible_merchants')
+    .select('reserve_destination')
+    .eq('merchant_name', merchantName)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.reserve_destination;
+}
+
 export async function addEligibleMerchant(
   merchantName: string,
   reserveDestination: string | null,
@@ -153,38 +167,68 @@ export async function removeEligibleMerchant(
 // =====================================================
 
 export async function getTransferOrders() {
-  const { data, error } = await supabase
+  // Get all transfer orders
+  const { data: tos, error: toError } = await supabase
     .from('transfer_orders')
     .select('*')
     .order('estimated_arrival', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching transfer orders:', error);
+  if (toError || !tos) {
+    console.error('Error fetching transfer orders:', toError);
     return [];
   }
 
-  return data || [];
+  // Get all eligible merchants with destinations
+  const { data: merchants, error: merchantError } = await supabase
+    .from('eligible_merchants')
+    .select('merchant_name, reserve_destination');
+
+  const merchantDestMap = new Map<string, string | null>();
+  merchants?.forEach((m) => {
+    merchantDestMap.set(m.merchant_name, m.reserve_destination);
+  });
+
+  // Add reserve_destination to each TO
+  return tos.map((to) => ({
+    ...to,
+    reserve_destination: merchantDestMap.get(to.merchant) || null,
+  }));
 }
 
 export async function getTransferOrderLines(transferOrderIds: string[]) {
   if (transferOrderIds.length === 0) return [];
 
-  const { data, error } = await supabase
+  const { data: lines, error: linesError } = await supabase
     .from('transfer_order_lines')
     .select(
       `
       *,
-      sku_data:sku_attributes(*)
+      sku_data:sku_attributes(*),
+      transfer_orders!inner(merchant)
     `
     )
     .in('transfer_order_id', transferOrderIds);
 
-  if (error) {
-    console.error('Error fetching transfer order lines:', error);
+  if (linesError || !lines) {
+    console.error('Error fetching transfer order lines:', linesError);
     return [];
   }
 
-  return data || [];
+  // Get all eligible merchants with destinations
+  const { data: merchants } = await supabase
+    .from('eligible_merchants')
+    .select('merchant_name, reserve_destination');
+
+  const merchantDestMap = new Map<string, string | null>();
+  merchants?.forEach((m) => {
+    merchantDestMap.set(m.merchant_name, m.reserve_destination);
+  });
+
+  // Add reserve_destination to each line
+  return lines.map((line: any) => ({
+    ...line,
+    reserve_destination: merchantDestMap.get(line.transfer_orders.merchant) || null,
+  }));
 }
 
 // =====================================================

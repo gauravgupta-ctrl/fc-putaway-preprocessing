@@ -17,6 +17,7 @@ export interface Setting {
 export interface EligibleMerchant {
   id: string;
   merchant_name: string;
+  reserve_destination: string | null;
   created_at: string;
   created_by: string | null;
 }
