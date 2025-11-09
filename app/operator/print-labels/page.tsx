@@ -12,6 +12,8 @@ import { Printer, CheckCircle, Home, ChevronLeft, ChevronRight } from 'lucide-re
 
 export default function PrintLabelsPage() {
   const [toNumber, setToNumber] = useState('');
+  const [merchant, setMerchant] = useState('');
+  const [reserveDestination, setReserveDestination] = useState<string | null>(null);
   const [labelCount, setLabelCount] = useState(1);
   const [printing, setPrinting] = useState(false);
   const [printed, setPrinted] = useState(false);
@@ -39,15 +41,27 @@ export default function PrintLabelsPage() {
   async function loadData() {
     if (!toId) return;
 
-    // Load TO info
+    // Load TO info with merchant
     const { data: toData } = await supabase
       .from('transfer_orders')
-      .select('transfer_number')
+      .select('transfer_number, merchant')
       .eq('id', toId)
       .single();
 
     if (toData) {
       setToNumber(toData.transfer_number);
+      setMerchant(toData.merchant);
+
+      // Get merchant's reserve destination
+      const { data: merchantData } = await supabase
+        .from('eligible_merchants')
+        .select('reserve_destination')
+        .eq('merchant_name', toData.merchant)
+        .single();
+
+      if (merchantData) {
+        setReserveDestination(merchantData.reserve_destination);
+      }
     }
 
     // Load completed items
@@ -132,6 +146,11 @@ export default function PrintLabelsPage() {
       <div className="bg-white border-b px-4 py-3">
         <p className="text-sm text-gray-600">Transfer Order</p>
         <p className="text-lg font-bold text-gray-900">{toNumber}</p>
+        {reserveDestination && (
+          <p className="text-sm text-gray-600 mt-1">
+            Destination: <span className="font-medium text-gray-900">{reserveDestination}</span>
+          </p>
+        )}
       </div>
 
       {/* Content */}
@@ -161,6 +180,11 @@ export default function PrintLabelsPage() {
           <p className="text-gray-600">
             {completedItems.length} item(s) completed
           </p>
+          {reserveDestination && (
+            <p className="text-sm text-gray-600 mt-2">
+              Send pallets to: <span className="font-semibold text-gray-900">{reserveDestination}</span>
+            </p>
+          )}
         </div>
 
         {/* Label Count Display */}
