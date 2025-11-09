@@ -202,7 +202,7 @@ export default function SettingsPage() {
                   className="flex-1"
                 />
                 <Input
-                  placeholder="Reserve destination (optional)"
+                  placeholder="Reserve storage destination (optional)"
                   value={newDestination}
                   onChange={(e) => setNewDestination(e.target.value)}
                   onKeyDown={(e) => {
@@ -226,27 +226,18 @@ export default function SettingsPage() {
               ) : (
                 merchants.map((merchant) => (
                   <div key={merchant.id} className="p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{merchant.merchant_name}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveMerchant(merchant)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
                     {editingMerchant === merchant.id ? (
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium min-w-[150px]">{merchant.merchant_name}</span>
                         <Input
-                          placeholder="Reserve destination"
+                          placeholder="Reserve storage destination"
                           value={editDestination}
                           onChange={(e) => setEditDestination(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleUpdateDestination(merchant.id);
                             if (e.key === 'Escape') setEditingMerchant(null);
                           }}
-                          className="text-sm"
+                          className="text-sm flex-1"
                           autoFocus
                         />
                         <Button size="sm" onClick={() => handleUpdateDestination(merchant.id)}>
@@ -257,21 +248,33 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">
-                          Destination: {merchant.reserve_destination || 'Not set'}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setEditingMerchant(merchant.id);
-                            setEditDestination(merchant.reserve_destination || '');
-                          }}
-                          className="text-xs"
-                        >
-                          Edit
-                        </Button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1">
+                          <span className="font-medium min-w-[150px]">{merchant.merchant_name}</span>
+                          <span className="text-sm text-gray-600">
+                            {merchant.reserve_destination || 'No destination set'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingMerchant(merchant.id);
+                              setEditDestination(merchant.reserve_destination || '');
+                            }}
+                            className="text-xs"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMerchant(merchant)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
