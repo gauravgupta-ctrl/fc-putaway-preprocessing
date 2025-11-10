@@ -182,9 +182,9 @@ export function PalletSelectorCarton({
   const isUnderAllocated = totalAssigned < totalExpected;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Pallet Squares - FIRST */}
-      <div>
+      <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-4">
           Select a pallet to assign current carton to
         </label>
@@ -194,19 +194,19 @@ export function PalletSelectorCarton({
               <button
                 type="button"
                 onClick={() => handlePalletClick(pallet.number)}
-                className={`w-[72px] h-[72px] rounded-xl font-semibold transition-all ${
+                className={`w-[72px] h-[72px] rounded-xl font-semibold transition-all shadow-sm ${
                   selectedPallet === pallet.number
-                    ? 'bg-gradient-to-br from-gray-700 to-gray-900 text-white shadow-lg scale-105'
+                    ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-800 border-2 border-gray-600'
                     : pallet.quantity > 0
-                    ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-800 shadow-sm hover:shadow-md'
-                    : 'bg-white text-gray-700 shadow-sm hover:shadow-md'
+                    ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-800 hover:shadow-md'
+                    : 'bg-white text-gray-700 hover:shadow-md'
                 }`}
               >
                 <div className="text-xl">{pallet.number}</div>
                 {pallet.quantity > 0 && (
                   <>
                     <div className="text-xs font-semibold mt-0.5">{pallet.quantity}</div>
-                    <div className={`text-[10px] ${selectedPallet === pallet.number ? 'text-gray-300' : 'text-gray-500'}`}>
+                    <div className="text-[10px] text-gray-500">
                       {pallet.cartonCount} ctns
                     </div>
                   </>
@@ -219,7 +219,7 @@ export function PalletSelectorCarton({
                     e.stopPropagation();
                     deletePallet(pallet.number);
                   }}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-gray-400 text-white rounded-full flex items-center justify-center hover:bg-gray-500 shadow-sm transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -238,9 +238,9 @@ export function PalletSelectorCarton({
 
       {/* Carton Quantity Input - SECOND */}
       <div>
-        <div className="text-center mb-3">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Carton Quantity</p>
-        </div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Enter retail unit quantity in current carton
+        </label>
         <Input
           ref={inputRef}
           type="number"
@@ -303,7 +303,7 @@ export function PalletSelectorCarton({
 
       {/* Clear Item Button - Subtle */}
       {currentItemQuantity > 0 && (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center -mt-1">
           <Button
             onClick={handleClearItem}
             disabled={isClearing}
