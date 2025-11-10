@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getAllTOPallets, addCartonToPallet, clearItemAssignments } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
-import { X, Package, ArrowRight } from 'lucide-react';
+import { X, Package, ArrowRight, PackagePlus } from 'lucide-react';
 import { PalletSelectorCarton } from '@/components/PalletSelectorCarton';
 import type { TransferOrderLineWithSku } from '@/types/database';
 
@@ -19,6 +19,9 @@ export default function AddCartonPage() {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [currentItemQty, setCurrentItemQty] = useState(0);
   const [currentItemCartons, setCurrentItemCartons] = useState(0);
+  const [selectedPallet, setSelectedPallet] = useState(1);
+  const [cartonQty, setCartonQty] = useState(0);
+  const [isAdding, setIsAdding] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const toId = searchParams.get('to');
@@ -84,12 +87,49 @@ export default function AddCartonPage() {
     }
   }
 
+  async function handleAddCartonClick() {
+    if (!toId || !itemId || !item || cartonQty <= 0 || isAdding) return;
+
+    setIsAdding(true);
+
+    try {
+      await addCartonToPallet(toId, itemId, item.sku, selectedPallet, cartonQty, userId);
+      
+      // Update item status based on quantity
+      const newTotalQty = currentItemQty + cartonQty;
+      const expected = item.units_incoming || 0;
+      
+      let newStatus: 'partially completed' | 'completed' = 'partially completed';
+      if (newTotalQty >= expected) {
+        newStatus = 'completed';
+      }
+
+      await supabase
+        .from('transfer_order_lines')
+        .update({ preprocessing_status: newStatus })
+        .eq('id', itemId);
+
+      // Navigate back to scan item page
+      router.push(`/operator/scan-item?to=${toId}`);
+    } catch (error) {
+      console.error('Error adding carton:', error);
+      alert('Failed to add carton. Please try again.');
+      setIsAdding(false);
+    }
+  }
+
+  function handleSelectionChange(palletNumber: number, qty: number) {
+    setSelectedPallet(palletNumber);
+    setCartonQty(qty);
+  }
+
   async function handleCartonAdd(palletNumber: number, cartonQuantity: number) {
+    // This is called by Enter key in the component
     if (!toId || !itemId || !item) return;
 
     await addCartonToPallet(toId, itemId, item.sku, palletNumber, cartonQuantity, userId);
     
-    // Update item status based on quantity
+    // Update item status
     const newTotalQty = currentItemQty + cartonQuantity;
     const expected = item.units_incoming || 0;
     
@@ -179,7 +219,7 @@ export default function AddCartonPage() {
             {/* Action Indicator */}
             <div className="max-w-md mx-auto w-full mb-4">
               <div className="bg-red-500 rounded-xl p-6 text-white text-center">
-                <p className="text-2xl font-bold">TO RESERVE</p>
+                <p className="text-2xl">TO RESERVE</p>
               </div>
             </div>
 
@@ -195,6 +235,7 @@ export default function AddCartonPage() {
                   onCartonAdd={handleCartonAdd}
                   onClearItem={handleClearItem}
                   onInputStateChange={setIsInputFocused}
+                  onSelectionChange={handleSelectionChange}
                 />
               </div>
             </div>
@@ -223,7 +264,7 @@ export default function AddCartonPage() {
                 <p className="text-sm font-medium mb-2 opacity-90">
                   Place this item in:
                 </p>
-                <p className="text-4xl font-bold mb-2">
+                <p className="text-4xl mb-2">
                   PICK FACE
                 </p>
                 <p className="text-sm opacity-90">
@@ -236,15 +277,36 @@ export default function AddCartonPage() {
 
         {/* Action Button */}
         <div className="max-w-md mx-auto w-full mt-auto">
-          <Button
-            onClick={() => router.push(`/operator/scan-item?to=${toId}`)}
-            size="lg"
-            variant="ghost"
-            className="w-full h-16 text-xl font-semibold bg-transparent"
-          >
-            <ArrowRight className="h-6 w-6 mr-3" />
-            Continue Scanning
-          </Button>
+          {toReserve ? (
+            <Button
+              onClick={handleAddCartonClick}
+              disabled={isAdding || isInputFocused || cartonQty <= 0}
+              size="lg"
+              className="w-full h-16 text-xl font-semibold disabled:opacity-50"
+            >
+              {isAdding ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <PackagePlus className="h-6 w-6 mr-3" />
+                  Add Carton to Pallet
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => router.push(`/operator/scan-item?to=${toId}`)}
+              size="lg"
+              variant="ghost"
+              className="w-full h-16 text-xl font-semibold bg-transparent"
+            >
+              <ArrowRight className="h-6 w-6 mr-3" />
+              Continue Scanning
+            </Button>
+          )}
         </div>
       </div>
     </div>

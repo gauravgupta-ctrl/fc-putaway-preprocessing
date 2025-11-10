@@ -20,6 +20,7 @@ interface PalletSelectorCartonProps {
   onCartonAdd: (palletNumber: number, cartonQuantity: number) => Promise<void>;
   onClearItem: () => Promise<void>;
   onInputStateChange?: (isInputFocused: boolean) => void;
+  onSelectionChange?: (palletNumber: number, cartonQuantity: number) => void;
 }
 
 export function PalletSelectorCarton({
@@ -31,6 +32,7 @@ export function PalletSelectorCarton({
   onCartonAdd,
   onClearItem,
   onInputStateChange,
+  onSelectionChange,
 }: PalletSelectorCartonProps) {
   const [pallets, setPallets] = useState<PalletData[]>([{ number: 1, quantity: 0, cartonCount: 0 }]);
   const [selectedPallet, setSelectedPallet] = useState<number>(1);
@@ -72,6 +74,14 @@ export function PalletSelectorCarton({
       onInputStateChange(isInputFocused);
     }
   }, [isInputFocused, onInputStateChange]);
+
+  // Notify parent about selection changes
+  useEffect(() => {
+    if (onSelectionChange) {
+      const qty = parseFloat(cartonQuantity) || 0;
+      onSelectionChange(selectedPallet, qty);
+    }
+  }, [selectedPallet, cartonQuantity, onSelectionChange]);
 
   function handleInputFocus() {
     setIsInputFocused(true);
@@ -118,6 +128,7 @@ export function PalletSelectorCarton({
       setIsAdding(false);
     }
   }
+
 
   async function handleClearItem() {
     if (isClearing) return;
@@ -172,10 +183,34 @@ export function PalletSelectorCarton({
 
   return (
     <div className="space-y-4">
+      {/* Carton Quantity Input - MOVED TO TOP */}
+      <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
+        <p className="text-sm text-gray-600 mb-3">
+          Enter retail unit quantity in current carton
+        </p>
+        <div className="flex items-center gap-3">
+          <Input
+            ref={inputRef}
+            type="number"
+            min="1"
+            step="1"
+            value={cartonQuantity}
+            onChange={(e) => setCartonQuantity(e.target.value)}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleAddCarton();
+            }}
+            placeholder="Enter quantity"
+            className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
+          />
+        </div>
+      </div>
+
       {/* Pallet Squares */}
       <div>
         <label className="block text-sm font-medium text-gray-900 mb-3">
-          Assign to Pallets
+          Select Pallet
         </label>
         <div className="flex flex-wrap gap-2" style={{ marginLeft: '2px', marginRight: '2px' }}>
           {pallets.map((pallet) => (
@@ -183,7 +218,7 @@ export function PalletSelectorCarton({
               <button
                 type="button"
                 onClick={() => handlePalletClick(pallet.number)}
-                className={`w-14 h-14 rounded-lg font-bold transition-all ${
+                className={`w-16 h-16 rounded-lg font-bold transition-all ${
                   selectedPallet === pallet.number
                     ? 'bg-gray-200 text-gray-800 border-2 border-gray-600'
                     : pallet.quantity > 0
@@ -194,8 +229,8 @@ export function PalletSelectorCarton({
                 <div className="text-lg">{pallet.number}</div>
                 {pallet.quantity > 0 && (
                   <>
-                    <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
-                    <div className="text-[8px] text-gray-600">{pallet.cartonCount} ctns</div>
+                    <div className="text-[11px] font-medium">{pallet.quantity}</div>
+                    <div className="text-[9px] text-gray-600">{pallet.cartonCount} ctns</div>
                   </>
                 )}
               </button>
@@ -223,30 +258,6 @@ export function PalletSelectorCarton({
         </div>
       </div>
 
-      {/* Carton Quantity Input */}
-      <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
-        <p className="text-sm text-gray-600 mb-3">
-          Enter carton quantity for Pallet {selectedPallet}
-        </p>
-        <div className="flex items-center gap-3">
-          <Input
-            ref={inputRef}
-            type="number"
-            min="1"
-            step="1"
-            value={cartonQuantity}
-            onChange={(e) => setCartonQuantity(e.target.value)}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleAddCarton();
-            }}
-            placeholder="Enter quantity"
-            className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
-          />
-        </div>
-      </div>
-
       {/* Progress Bar */}
       <div>
         <div className="flex items-center justify-between mb-1">
@@ -256,7 +267,7 @@ export function PalletSelectorCarton({
               isOverAllocated
                 ? 'text-blue-600'
                 : isUnderAllocated
-                ? 'text-orange-500'
+                ? 'text-orange-600'
                 : 'text-green-600'
             }`}
           >
@@ -267,10 +278,10 @@ export function PalletSelectorCarton({
           <div
             className={`h-full transition-all duration-300 ${
               isOverAllocated
-                ? 'bg-blue-300'
+                ? 'bg-blue-600'
                 : isUnderAllocated
-                ? 'bg-orange-300'
-                : 'bg-green-300'
+                ? 'bg-orange-600'
+                : 'bg-green-600'
             }`}
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
@@ -278,13 +289,13 @@ export function PalletSelectorCarton({
       </div>
 
       {/* Clear Item Button */}
-      <div className="flex justify-end">
+      <div className="bg-white rounded-lg p-3">
         <Button
           onClick={handleClearItem}
           disabled={isClearing || currentItemQuantity === 0}
           variant="ghost"
           size="sm"
-          className="text-gray-600 hover:text-red-600"
+          className="w-full text-gray-600 hover:text-red-600"
         >
           {isClearing ? (
             <>
