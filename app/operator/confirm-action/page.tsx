@@ -261,22 +261,12 @@ export default function ConfirmActionPage() {
               onClick={handleConfirm}
               disabled={confirming || isEditingQuantity || !hasAssignments}
               size="lg"
-              className="w-full h-16 text-xl font-semibold"
+              className="w-full h-16 text-xl font-semibold disabled:opacity-50"
             >
               {confirming ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
                   Confirming...
-                </>
-              ) : !hasAssignments ? (
-                <>
-                  <CheckCircle className="h-6 w-6 mr-3" />
-                  Assign Quantity First
-                </>
-              ) : isEditingQuantity ? (
-                <>
-                  <CheckCircle className="h-6 w-6 mr-3" />
-                  Finish Input First
                 </>
               ) : (
                 <>

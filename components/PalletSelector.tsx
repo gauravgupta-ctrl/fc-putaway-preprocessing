@@ -93,9 +93,14 @@ export function PalletSelector({
   // Notify parent about input state (for disabling confirm button)
   useEffect(() => {
     if (onInputStateChange) {
-      const isEditing = editingPallet !== null && tempQuantity !== '';
+      // User is editing if they've selected a pallet AND have unsaved changes
+      const currentPallet = pallets.find((p) => p.number === editingPallet);
+      const currentSavedQty = currentPallet?.quantity || 0;
+      const inputQty = parseFloat(tempQuantity) || 0;
+      const hasUnsavedChanges = editingPallet !== null && inputQty !== currentSavedQty;
+      
       const hasAssignments = pallets.some((p) => p.quantity > 0);
-      onInputStateChange(isEditing, hasAssignments);
+      onInputStateChange(hasUnsavedChanges, hasAssignments);
     }
   }, [editingPallet, tempQuantity, pallets, onInputStateChange]);
 
