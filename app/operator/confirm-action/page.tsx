@@ -26,6 +26,8 @@ export default function ConfirmActionPage() {
   const [allTOPallets, setAllTOPallets] = useState<
     { palletNumber: number; totalQuantity: number; items: { sku: string; quantity: number }[] }[]
   >([]);
+  const [isEditingQuantity, setIsEditingQuantity] = useState(false);
+  const [hasAssignments, setHasAssignments] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const toId = searchParams.get('to');
@@ -207,6 +209,10 @@ export default function ConfirmActionPage() {
                   allTOPallets={allTOPallets}
                   currentSku={item.sku}
                   onAssignmentsChange={setPalletAssignments}
+                  onInputStateChange={(isEditing, hasAssignments) => {
+                    setIsEditingQuantity(isEditing);
+                    setHasAssignments(hasAssignments);
+                  }}
                 />
               </div>
             </div>
@@ -253,7 +259,7 @@ export default function ConfirmActionPage() {
           {toReserve ? (
             <Button
               onClick={handleConfirm}
-              disabled={confirming}
+              disabled={confirming || isEditingQuantity || !hasAssignments}
               size="lg"
               className="w-full h-16 text-xl font-semibold"
             >
@@ -261,6 +267,16 @@ export default function ConfirmActionPage() {
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
                   Confirming...
+                </>
+              ) : !hasAssignments ? (
+                <>
+                  <CheckCircle className="h-6 w-6 mr-3" />
+                  Assign Quantity First
+                </>
+              ) : isEditingQuantity ? (
+                <>
+                  <CheckCircle className="h-6 w-6 mr-3" />
+                  Finish Input First
                 </>
               ) : (
                 <>

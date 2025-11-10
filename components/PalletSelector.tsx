@@ -16,6 +16,7 @@ interface PalletSelectorProps {
   allTOPallets?: { palletNumber: number; totalQuantity: number; items: { sku: string; quantity: number }[] }[];
   currentSku?: string;
   onAssignmentsChange: (assignments: { palletNumber: number; quantity: number }[]) => void;
+  onInputStateChange?: (isEditing: boolean, hasAssignments: boolean) => void;
 }
 
 export function PalletSelector({
@@ -24,6 +25,7 @@ export function PalletSelector({
   allTOPallets = [],
   currentSku = '',
   onAssignmentsChange,
+  onInputStateChange,
 }: PalletSelectorProps) {
   const [pallets, setPallets] = useState<PalletData[]>([{ number: 1, quantity: 0 }]);
   const [editingPallet, setEditingPallet] = useState<number | null>(1);
@@ -87,6 +89,15 @@ export function PalletSelector({
       .map((p) => ({ palletNumber: p.number, quantity: p.quantity }));
     onAssignmentsChange(assignments);
   }, [pallets, onAssignmentsChange]);
+
+  // Notify parent about input state (for disabling confirm button)
+  useEffect(() => {
+    if (onInputStateChange) {
+      const isEditing = editingPallet !== null && tempQuantity !== '';
+      const hasAssignments = pallets.some((p) => p.quantity > 0);
+      onInputStateChange(isEditing, hasAssignments);
+    }
+  }, [editingPallet, tempQuantity, pallets, onInputStateChange]);
 
   function addPallet() {
     // Next pallet number is always length + 1 (sequential)
