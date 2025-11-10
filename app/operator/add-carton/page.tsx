@@ -204,7 +204,7 @@ export default function AddCartonPage() {
             {/* Item Info */}
             <div className="max-w-md mx-auto w-full mb-5">
               <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Current Item</p>
+                <p className="text-xs font-medium text-gray-500 mb-2">Current Item</p>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xl font-bold text-gray-900 font-mono">
                     {item.sku}
