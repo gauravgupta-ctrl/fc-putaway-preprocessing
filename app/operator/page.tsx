@@ -10,6 +10,8 @@ import { supabase } from '@/lib/supabase';
 import { AlertCircle, Package, Printer } from 'lucide-react';
 import type { TransferOrder } from '@/types/database';
 
+export const dynamic = 'force-dynamic';
+
 export default function OperatorHomePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

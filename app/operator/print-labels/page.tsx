@@ -11,6 +11,8 @@ import { supabase } from '@/lib/supabase';
 import { Printer, CheckCircle, Home, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+export const revalidate = 0;
 
 export default function PrintLabelsPage() {
   const [toNumber, setToNumber] = useState('');
