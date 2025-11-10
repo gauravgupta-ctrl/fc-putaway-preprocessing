@@ -182,10 +182,10 @@ export function PalletSelectorCarton({
   const isUnderAllocated = totalAssigned < totalExpected;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Pallet Squares - FIRST */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-gray-700 mb-4">
           Select a pallet to assign current carton to
         </label>
         <div className="flex flex-wrap gap-3">
@@ -194,12 +194,12 @@ export function PalletSelectorCarton({
               <button
                 type="button"
                 onClick={() => handlePalletClick(pallet.number)}
-                className={`w-[72px] h-[72px] rounded-xl font-semibold transition-all shadow-sm ${
+                className={`w-[72px] h-[72px] rounded-xl font-semibold transition-all ${
                   selectedPallet === pallet.number
-                    ? 'bg-gradient-to-br from-gray-700 to-gray-800 text-white ring-2 ring-gray-900 ring-offset-2'
+                    ? 'bg-gradient-to-br from-gray-700 to-gray-900 text-white shadow-lg scale-105'
                     : pallet.quantity > 0
-                    ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-800 hover:shadow-md'
-                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-400 hover:shadow-md'
+                    ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-800 shadow-sm hover:shadow-md'
+                    : 'bg-white text-gray-700 shadow-sm hover:shadow-md'
                 }`}
               >
                 <div className="text-xl">{pallet.number}</div>
@@ -238,9 +238,9 @@ export function PalletSelectorCarton({
 
       {/* Carton Quantity Input - SECOND */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          Enter retail unit quantity in current carton
-        </label>
+        <div className="text-center mb-3">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Carton Quantity</p>
+        </div>
         <Input
           ref={inputRef}
           type="number"
@@ -253,8 +253,8 @@ export function PalletSelectorCarton({
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleAddCarton();
           }}
-          placeholder="Enter quantity"
-          className="text-2xl h-14 text-center font-semibold"
+          placeholder="0"
+          className="text-3xl h-16 text-center font-bold"
         />
       </div>
 
