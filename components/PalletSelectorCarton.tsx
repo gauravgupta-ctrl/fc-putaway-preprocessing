@@ -188,7 +188,7 @@ export function PalletSelectorCarton({
         <label className="block text-sm font-medium text-gray-700 mb-4">
           Select a pallet to assign current carton to
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5 justify-center">
           {pallets.map((pallet) => (
             <div key={pallet.number} className="relative">
               <button

@@ -217,7 +217,7 @@ export default function AddCartonPage() {
           <>
             {/* Item Info */}
             <div className="max-w-md mx-auto w-full mb-5">
-              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div className="bg-white rounded-xl p-4 shadow-sm">
                 <p className="text-xs font-medium text-gray-500 mb-2">Current Item</p>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xl font-bold text-gray-900 font-mono">
@@ -239,7 +239,7 @@ export default function AddCartonPage() {
 
             {/* Pallet Assignment */}
             <div className="max-w-md mx-auto w-full mb-5">
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200 shadow-sm">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 shadow-sm">
                 <PalletSelectorCarton
                   totalExpected={item.units_incoming || 0}
                   currentItemQuantity={currentItemQty}
