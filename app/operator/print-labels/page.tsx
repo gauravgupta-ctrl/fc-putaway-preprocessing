@@ -209,12 +209,12 @@ export default function PrintLabelsPage() {
         </div>
 
         {/* Print Button */}
-        <div className="max-w-md mx-auto w-full space-y-3 mt-auto">
+        <div className="max-w-md mx-auto w-full space-y-2 mt-auto">
           <Button
             onClick={handlePrint}
             disabled={printing || printed}
             size="lg"
-            className="w-full h-14 text-lg font-semibold"
+            className="w-full h-12 text-base font-semibold"
           >
             {printing ? (
               <>
@@ -239,7 +239,7 @@ export default function PrintLabelsPage() {
               onClick={handleContinue}
               size="lg"
               variant="outline"
-              className="w-full h-14 text-lg"
+              className="w-full h-12 text-base"
             >
               Continue Scanning Items
             </Button>
@@ -250,9 +250,9 @@ export default function PrintLabelsPage() {
               onClick={() => router.push('/operator')}
               size="lg"
               variant="outline"
-              className="w-full h-14 text-lg"
+              className="w-full h-12 text-base"
             >
-              <Home className="h-5 w-5 mr-2" />
+              <Home className="h-4 w-4 mr-2" />
               Scan New Transfer Order
             </Button>
           )}
