@@ -16,6 +16,7 @@ interface PalletAssignment {
   pallet_number: number;
   sku: string;
   quantity: number;
+  carton_count: number;
   sku_description?: string;
 }
 
@@ -108,6 +109,7 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
         pallet_number,
         sku,
         quantity,
+        carton_count,
         sku_data:sku_attributes(description)
       `)
       .eq('transfer_order_id', transferOrder.id)
@@ -120,6 +122,7 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
         pallet_number: item.pallet_number,
         sku: item.sku,
         quantity: item.quantity,
+        carton_count: item.carton_count || 1,
         sku_description: item.sku_data?.description || '',
       }));
       setPalletAssignments(assignments);
@@ -151,6 +154,7 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
   // Calculate totals
   const uniqueItems = new Set(palletAssignments.map((a) => a.sku)).size;
   const totalUnits = palletAssignments.reduce((sum, a) => sum + a.quantity, 0);
+  const totalCartons = palletAssignments.reduce((sum, a) => sum + a.carton_count, 0);
 
   // Group by pallet number
   const palletGroups = palletAssignments.reduce((acc, assignment) => {
@@ -230,11 +234,11 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
                 </div>
               </div>
               
-              {/* Second row: Storage Zone, Unique Items, Total Units */}
-              <div className="grid grid-cols-3 gap-x-4">
+              {/* Second row: Storage Zone, Unique Items, Total Units, Total Cartons */}
+              <div className="grid grid-cols-4 gap-x-3">
                 <div>
                   <p className="text-xs text-gray-600 mb-1">Storage Zone</p>
-                  <p className="font-semibold text-gray-900 text-sm">
+                  <p className="font-semibold text-gray-900 text-xs">
                     Reserve{(transferOrder as any).reserve_destination ? ` - ${(transferOrder as any).reserve_destination}` : ''}
                   </p>
                 </div>
@@ -245,6 +249,10 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
                 <div>
                   <p className="text-xs text-gray-600 mb-1">Total Units</p>
                   <p className="font-semibold text-gray-900">{totalUnits.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Total Cartons</p>
+                  <p className="font-semibold text-gray-900">{totalCartons.toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -334,8 +342,8 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
                               </p>
                             </div>
                             <div className="text-right ml-3 flex-shrink-0">
-                              <p className="font-bold text-sm text-gray-900">{item.quantity}</p>
-                              <p className="text-[10px] text-gray-500">units</p>
+                              <p className="font-bold text-sm text-gray-900">{item.quantity} units</p>
+                              <p className="text-[10px] text-gray-500">({item.carton_count} cartons)</p>
                             </div>
                           </div>
                         ))}

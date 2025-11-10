@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Check } from 'lucide-react';
+import { Plus, Trash2, RotateCcw } from 'lucide-react';
 
 interface PalletData {
   number: number;
@@ -11,18 +11,18 @@ interface PalletData {
   cartonCount: number;
 }
 
-interface PalletSelectorProps {
+interface PalletSelectorCartonProps {
   totalExpected: number;
   currentItemQuantity: number;
   currentItemCartons: number;
-  allTOPallets?: { palletNumber: number; totalQuantity: number; totalCartons: number; items: { sku: string; quantity: number; cartonCount: number }[] }[];
-  currentSku?: string;
+  allTOPallets: { palletNumber: number; totalQuantity: number; totalCartons: number; items: { sku: string; quantity: number; cartonCount: number }[] }[];
+  currentSku: string;
   onCartonAdd: (palletNumber: number, cartonQuantity: number) => Promise<void>;
   onClearItem: () => Promise<void>;
   onInputStateChange?: (isInputFocused: boolean) => void;
 }
 
-export function PalletSelector({
+export function PalletSelectorCarton({
   totalExpected,
   currentItemQuantity,
   currentItemCartons,
@@ -31,7 +31,7 @@ export function PalletSelector({
   onCartonAdd,
   onClearItem,
   onInputStateChange,
-}: PalletSelectorProps) {
+}: PalletSelectorCartonProps) {
   const [pallets, setPallets] = useState<PalletData[]>([{ number: 1, quantity: 0, cartonCount: 0 }]);
   const [selectedPallet, setSelectedPallet] = useState<number>(1);
   const [cartonQuantity, setCartonQuantity] = useState('');
@@ -75,7 +75,6 @@ export function PalletSelector({
 
   function handleInputFocus() {
     setIsInputFocused(true);
-    // Scroll the input into view when keyboard appears on mobile
     setTimeout(() => {
       inputRef.current?.scrollIntoView({ 
         behavior: 'smooth', 
@@ -89,59 +88,63 @@ export function PalletSelector({
   }
 
   function addPallet() {
-    // Next pallet number is always length + 1 (sequential)
     const nextNumber = pallets.length + 1;
-    setPallets([...pallets, { number: nextNumber, quantity: 0 }]);
-    setEditingPallet(nextNumber);
-    setTempQuantity('');
+    setPallets([...pallets, { number: nextNumber, quantity: 0, cartonCount: 0 }]);
+    setSelectedPallet(nextNumber);
   }
 
   function handlePalletClick(number: number) {
-    const pallet = pallets.find((p) => p.number === number);
-    if (!pallet) return;
-
-    // Select for editing (whether it has quantity or not)
-    setEditingPallet(number);
-    setTempQuantity(pallet.quantity > 0 ? String(pallet.quantity) : '');
+    setSelectedPallet(number);
   }
 
-  function saveQuantity() {
-    if (editingPallet === null) return;
+  async function handleAddCarton() {
+    if (!cartonQuantity || isAdding) return;
     
-    const qty = parseFloat(tempQuantity) || 0;
-    // Update quantity (including 0, which deselects the pallet)
-    setPallets(pallets.map((p) => (p.number === editingPallet ? { ...p, quantity: qty } : p)));
-    setEditingPallet(null);
-    setTempQuantity('');
+    const qty = parseFloat(cartonQuantity);
+    if (isNaN(qty) || qty <= 0) {
+      alert('Please enter a valid carton quantity');
+      return;
+    }
+
+    setIsAdding(true);
+    
+    try {
+      await onCartonAdd(selectedPallet, qty);
+      setCartonQuantity('');
+    } catch (error) {
+      console.error('Error adding carton:', error);
+      alert('Failed to add carton. Please try again.');
+    } finally {
+      setIsAdding(false);
+    }
   }
 
-  function cancelEdit() {
-    setEditingPallet(null);
-    setTempQuantity('');
+  async function handleClearItem() {
+    if (isClearing) return;
+
+    if (!confirm(`Clear all assignments for ${currentSku}?\n\nThis will remove all quantities and cartons from all pallets for this item.`)) {
+      return;
+    }
+
+    setIsClearing(true);
+    
+    try {
+      await onClearItem();
+      setCartonQuantity('');
+    } catch (error) {
+      console.error('Error clearing item:', error);
+      alert('Failed to clear item. Please try again.');
+    } finally {
+      setIsClearing(false);
+    }
   }
 
   function canDeletePallet(number: number): boolean {
-    const pallet = pallets.find((p) => p.number === number);
-    
-    // Check if current item has quantity on this pallet
-    if (pallet && pallet.quantity > 0) {
-      return false;
-    }
-
-    // Check if any other item in the TO has quantity on this pallet
     const toPallet = allTOPallets.find((p) => p.palletNumber === number);
-    if (toPallet) {
-      // Check if there's any quantity from other items (not current SKU)
-      const otherItemsQuantity = toPallet.items
-        .filter(item => item.sku !== currentSku)
-        .reduce((sum, item) => sum + item.quantity, 0);
-      
-      if (otherItemsQuantity > 0) {
-        return false;
-      }
+    if (!toPallet || toPallet.totalQuantity === 0) {
+      return true; // Can delete if empty
     }
-
-    return true;
+    return false;
   }
 
   function deletePallet(number: number) {
@@ -150,7 +153,6 @@ export function PalletSelector({
       return;
     }
 
-    // Remove the pallet and renumber sequentially
     const filteredPallets = pallets.filter((p) => p.number !== number);
     const renumberedPallets = filteredPallets.map((p, index) => ({
       ...p,
@@ -158,12 +160,12 @@ export function PalletSelector({
     }));
 
     setPallets(renumberedPallets);
-    if (editingPallet === number) {
-      setEditingPallet(null);
+    if (selectedPallet === number) {
+      setSelectedPallet(renumberedPallets.length > 0 ? renumberedPallets[renumberedPallets.length - 1].number : 1);
     }
   }
 
-  const totalAssigned = pallets.reduce((sum, p) => sum + p.quantity, 0);
+  const totalAssigned = currentItemQuantity;
   const progress = (totalAssigned / totalExpected) * 100;
   const isOverAllocated = totalAssigned > totalExpected;
   const isUnderAllocated = totalAssigned < totalExpected;
@@ -176,13 +178,13 @@ export function PalletSelector({
           Assign to Pallets
         </label>
         <div className="flex flex-wrap gap-2" style={{ marginLeft: '2px', marginRight: '2px' }}>
-          {pallets.map((pallet, index) => (
+          {pallets.map((pallet) => (
             <div key={pallet.number} className="relative">
               <button
                 type="button"
                 onClick={() => handlePalletClick(pallet.number)}
                 className={`w-14 h-14 rounded-lg font-bold transition-all ${
-                  editingPallet === pallet.number
+                  selectedPallet === pallet.number
                     ? 'bg-gray-200 text-gray-800 border-2 border-gray-600'
                     : pallet.quantity > 0
                     ? 'bg-gray-200 text-gray-800 border border-gray-200'
@@ -191,7 +193,10 @@ export function PalletSelector({
               >
                 <div className="text-lg">{pallet.number}</div>
                 {pallet.quantity > 0 && (
-                  <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
+                  <>
+                    <div className="text-[10px] font-medium mt-0.5">{pallet.quantity}</div>
+                    <div className="text-[8px] text-gray-600">{pallet.cartonCount} ctns</div>
+                  </>
                 )}
               </button>
               {pallets.length > 1 && canDeletePallet(pallet.number) && (
@@ -218,37 +223,27 @@ export function PalletSelector({
         </div>
       </div>
 
-      {/* Quantity Input Bar (always visible, shows selected pallet) */}
+      {/* Carton Quantity Input */}
       <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
         <p className="text-sm text-gray-600 mb-3">
-          {editingPallet !== null 
-            ? `Enter quantity for Pallet ${editingPallet}`
-            : 'Tap a pallet above to assign quantity'}
+          Enter carton quantity for Pallet {selectedPallet}
         </p>
         <div className="flex items-center gap-3">
           <Input
             ref={inputRef}
             type="number"
-            min="0"
-            value={tempQuantity}
-            onChange={(e) => setTempQuantity(e.target.value)}
+            min="1"
+            step="1"
+            value={cartonQuantity}
+            onChange={(e) => setCartonQuantity(e.target.value)}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') saveQuantity();
+              if (e.key === 'Enter') handleAddCarton();
             }}
-            placeholder="0"
-            disabled={editingPallet === null}
+            placeholder="Enter quantity"
             className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
           />
-          <button
-            type="button"
-            onClick={saveQuantity}
-            disabled={editingPallet === null || !tempQuantity}
-            className="w-12 h-12 bg-gray-200 text-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <Check className="h-5 w-5" />
-          </button>
         </div>
       </div>
 
@@ -280,6 +275,29 @@ export function PalletSelector({
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
+      </div>
+
+      {/* Clear Item Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handleClearItem}
+          disabled={isClearing || currentItemQuantity === 0}
+          variant="ghost"
+          size="sm"
+          className="text-gray-600 hover:text-red-600"
+        >
+          {isClearing ? (
+            <>
+              <div className="animate-spin rounded-full h-3 w-3 border-2 border-gray-900 border-t-transparent mr-1"></div>
+              Clearing...
+            </>
+          ) : (
+            <>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Clear Current Item
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );

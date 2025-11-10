@@ -3,7 +3,8 @@
 export type PreprocessingStatus =
   | 'not needed'
   | 'requested'
-  | 'in-progress'
+  | 'not completed'
+  | 'partially completed'
   | 'completed';
 
 export interface Setting {
@@ -86,6 +87,7 @@ export interface PalletAssignment {
   pallet_number: number;
   sku: string;
   quantity: number;
+  carton_count: number;
   created_by: string | null;
   created_at: string;
   updated_at: string;

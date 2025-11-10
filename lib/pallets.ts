@@ -125,11 +125,11 @@ export async function getMaxPalletNumber(transferOrderId: string): Promise<numbe
 
 // Get all pallets with their quantities for a TO (grouped by pallet number)
 export async function getAllTOPallets(transferOrderId: string): Promise<
-  { palletNumber: number; totalQuantity: number; items: { sku: string; quantity: number }[] }[]
+  { palletNumber: number; totalQuantity: number; totalCartons: number; items: { sku: string; quantity: number; cartonCount: number }[] }[]
 > {
   const { data, error } = await supabase
     .from('pallet_assignments')
-    .select('pallet_number, sku, quantity')
+    .select('pallet_number, sku, quantity, carton_count')
     .eq('transfer_order_id', transferOrderId)
     .order('pallet_number', { ascending: true });
 
@@ -138,7 +138,7 @@ export async function getAllTOPallets(transferOrderId: string): Promise<
   }
 
   // Group by pallet number
-  const palletMap = new Map<number, { sku: string; quantity: number }[]>();
+  const palletMap = new Map<number, { sku: string; quantity: number; cartonCount: number }[]>();
   
   data.forEach((assignment) => {
     if (!palletMap.has(assignment.pallet_number)) {
@@ -147,14 +147,116 @@ export async function getAllTOPallets(transferOrderId: string): Promise<
     palletMap.get(assignment.pallet_number)!.push({
       sku: assignment.sku,
       quantity: assignment.quantity,
+      cartonCount: assignment.carton_count,
     });
   });
 
   return Array.from(palletMap.entries()).map(([palletNumber, items]) => ({
     palletNumber,
     totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+    totalCartons: items.reduce((sum, item) => sum + item.cartonCount, 0),
     items,
   }));
+}
+
+// Add carton to pallet (incremental addition)
+export async function addCartonToPallet(
+  transferOrderId: string,
+  transferOrderLineId: string,
+  sku: string,
+  palletNumber: number,
+  cartonQuantity: number,
+  userId: string | null
+): Promise<void> {
+  // Check if assignment already exists for this item on this pallet
+  const { data: existing } = await supabase
+    .from('pallet_assignments')
+    .select('*')
+    .eq('transfer_order_id', transferOrderId)
+    .eq('sku', sku)
+    .eq('pallet_number', palletNumber)
+    .single();
+
+  if (existing) {
+    // Increment existing assignment
+    const { error } = await supabase
+      .from('pallet_assignments')
+      .update({
+        quantity: existing.quantity + cartonQuantity,
+        carton_count: existing.carton_count + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id);
+
+    if (error) {
+      console.error('Error updating pallet assignment:', error);
+      throw error;
+    }
+  } else {
+    // Create new assignment
+    const { error } = await supabase
+      .from('pallet_assignments')
+      .insert({
+        transfer_order_id: transferOrderId,
+        transfer_order_line_id: transferOrderLineId,
+        pallet_number: palletNumber,
+        sku,
+        quantity: cartonQuantity,
+        carton_count: 1,
+        created_by: userId,
+      });
+
+    if (error) {
+      console.error('Error creating pallet assignment:', error);
+      throw error;
+    }
+  }
+
+  // Log audit trail
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'add_carton_to_pallet',
+      entity_type: 'pallet_assignments',
+      details: {
+        transfer_order_id: transferOrderId,
+        sku,
+        pallet_number: palletNumber,
+        carton_quantity: cartonQuantity,
+      },
+    });
+  }
+}
+
+// Clear all assignments for a specific item
+export async function clearItemAssignments(
+  transferOrderId: string,
+  sku: string,
+  userId: string | null
+): Promise<void> {
+  const { error } = await supabase
+    .from('pallet_assignments')
+    .delete()
+    .eq('transfer_order_id', transferOrderId)
+    .eq('sku', sku);
+
+  if (error) {
+    console.error('Error clearing item assignments:', error);
+    throw error;
+  }
+
+  // Log audit trail
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: 'clear_item_assignments',
+      entity_type: 'pallet_assignments',
+      details: {
+        transfer_order_id: transferOrderId,
+        sku,
+      },
+    });
+  }
 }
 
 // Get pallet summary (which items on which pallets)
