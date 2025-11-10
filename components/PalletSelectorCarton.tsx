@@ -254,7 +254,7 @@ export function PalletSelectorCarton({
             if (e.key === 'Enter') handleAddCarton();
           }}
           placeholder="0"
-          className="text-3xl h-16 text-center font-bold"
+          className="text-3xl h-16 text-center font-bold bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
         />
       </div>
 
@@ -301,15 +301,15 @@ export function PalletSelectorCarton({
         </div>
       </div>
 
-      {/* Clear Item Button - Subtle */}
+      {/* Clear Item Button */}
       {currentItemQuantity > 0 && (
-        <div className="flex justify-center -mt-1">
+        <div className="pt-2">
           <Button
             onClick={handleClearItem}
             disabled={isClearing}
             variant="ghost"
             size="sm"
-            className="text-xs text-gray-400 hover:text-red-500 h-8"
+            className="w-full text-xs text-gray-400 hover:text-red-500 h-8"
           >
             {isClearing ? (
               <>

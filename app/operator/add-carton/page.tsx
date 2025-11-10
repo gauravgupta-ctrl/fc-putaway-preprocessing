@@ -276,7 +276,7 @@ export default function AddCartonPage() {
         )}
 
         {/* Action Button */}
-        <div className="max-w-md mx-auto w-full mt-auto px-4 pb-4">
+        <div className="max-w-md mx-auto w-full mt-auto">
           {toReserve ? (
             <Button
               onClick={handleAddCartonClick}
