@@ -62,63 +62,8 @@ export async function findItemByBarcode(barcode: string, transferOrderId: string
   return Array.isArray(lineData) ? lineData[0] : lineData;
 }
 
-// Update item status after operator confirms action
-export async function confirmItemAction(
-  lineId: string,
-  userId: string | null
-): Promise<void> {
-  const { error } = await supabase
-    .from('transfer_order_lines')
-    .update({
-      preprocessing_status: 'completed',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', lineId);
-
-  if (error) {
-    console.error('Error updating item status:', error);
-    throw error;
-  }
-
-  // Log audit trail
-  if (userId) {
-    await supabase.from('audit_log').insert({
-      user_id: userId,
-      action: 'complete_preprocessing',
-      entity_type: 'transfer_order_lines',
-      entity_id: lineId,
-    });
-  }
-}
-
-// Start processing an item (set to in-progress)
-export async function startItemProcessing(
-  lineId: string,
-  userId: string | null
-): Promise<void> {
-  const { error } = await supabase
-    .from('transfer_order_lines')
-    .update({
-      preprocessing_status: 'in-progress',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', lineId);
-
-  if (error) {
-    console.error('Error starting item processing:', error);
-    throw error;
-  }
-
-  // Log audit trail
-  if (userId) {
-    await supabase.from('audit_log').insert({
-      user_id: userId,
-      action: 'start_preprocessing',
-      entity_type: 'transfer_order_lines',
-      entity_id: lineId,
-    });
-  }
-}
+// These functions are no longer used with the carton-by-carton flow
+// Status is now updated in real-time based on quantity additions
 
 // Get all items for a TO that need pre-processing
 export async function getPreprocessingItems(transferOrderId: string) {
@@ -139,22 +84,8 @@ export async function getPreprocessingItems(transferOrderId: string) {
   return data;
 }
 
-// Check if all requested items are completed
-export async function areAllItemsCompleted(transferOrderId: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('transfer_order_lines')
-    .select('preprocessing_status')
-    .eq('transfer_order_id', transferOrderId)
-    .eq('preprocessing_status', 'requested');
-
-  if (error) {
-    console.error('Error checking completion:', error);
-    return false;
-  }
-
-  // If no items are still in "requested" status, all are done
-  return !data || data.length === 0;
-}
+// Function removed - no longer needed with carton-by-carton flow
+// Completion is now determined by the Complete TO button
 
 // Get completed items for a TO (for label printing)
 export async function getCompletedItems(transferOrderId: string) {
