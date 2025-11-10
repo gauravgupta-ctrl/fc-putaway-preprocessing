@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getAllTOPallets, addCartonToPallet, clearItemAssignments } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
-import { X, Package } from 'lucide-react';
+import { X, Package, ArrowRight } from 'lucide-react';
 import { PalletSelectorCarton } from '@/components/PalletSelectorCarton';
 import type { TransferOrderLineWithSku } from '@/types/database';
 
