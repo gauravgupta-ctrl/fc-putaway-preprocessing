@@ -30,6 +30,7 @@ export function PalletSelector({
   const [pallets, setPallets] = useState<PalletData[]>([{ number: 1, quantity: 0 }]);
   const [editingPallet, setEditingPallet] = useState<number | null>(1);
   const [tempQuantity, setTempQuantity] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load pallets from TO (preserve across items)
@@ -73,6 +74,7 @@ export function PalletSelector({
   }, [editingPallet]);
 
   function handleInputFocus() {
+    setIsInputFocused(true);
     // Scroll the input into view when keyboard appears on mobile
     setTimeout(() => {
       inputRef.current?.scrollIntoView({ 
@@ -80,6 +82,10 @@ export function PalletSelector({
         block: 'center' 
       });
     }, 300); // Delay to allow keyboard to appear first
+  }
+
+  function handleInputBlur() {
+    setIsInputFocused(false);
   }
 
   // Notify parent of changes
@@ -93,16 +99,11 @@ export function PalletSelector({
   // Notify parent about input state (for disabling confirm button)
   useEffect(() => {
     if (onInputStateChange) {
-      // User is editing if they've selected a pallet AND have unsaved changes
-      const currentPallet = pallets.find((p) => p.number === editingPallet);
-      const currentSavedQty = currentPallet?.quantity || 0;
-      const inputQty = parseFloat(tempQuantity) || 0;
-      const hasUnsavedChanges = editingPallet !== null && inputQty !== currentSavedQty;
-      
+      // User is editing if the input field is focused (keyboard is active)
       const hasAssignments = pallets.some((p) => p.quantity > 0);
-      onInputStateChange(hasUnsavedChanges, hasAssignments);
+      onInputStateChange(isInputFocused, hasAssignments);
     }
-  }, [editingPallet, tempQuantity, pallets, onInputStateChange]);
+  }, [isInputFocused, pallets, onInputStateChange]);
 
   function addPallet() {
     // Next pallet number is always length + 1 (sequential)
@@ -249,6 +250,7 @@ export function PalletSelector({
             value={tempQuantity}
             onChange={(e) => setTempQuantity(e.target.value)}
             onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
             onKeyDown={(e) => {
               if (e.key === 'Enter') saveQuantity();
             }}
