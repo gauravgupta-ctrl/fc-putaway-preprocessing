@@ -62,12 +62,23 @@ export function PalletSelector({
     }
   }, [initialAssignments, allTOPallets]);
 
-  // Focus input when editing starts
+  // Focus input when editing starts (but don't auto-focus on mobile)
   useEffect(() => {
     if (editingPallet !== null) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+      // Don't auto-focus to avoid keyboard popping up immediately
+      // User will tap to focus when ready
     }
   }, [editingPallet]);
+
+  function handleInputFocus() {
+    // Scroll the input into view when keyboard appears on mobile
+    setTimeout(() => {
+      inputRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }, 300); // Delay to allow keyboard to appear first
+  }
 
   // Notify parent of changes
   useEffect(() => {
@@ -221,6 +232,7 @@ export function PalletSelector({
             min="0"
             value={tempQuantity}
             onChange={(e) => setTempQuantity(e.target.value)}
+            onFocus={handleInputFocus}
             onKeyDown={(e) => {
               if (e.key === 'Enter') saveQuantity();
             }}
