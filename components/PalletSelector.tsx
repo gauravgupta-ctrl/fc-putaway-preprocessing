@@ -186,10 +186,10 @@ export function PalletSelector({
   const isUnderAllocated = totalAssigned < totalExpected;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       {/* Pallet Squares */}
       <div>
-        <label className="block text-xs font-medium text-gray-900 mb-1.5">
+        <label className="block text-sm font-medium text-gray-900 mb-3">
           Assign to Pallets
         </label>
         <div className="flex flex-wrap gap-2" style={{ marginLeft: '2px', marginRight: '2px' }}>
@@ -236,13 +236,13 @@ export function PalletSelector({
       </div>
 
       {/* Quantity Input Bar (always visible, shows selected pallet) */}
-      <div className="bg-gray-100 rounded-lg border border-gray-300 p-2">
-        <p className="text-xs text-gray-600 mb-1.5">
+      <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
+        <p className="text-sm text-gray-600 mb-3">
           {editingPallet !== null 
             ? `Enter quantity for Pallet ${editingPallet}`
             : 'Tap a pallet above to assign quantity'}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Input
             ref={inputRef}
             type="number"
@@ -256,25 +256,25 @@ export function PalletSelector({
             }}
             placeholder="0"
             disabled={editingPallet === null}
-            className="text-base h-10 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
+            className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
           />
           <button
             type="button"
             onClick={saveQuantity}
             disabled={editingPallet === null || !tempQuantity}
-            className="w-10 h-10 bg-gray-200 text-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-12 h-12 bg-gray-200 text-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Check className="h-4 w-4" />
+            <Check className="h-5 w-5" />
           </button>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div>
-        <div className="flex items-center justify-between mb-0.5">
-          <span className="text-xs font-medium text-gray-700">Progress</span>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm font-medium text-gray-700">Progress</span>
           <span
-            className={`text-xs font-bold ${
+            className={`text-sm font-bold ${
               isOverAllocated
                 ? 'text-blue-600'
                 : isUnderAllocated
@@ -285,7 +285,7 @@ export function PalletSelector({
             {totalAssigned} / {totalExpected} ({Math.round(progress)}%)
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ${
               isOverAllocated
