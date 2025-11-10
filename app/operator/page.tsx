@@ -121,7 +121,6 @@ export default function OperatorHomePage() {
           <BarcodeScanner
             onScan={handleScan}
             placeholder="Enter TO number"
-            autoFocus
           />
         </div>
 

@@ -125,7 +125,6 @@ export default function ScanItemPage() {
           <BarcodeScanner
             onScan={handleScan}
             placeholder="Enter item barcode"
-            autoFocus
           />
         </div>
 

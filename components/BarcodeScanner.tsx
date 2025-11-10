@@ -74,6 +74,16 @@ export function BarcodeScanner({
     }
   }
 
+  function handleInputFocus() {
+    // Scroll the input into view when keyboard appears on mobile
+    setTimeout(() => {
+      inputRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }, 300); // Delay to allow keyboard to appear first
+  }
+
   return (
     <div className="space-y-4">
       {label && (
@@ -98,10 +108,7 @@ export function BarcodeScanner({
         </button>
         <button
           type="button"
-          onClick={() => {
-            setScanMode('manual');
-            setTimeout(() => inputRef.current?.focus(), 100);
-          }}
+          onClick={() => setScanMode('manual')}
           className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-colors ${
             scanMode === 'manual'
               ? 'bg-white text-gray-900 shadow-sm'
@@ -134,8 +141,8 @@ export function BarcodeScanner({
             type="text"
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
+            onFocus={handleInputFocus}
             placeholder={placeholder}
-            autoFocus={autoFocus}
             className="text-lg h-14 text-center font-mono"
           />
           <Button
