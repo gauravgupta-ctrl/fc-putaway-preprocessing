@@ -1,11 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import type { TransferOrder } from '@/types/database';
 import { format } from 'date-fns';
+import { generateTransferCSVs } from '@/lib/transferCSV';
+import { toggleAdminReviewed } from '@/lib/database';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface PalletAssignment {
   id: string;
@@ -24,16 +28,74 @@ interface ExpectedQuantity {
 interface TOReviewSidepanelProps {
   transferOrder: TransferOrder;
   onClose: () => void;
+  userId: string | null;
+  onUpdate: () => void;
+  reviewedOverrides: Map<string, boolean>;
+  onReviewedChange: (toId: string, reviewed: boolean) => void;
 }
 
-export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelProps) {
+export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, reviewedOverrides, onReviewedChange }: TOReviewSidepanelProps) {
   const [palletAssignments, setPalletAssignments] = useState<PalletAssignment[]>([]);
   const [expectedQuantities, setExpectedQuantities] = useState<ExpectedQuantity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+  const [isUpdatingReviewed, setIsUpdatingReviewed] = useState(false);
+
+  // Use override if exists, otherwise use the original value
+  const reviewed = reviewedOverrides.has(transferOrder.id) 
+    ? reviewedOverrides.get(transferOrder.id)! 
+    : transferOrder.admin_reviewed;
 
   useEffect(() => {
     loadData();
   }, [transferOrder.id]);
+
+  async function handleToggleReviewed(checked: boolean) {
+    if (isUpdatingReviewed) return;
+    
+    setIsUpdatingReviewed(true);
+    
+    // Optimistically update via parent's shared state
+    onReviewedChange(transferOrder.id, checked);
+    
+    try {
+      await toggleAdminReviewed(transferOrder.id, checked, userId);
+      // Don't call onUpdate() to avoid re-fetching data and potential side effects
+    } catch (error) {
+      console.error('Error toggling admin reviewed:', error);
+      alert('Failed to update review status. Please try again.');
+      // On error, revert the optimistic update
+      onReviewedChange(transferOrder.id, !checked);
+    } finally {
+      setIsUpdatingReviewed(false);
+    }
+  }
+
+  async function handleCreateTransfers() {
+    if (downloading) return;
+
+    const storageZone = (transferOrder as any).reserve_destination || 'Reserve';
+    
+    setDownloading(true);
+    
+    try {
+      await generateTransferCSVs(
+        transferOrder.id,
+        transferOrder.transfer_number,
+        transferOrder.merchant,
+        storageZone
+      );
+      
+      // Keep button disabled for 5 seconds
+      setTimeout(() => {
+        setDownloading(false);
+      }, 5000);
+    } catch (error) {
+      console.error('Error generating transfer CSVs:', error);
+      alert('Failed to generate transfer files. Please try again.');
+      setDownloading(false);
+    }
+  }
 
   async function loadData() {
     setLoading(true);
@@ -126,41 +188,64 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
       <div className="fixed right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <div>
+          <div className="flex-1">
             <h2 className="text-2xl font-bold text-gray-900">Pre-processed Pallets</h2>
             <p className="text-sm text-gray-600 mt-1">Review pallet assignments and quantities for this transfer order</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-6 w-6" />
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="reviewed-checkbox"
+                checked={reviewed}
+                disabled={isUpdatingReviewed}
+                onCheckedChange={(checked) => handleToggleReviewed(!!checked)}
+              />
+              <Label htmlFor="reviewed-checkbox" className="text-sm font-medium cursor-pointer">
+                Reviewed
+              </Label>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* TO Info */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-              <div>
-                <p className="text-xs text-gray-600 mb-1">Transfer Number</p>
-                <p className="font-semibold text-gray-900">{transferOrder.transfer_number}</p>
+            <div className="space-y-3">
+              {/* First row: Transfer Number, Merchant (aligned with Unique Items below) */}
+              <div className="grid grid-cols-3 gap-x-4">
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Transfer Number</p>
+                  <p className="font-semibold text-gray-900">{transferOrder.transfer_number}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Merchant</p>
+                  <p className="font-semibold text-gray-900">{transferOrder.merchant}</p>
+                </div>
+                <div>
+                  {/* Empty space for alignment */}
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-gray-600 mb-1">Merchant</p>
-                <p className="font-semibold text-gray-900">{transferOrder.merchant}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 mb-1">Storage Destination</p>
-                <p className="font-semibold text-gray-900">
-                  To Reserve{(transferOrder as any).reserve_destination ? ` - ${(transferOrder as any).reserve_destination}` : ''}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 mb-1">Unique Items</p>
-                <p className="font-semibold text-gray-900">{uniqueItems}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 mb-1">Total Units</p>
-                <p className="font-semibold text-gray-900">{totalUnits.toLocaleString()}</p>
+              
+              {/* Second row: Storage Zone, Unique Items, Total Units */}
+              <div className="grid grid-cols-3 gap-x-4">
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Storage Zone</p>
+                  <p className="font-semibold text-gray-900 text-sm">
+                    Reserve{(transferOrder as any).reserve_destination ? ` - ${(transferOrder as any).reserve_destination}` : ''}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Unique Items</p>
+                  <p className="font-semibold text-gray-900">{uniqueItems}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Total Units</p>
+                  <p className="font-semibold text-gray-900">{totalUnits.toLocaleString()}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -259,6 +344,28 @@ export function TOReviewSidepanel({ transferOrder, onClose }: TOReviewSidepanelP
                   ))}
               </div>
             )}
+          </div>
+
+          {/* Create Transfers Button */}
+          <div className="pt-4 border-t">
+            <Button
+              onClick={handleCreateTransfers}
+              disabled={downloading}
+              size="lg"
+              className="w-full"
+            >
+              {downloading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                  Creating Transfers...
+                </>
+              ) : (
+                <>
+                  <Download className="h-5 w-5 mr-2" />
+                  Create Transfers
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>

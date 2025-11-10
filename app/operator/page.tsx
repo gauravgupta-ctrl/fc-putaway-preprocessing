@@ -3,18 +3,31 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarcodeScanner } from '@/components/BarcodeScanner';
-import { findTransferOrderByNumber } from '@/lib/operator';
-import { AlertCircle, Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { findTransferOrderByNumber, logLabelPrint } from '@/lib/operator';
+import { getPalletCount } from '@/lib/pallets';
+import { supabase } from '@/lib/supabase';
+import { AlertCircle, Package, Printer } from 'lucide-react';
 import type { TransferOrder } from '@/types/database';
 
 export default function OperatorHomePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [completedTO, setCompletedTO] = useState<TransferOrder | null>(null);
+  const [palletCount, setPalletCount] = useState<number>(0);
+  const [printing, setPrinting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
 
   async function handleScan(code: string) {
     setError(null);
+    setCompletedTO(null);
+    setPalletCount(0);
     setLoading(true);
+
+    // Get user session
+    const { data: { session } } = await supabase.auth.getSession();
+    setUserId(session?.user?.id || null);
 
     try {
       const transferOrder = await findTransferOrderByNumber(code);
@@ -30,6 +43,12 @@ export default function OperatorHomePage() {
       
       if (status === 'completed') {
         setError('Pre-processing for this Transfer Order is already completed.');
+        setCompletedTO(transferOrder);
+        
+        // Get pallet count for the completed TO
+        const count = await getPalletCount(transferOrder.id);
+        setPalletCount(count || 0);
+        
         setLoading(false);
         return;
       }
@@ -46,6 +65,35 @@ export default function OperatorHomePage() {
       console.error('Error scanning TO:', error);
       setError('An error occurred. Please try again.');
       setLoading(false);
+    }
+  }
+
+  async function handlePrintLabels() {
+    if (!completedTO) return;
+
+    setPrinting(true);
+
+    try {
+      await logLabelPrint(completedTO.id, palletCount, userId);
+
+      // Log to console (replace with actual printer integration later)
+      console.log('PRINTING PALLET LABELS:', {
+        transferOrder: completedTO.transfer_number,
+        labelCount: palletCount,
+        timestamp: new Date().toISOString(),
+      });
+
+      alert(`Successfully printed ${palletCount} pallet label(s) for ${completedTO.transfer_number}`);
+      
+      // Clear the state after successful print
+      setCompletedTO(null);
+      setPalletCount(0);
+      setError(null);
+      setPrinting(false);
+    } catch (error) {
+      console.error('Error logging label print:', error);
+      alert('Failed to log label print. Please try again.');
+      setPrinting(false);
     }
   }
 
@@ -85,6 +133,31 @@ export default function OperatorHomePage() {
                 <p className="text-sm text-red-700 mt-1">{error}</p>
               </div>
             </div>
+            
+            {/* Print Labels Button for Completed TOs */}
+            {completedTO && palletCount > 0 && (
+              <div className="mt-4">
+                <Button
+                  onClick={handlePrintLabels}
+                  disabled={printing}
+                  size="lg"
+                  variant="ghost"
+                  className="w-full bg-transparent border-0 text-gray-700 hover:text-gray-900"
+                >
+                  {printing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-900 border-t-transparent mr-2"></div>
+                      Printing...
+                    </>
+                  ) : (
+                    <>
+                      <Printer className="h-5 w-5 mr-2" />
+                      Print {palletCount} Label{palletCount !== 1 ? 's' : ''}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

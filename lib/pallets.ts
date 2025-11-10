@@ -236,17 +236,16 @@ export async function cleanupAndResequencePallets(
     (num) => !palletNumberMap.has(num)
   );
 
+  // Delete assignments for empty pallets separately
   if (emptyPalletNumbers.length > 0) {
-    updates.push(
-      supabase
-        .from('pallet_assignments')
-        .delete()
-        .eq('transfer_order_id', transferOrderId)
-        .in('pallet_number', emptyPalletNumbers)
-    );
+    await supabase
+      .from('pallet_assignments')
+      .delete()
+      .eq('transfer_order_id', transferOrderId)
+      .in('pallet_number', emptyPalletNumbers);
   }
 
-  // Execute all updates
+  // Execute all update operations
   if (updates.length > 0) {
     await Promise.all(updates);
   }

@@ -31,6 +31,7 @@ export interface TransferOrder {
   receipt_time: string | null;
   destination: string | null;
   preprocessing_status: PreprocessingStatus;
+  admin_reviewed: boolean;
   synced_at: string;
   created_at: string;
   updated_at: string;

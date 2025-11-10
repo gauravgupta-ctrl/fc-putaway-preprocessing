@@ -359,3 +359,36 @@ export async function cancelAllPreprocessing(
   }
 }
 
+// =====================================================
+// Admin Review Status
+// =====================================================
+
+export async function toggleAdminReviewed(
+  transferOrderId: string,
+  reviewed: boolean,
+  userId: string | null
+): Promise<void> {
+  const { error } = await supabase
+    .from('transfer_orders')
+    .update({
+      admin_reviewed: reviewed,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', transferOrderId);
+
+  if (error) {
+    console.error('Error updating admin_reviewed:', error);
+    throw error;
+  }
+
+  // Log audit trail (skip if no user)
+  if (userId) {
+    await supabase.from('audit_log').insert({
+      user_id: userId,
+      action: reviewed ? 'mark_reviewed' : 'unmark_reviewed',
+      entity_type: 'transfer_orders',
+      entity_id: transferOrderId,
+    });
+  }
+}
+

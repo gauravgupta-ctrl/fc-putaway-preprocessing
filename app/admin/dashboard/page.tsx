@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [threshold, setThreshold] = useState(30);
   const [reviewingTO, setReviewingTO] = useState<TransferOrder | null>(null);
+  const [reviewedOverrides, setReviewedOverrides] = useState<Map<string, boolean>>(new Map());
 
   useEffect(() => {
     loadData();
@@ -80,6 +81,14 @@ export default function DashboardPage() {
     }
   }
 
+  function handleReviewedChange(toId: string, reviewed: boolean) {
+    setReviewedOverrides(prev => {
+      const newMap = new Map(prev);
+      newMap.set(toId, reviewed);
+      return newMap;
+    });
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -120,6 +129,10 @@ export default function DashboardPage() {
             selectedTOs={selectedTOs}
             onSelectionChange={setSelectedTOs}
             onReviewClick={setReviewingTO}
+            userId={userId}
+            onUpdate={handleRefresh}
+            reviewedOverrides={reviewedOverrides}
+            onReviewedChange={handleReviewedChange}
           />
         </CardContent>
       </Card>
@@ -165,6 +178,10 @@ export default function DashboardPage() {
         <TOReviewSidepanel
           transferOrder={reviewingTO}
           onClose={() => setReviewingTO(null)}
+          userId={userId}
+          onUpdate={handleRefresh}
+          reviewedOverrides={reviewedOverrides}
+          onReviewedChange={handleReviewedChange}
         />
       )}
     </div>

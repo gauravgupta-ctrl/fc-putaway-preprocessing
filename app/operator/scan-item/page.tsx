@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import {
   findItemByBarcode,
   getPreprocessingItems,
-  getCompletedItems,
 } from '@/lib/operator';
-import { AlertCircle, PackageSearch, X, Printer } from 'lucide-react';
+import { AlertCircle, PackageSearch, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function ScanItemPage() {
@@ -17,7 +16,6 @@ export default function ScanItemPage() {
   const [warning, setWarning] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [toNumber, setToNumber] = useState<string>('');
-  const [completedCount, setCompletedCount] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
   const toId = searchParams.get('to');
@@ -28,14 +26,9 @@ export default function ScanItemPage() {
     }
   }
 
-  function handlePrintLabel() {
-    router.push(`/operator/print-labels?to=${toId}`);
-  }
-
   useEffect(() => {
     if (toId) {
       loadToInfo();
-      loadCompletedCount();
     }
   }, [toId]);
 
@@ -49,12 +42,6 @@ export default function ScanItemPage() {
     if (data) {
       setToNumber(data.transfer_number);
     }
-  }
-
-  async function loadCompletedCount() {
-    if (!toId) return;
-    const completed = await getCompletedItems(toId);
-    setCompletedCount(completed.length);
   }
 
   async function handleScan(barcode: string) {
@@ -102,13 +89,7 @@ export default function ScanItemPage() {
             <p className="text-sm text-gray-600">Transfer Order</p>
             <p className="text-lg font-bold text-gray-900">{toNumber}</p>
           </div>
-          {completedCount > 0 && (
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <p className="text-sm text-gray-600">Completed</p>
-              <p className="text-lg font-bold text-green-600">{completedCount}</p>
-            </div>
-          )}
-          <div className={`flex-1 flex ${completedCount === 0 ? 'justify-end' : 'justify-end'}`}>
+          <div className="flex-1 flex justify-end">
             <Button
               onClick={handleAbort}
               variant="ghost"
@@ -180,6 +161,10 @@ export default function ScanItemPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
 
       {/* Bottom Actions - Print Label Only */}
       {completedCount > 0 && (

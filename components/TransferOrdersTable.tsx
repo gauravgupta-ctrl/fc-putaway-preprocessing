@@ -15,16 +15,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TransferOrder, PreprocessingStatus } from '@/types/database';
 import { format } from 'date-fns';
+import { generateTransferCSVs } from '@/lib/transferCSV';
+import { toggleAdminReviewed } from '@/lib/database';
 
 interface TransferOrdersTableProps {
   data: TransferOrder[];
   selectedTOs: string[];
   onSelectionChange: (selectedIds: string[]) => void;
   onReviewClick?: (to: TransferOrder) => void;
+  userId: string | null;
+  onUpdate: () => void;
+  reviewedOverrides: Map<string, boolean>;
+  onReviewedChange: (toId: string, reviewed: boolean) => void;
 }
 
 function getStatusColor(status: PreprocessingStatus): string {
@@ -42,11 +48,69 @@ function getStatusColor(status: PreprocessingStatus): string {
   }
 }
 
-export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onReviewClick }: TransferOrdersTableProps) {
+export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onReviewClick, userId, onUpdate, reviewedOverrides, onReviewedChange }: TransferOrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'estimated_arrival', desc: true }, // Default: newest first
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [downloadingTOs, setDownloadingTOs] = useState<Set<string>>(new Set());
+  const [updatingReviewed, setUpdatingReviewed] = useState<string | null>(null);
+
+  async function handleToggleReviewed(toId: string, transferNumber: string, checked: boolean) {
+    console.log('Toggling reviewed for TO:', transferNumber, 'ID:', toId, 'New value:', checked);
+    
+    if (updatingReviewed) {
+      console.log('Already updating another TO, ignoring');
+      return;
+    }
+    
+    setUpdatingReviewed(toId);
+    
+    // Optimistically update via parent's shared state
+    onReviewedChange(toId, checked);
+    
+    try {
+      await toggleAdminReviewed(toId, checked, userId);
+    } catch (error) {
+      console.error('Error toggling admin reviewed:', error);
+      alert('Failed to update review status. Please try again.');
+      // On error, revert the optimistic update
+      onReviewedChange(toId, !checked);
+    } finally {
+      setUpdatingReviewed(null);
+    }
+  }
+
+  async function handleCreateTransfers(to: TransferOrder, e: React.MouseEvent) {
+    e.stopPropagation();
+    
+    if (downloadingTOs.has(to.id)) return;
+
+    const storageZone = (to as any).reserve_destination || 'Reserve';
+    
+    setDownloadingTOs(prev => new Set(prev).add(to.id));
+    
+    try {
+      await generateTransferCSVs(to.id, to.transfer_number, to.merchant, storageZone);
+      
+      // Keep button disabled for 5 seconds
+      setTimeout(() => {
+        setDownloadingTOs(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(to.id);
+          return newSet;
+        });
+      }, 5000);
+    } catch (error) {
+      console.error('Error generating transfer CSVs:', error);
+      alert('Failed to generate transfer files. Please try again.');
+      setDownloadingTOs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(to.id);
+        return newSet;
+      });
+    }
+  }
 
   const columns = useMemo<ColumnDef<TransferOrder>[]>(
     () => [
@@ -76,6 +140,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Transfer #
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -91,6 +156,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Merchant
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -105,6 +171,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Transfer Status
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -123,6 +190,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Est. Arrival
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -141,6 +209,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Receipt Time
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -159,6 +228,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Destination
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -173,6 +243,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Pre-processing Status
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -185,48 +256,79 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
         },
       },
       {
-        id: 'storage_destination',
-        header: 'Storage Destination',
-        cell: ({ row }) => {
-          const status = row.original.preprocessing_status;
-          const reserveDest = (row.original as any).reserve_destination;
-          
-          if (status === 'not needed') {
-            return <span className="text-sm text-gray-600">To Pick Face</span>;
-          } else if (['requested', 'in-progress', 'completed'].includes(status)) {
-            return (
-              <span className="text-sm text-gray-900">
-                To Reserve{reserveDest ? ` - ${reserveDest}` : ''}
-              </span>
-            );
-          }
-          return <span className="text-sm text-gray-400">-</span>;
-        },
-        enableSorting: false,
-      },
-      {
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => {
           const status = row.original.preprocessing_status;
           if (status !== 'completed') return null;
+          const isDownloading = downloadingTOs.has(row.original.id);
           return (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onReviewClick?.(row.original);
-              }}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReviewClick?.(row.original);
+                }}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => handleCreateTransfers(row.original, e)}
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-gray-900 border-t-transparent mr-1"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3 w-3 mr-1" />
+                    Create Transfers
+                  </>
+                )}
+              </Button>
+            </div>
+          );
+        },
+        enableSorting: false,
+      },
+      {
+        id: 'reviewed',
+        header: 'Reviewed',
+        cell: ({ row }) => {
+          const status = row.original.preprocessing_status;
+          if (status !== 'completed') return null;
+          const to = row.original;
+          const isUpdating = updatingReviewed === to.id;
+          // Use override if exists, otherwise use the original value
+          const isReviewed = reviewedOverrides.has(to.id) ? reviewedOverrides.get(to.id)! : to.admin_reviewed;
+          return (
+            <div 
+              onClick={(e) => e.stopPropagation()} 
+              className="flex items-center justify-center"
             >
-              Review
-            </Button>
+              <Checkbox
+                id={`reviewed-${to.id}`}
+                checked={isReviewed}
+                disabled={isUpdating}
+                onCheckedChange={(checked) => {
+                  console.log('Checkbox clicked for:', to.transfer_number, 'Current value:', isReviewed, 'New value:', checked);
+                  handleToggleReviewed(to.id, to.transfer_number, !!checked);
+                }}
+                aria-label={`Mark ${to.transfer_number} as reviewed`}
+              />
+            </div>
           );
         },
         enableSorting: false,
       },
     ],
-    [onReviewClick]
+    [onReviewClick, downloadingTOs, updatingReviewed, reviewedOverrides]
   );
 
   const table = useReactTable({
@@ -302,7 +404,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell key={cell.id} className="align-middle">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}

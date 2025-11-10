@@ -148,7 +148,7 @@ export default function PrintLabelsPage() {
         <p className="text-lg font-bold text-gray-900">{toNumber}</p>
         {reserveDestination && (
           <p className="text-sm text-gray-600 mt-1">
-            Destination: <span className="font-medium text-gray-900">{reserveDestination}</span>
+            Zone: <span className="font-medium text-gray-900">{reserveDestination}</span>
           </p>
         )}
       </div>

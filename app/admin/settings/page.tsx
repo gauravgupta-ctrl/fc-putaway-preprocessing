@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, LogOut } from 'lucide-react';
 import {
   getThreshold,
   updateThreshold,
@@ -20,6 +21,7 @@ import type { EligibleMerchant } from '@/types/database';
 import { CSVUpload } from '@/components/CSVUpload';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [threshold, setThreshold] = useState(30);
   const [merchants, setMerchants] = useState<EligibleMerchant[]>([]);
   const [newMerchant, setNewMerchant] = useState('');
@@ -114,6 +116,15 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleLogout() {
+    try {
+      await supabase.auth.signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Failed to logout');
+    }
+  }
 
   if (loading) {
     return (
@@ -125,9 +136,19 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Settings</h1>
-        <p className="text-gray-600">Configure pre-processing rules and data synchronization</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Settings</h1>
+          <p className="text-gray-600">Configure pre-processing rules and data synchronization</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleLogout}
+          className="flex items-center gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </div>
 
       {/* CSV Upload Section */}
@@ -202,7 +223,7 @@ export default function SettingsPage() {
                   className="flex-1"
                 />
                 <Input
-                  placeholder="Reserve storage destination (optional)"
+                  placeholder="Reserve storage zone (optional)"
                   value={newDestination}
                   onChange={(e) => setNewDestination(e.target.value)}
                   onKeyDown={(e) => {
@@ -230,7 +251,7 @@ export default function SettingsPage() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium min-w-[150px]">{merchant.merchant_name}</span>
                         <Input
-                          placeholder="Reserve storage destination"
+                          placeholder="Reserve storage zone"
                           value={editDestination}
                           onChange={(e) => setEditDestination(e.target.value)}
                           onKeyDown={(e) => {
@@ -252,7 +273,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-4 flex-1">
                           <span className="font-medium min-w-[150px]">{merchant.merchant_name}</span>
                           <span className="text-sm text-gray-600">
-                            {merchant.reserve_destination || 'No destination set'}
+                            {merchant.reserve_destination || 'No zone set'}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">

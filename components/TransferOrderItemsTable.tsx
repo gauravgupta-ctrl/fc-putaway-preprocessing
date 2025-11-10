@@ -137,6 +137,7 @@ export function TransferOrderItemsTable({
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Transfer #
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -152,6 +153,7 @@ export function TransferOrderItemsTable({
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               SKU
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -167,6 +169,7 @@ export function TransferOrderItemsTable({
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Barcode
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -197,6 +200,7 @@ export function TransferOrderItemsTable({
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Qty Incoming
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -216,6 +220,7 @@ export function TransferOrderItemsTable({
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
               Days of Stock in Pick Face
               <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -242,8 +247,9 @@ export function TransferOrderItemsTable({
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
             >
-              Status
+              Pre-processing Status
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           );
@@ -255,17 +261,17 @@ export function TransferOrderItemsTable({
       },
       {
         id: 'storage_destination',
-        header: 'Storage Destination',
+        header: 'Storage Zone',
         cell: ({ row }) => {
           const status = row.original.preprocessing_status;
           const reserveDest = (row.original as any).reserve_destination;
           
           if (status === 'not needed') {
-            return <span className="text-sm text-gray-600">To Pick Face</span>;
+            return <span className="text-sm text-gray-600">Pick Face</span>;
           } else if (['requested', 'in-progress', 'completed'].includes(status)) {
             return (
               <span className="text-sm text-gray-900">
-                To Reserve{reserveDest ? ` - ${reserveDest}` : ''}
+                Reserve{reserveDest ? ` - ${reserveDest}` : ''}
               </span>
             );
           }
@@ -325,7 +331,7 @@ export function TransferOrderItemsTable({
 
   const aboveThresholdCount = data.filter((item) => {
     const dos = item.sku_data?.days_of_stock_pickface || 0;
-    return item.preprocessing_status === 'no instruction' && dos > threshold;
+    return item.preprocessing_status === 'not needed' && dos > threshold;
   }).length;
   const requestedCount = data.filter((item) => item.preprocessing_status === 'requested').length;
 
@@ -369,7 +375,7 @@ export function TransferOrderItemsTable({
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell key={cell.id} className="align-middle">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}

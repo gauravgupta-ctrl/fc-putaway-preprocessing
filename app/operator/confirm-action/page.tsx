@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { confirmItemAction, areAllItemsCompleted } from '@/lib/operator';
 import { getItemPalletAssignments, savePalletAssignments, getAllTOPallets } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, X } from 'lucide-react';
 import { PalletSelector } from '@/components/PalletSelector';
 import type { TransferOrderLineWithSku } from '@/types/database';
 
@@ -84,6 +84,12 @@ export default function ConfirmActionPage() {
     }
   }
 
+  function handleAbort() {
+    if (confirm('Are you sure you want to abort this Transfer Order?')) {
+      router.push('/operator');
+    }
+  }
+
   async function handleConfirm() {
     if (!itemId || !toId || !item) return;
 
@@ -142,10 +148,25 @@ export default function ConfirmActionPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
-      {/* TO Info Bar */}
+      {/* TO Info Bar with Abort Button */}
       <div className="bg-white border-b px-4 py-3">
-        <p className="text-sm text-gray-600">Transfer Order</p>
-        <p className="text-lg font-bold text-gray-900">{toNumber}</p>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <p className="text-sm text-gray-600">Transfer Order</p>
+            <p className="text-lg font-bold text-gray-900">{toNumber}</p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <Button
+              onClick={handleAbort}
+              variant="ghost"
+              size="sm"
+              className="bg-transparent"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Abort
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Content */}

@@ -3,8 +3,8 @@ import type { TransferOrder, TransferOrderLine, SkuAttribute, PreprocessingStatu
 
 // Find TO by transfer number (supports both "#T0303" and "T0303")
 export async function findTransferOrderByNumber(transferNumber: string) {
-  // Normalize: ensure it has # prefix
-  const normalized = transferNumber.startsWith('#') ? transferNumber : `#${transferNumber}`;
+  // Remove # prefix if present for consistent lookup
+  const normalized = transferNumber.startsWith('#') ? transferNumber.substring(1) : transferNumber;
   
   const { data, error } = await supabase
     .from('transfer_orders')
@@ -22,17 +22,24 @@ export async function findTransferOrderByNumber(transferNumber: string) {
 
 // Find item by barcode
 export async function findItemByBarcode(barcode: string, transferOrderId: string) {
+  console.log('Looking up barcode:', barcode, 'for TO:', transferOrderId);
+  
   // First, find SKU by barcode
   const { data: skuData, error: skuError } = await supabase
     .from('sku_attributes')
     .select('sku')
-    .eq('barcode', barcode)
-    .single();
+    .eq('barcode', barcode);
 
-  if (skuError || !skuData) {
-    console.error('SKU not found for barcode:', barcode);
+  console.log('SKU lookup result:', skuData, 'error:', skuError);
+
+  if (skuError || !skuData || skuData.length === 0) {
+    console.error('SKU not found for barcode:', barcode, 'error:', skuError);
     return null;
   }
+
+  // If multiple SKUs have the same barcode, use the first one
+  const sku = Array.isArray(skuData) ? skuData[0].sku : skuData.sku;
+  console.log('Using SKU:', sku);
 
   // Then find the transfer order line
   const { data: lineData, error: lineError } = await supabase
@@ -42,15 +49,17 @@ export async function findItemByBarcode(barcode: string, transferOrderId: string
       sku_data:sku_attributes(*)
     `)
     .eq('transfer_order_id', transferOrderId)
-    .eq('sku', skuData.sku)
-    .single();
+    .eq('sku', sku);
 
-  if (lineError || !lineData) {
+  console.log('Line lookup result:', lineData, 'error:', lineError);
+
+  if (lineError || !lineData || (Array.isArray(lineData) && lineData.length === 0)) {
     console.error('Item not found in TO:', lineError);
     return null;
   }
 
-  return lineData;
+  // Return the first match if multiple lines exist
+  return Array.isArray(lineData) ? lineData[0] : lineData;
 }
 
 // Update item status after operator confirms action
