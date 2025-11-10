@@ -219,8 +219,8 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
           {/* TO Info */}
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="space-y-3">
-              {/* First row: Transfer Number, Merchant (aligned with Unique Items below) */}
-              <div className="grid grid-cols-3 gap-x-4">
+              {/* First row: Transfer Number, Merchant, empty, empty */}
+              <div className="grid grid-cols-4 gap-x-3">
                 <div>
                   <p className="text-xs text-gray-600 mb-1">Transfer Number</p>
                   <p className="font-semibold text-gray-900">{transferOrder.transfer_number}</p>
@@ -229,9 +229,8 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
                   <p className="text-xs text-gray-600 mb-1">Merchant</p>
                   <p className="font-semibold text-gray-900">{transferOrder.merchant}</p>
                 </div>
-                <div>
-                  {/* Empty space for alignment */}
-                </div>
+                <div></div>
+                <div></div>
               </div>
               
               {/* Second row: Storage Zone, Unique Items, Total Units, Total Cartons */}
