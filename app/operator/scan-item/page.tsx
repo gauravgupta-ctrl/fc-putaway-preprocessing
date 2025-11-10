@@ -12,8 +12,6 @@ import { AlertCircle, PackageSearch, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
-export const revalidate = 0;
 
 export default function ScanItemPage() {
   const [error, setError] = useState<string | null>(null);
