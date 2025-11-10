@@ -156,15 +156,15 @@ export default function PrintLabelsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col px-4 py-8">
+      <div className="flex-1 flex flex-col px-4 py-4 pb-4">
         {isAllCompleted && (
-          <div className="max-w-md mx-auto w-full mb-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <p className="font-semibold text-green-900">
+          <div className="max-w-md mx-auto w-full mb-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+              <CheckCircle className="h-6 w-6 text-green-600 mx-auto mb-1" />
+              <p className="font-semibold text-green-900 text-sm">
                 All Items Completed
               </p>
-              <p className="text-sm text-green-700 mt-1">
+              <p className="text-xs text-green-700 mt-0.5">
                 Pre-processing complete for this Transfer Order
               </p>
             </div>
@@ -172,37 +172,37 @@ export default function PrintLabelsPage() {
         )}
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-            <Printer className="h-8 w-8 text-gray-600" />
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+            <Printer className="h-6 w-6 text-gray-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-bold text-gray-900 mb-1">
             Print Pallet Labels
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-600">
             {completedItems.length} item(s) completed
           </p>
           {reserveDestination && (
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-xs text-gray-600 mt-1">
               Send pallets to: <span className="font-semibold text-gray-900">{reserveDestination}</span>
             </p>
           )}
         </div>
 
         {/* Label Count Display */}
-        <div className="max-w-md mx-auto w-full mb-8">
-          <div className="bg-gray-100 rounded-lg p-6 text-center">
-            <Label className="text-base mb-4 block">
+        <div className="max-w-md mx-auto w-full mb-4">
+          <div className="bg-gray-100 rounded-lg p-4 text-center">
+            <Label className="text-sm mb-2 block">
               Labels to Print
             </Label>
-            <div className="text-5xl font-bold text-gray-900 mb-2">
+            <div className="text-4xl font-bold text-gray-900 mb-1">
               {labelCount}
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs text-gray-600">
               Based on {labelCount} pallet{labelCount !== 1 ? 's' : ''} used
             </p>
             {labelCount > 1 && (
-              <p className="text-sm text-gray-500 mt-3">
+              <p className="text-xs text-gray-500 mt-2">
                 Labels will be numbered 1 of {labelCount}, 2 of {labelCount}, etc.
               </p>
             )}
@@ -210,12 +210,12 @@ export default function PrintLabelsPage() {
         </div>
 
         {/* Print Button */}
-        <div className="max-w-md mx-auto w-full space-y-3">
+        <div className="max-w-md mx-auto w-full space-y-3 mt-auto">
           <Button
             onClick={handlePrint}
             disabled={printing || printed}
             size="lg"
-            className="w-full h-16 text-xl font-semibold"
+            className="w-full h-14 text-lg font-semibold"
           >
             {printing ? (
               <>

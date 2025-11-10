@@ -186,10 +186,10 @@ export function PalletSelector({
   const isUnderAllocated = totalAssigned < totalExpected;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Pallet Squares */}
       <div>
-        <label className="block text-sm font-medium text-gray-900 mb-3">
+        <label className="block text-sm font-medium text-gray-900 mb-2">
           Assign to Pallets
         </label>
         <div className="flex flex-wrap gap-2" style={{ marginLeft: '2px', marginRight: '2px' }}>
@@ -236,8 +236,8 @@ export function PalletSelector({
       </div>
 
       {/* Quantity Input Bar (always visible, shows selected pallet) */}
-      <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
-        <p className="text-sm text-gray-600 mb-3">
+      <div className="bg-gray-100 rounded-lg border border-gray-300 p-3">
+        <p className="text-sm text-gray-600 mb-2">
           {editingPallet !== null 
             ? `Enter quantity for Pallet ${editingPallet}`
             : 'Tap a pallet above to assign quantity'}

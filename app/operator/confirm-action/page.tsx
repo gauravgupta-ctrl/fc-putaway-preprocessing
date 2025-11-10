@@ -174,19 +174,19 @@ export default function ConfirmActionPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col px-4 py-6">
+      <div className="flex-1 flex flex-col px-4 py-3 pb-4">
         {toReserve ? (
           /* Compact layout for TO RESERVE - fits in one screen */
           <>
             {/* Item Info - Compact */}
-            <div className="max-w-md mx-auto w-full mb-4">
-              <div className="bg-white rounded-lg border p-3">
+            <div className="max-w-md mx-auto w-full mb-3">
+              <div className="bg-white rounded-lg border p-2.5">
                 <p className="text-xs text-gray-600 mb-1">Item</p>
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-lg font-bold text-gray-900 font-mono">
+                  <p className="text-base font-bold text-gray-900 font-mono">
                     {item.sku}
                   </p>
-                  <p className="text-sm text-gray-600 truncate text-right">
+                  <p className="text-xs text-gray-600 truncate text-right">
                     {item.sku_data?.description || ''}
                   </p>
                 </div>
@@ -194,15 +194,15 @@ export default function ConfirmActionPage() {
             </div>
 
             {/* Action Indicator - Compact */}
-            <div className="max-w-md mx-auto w-full mb-4">
-              <div className="bg-red-500 rounded-xl p-6 text-white text-center">
-                <p className="text-2xl font-bold">TO RESERVE</p>
+            <div className="max-w-md mx-auto w-full mb-3">
+              <div className="bg-red-500 rounded-xl p-4 text-white text-center">
+                <p className="text-xl font-bold">TO RESERVE</p>
               </div>
             </div>
 
             {/* Pallet Assignment */}
-            <div className="max-w-md mx-auto w-full mb-4">
-              <div className="bg-gray-100 rounded-lg p-4">
+            <div className="max-w-md mx-auto w-full mb-3">
+              <div className="bg-gray-100 rounded-lg p-3">
                 <PalletSelector
                   totalExpected={item.units_incoming || 0}
                   initialAssignments={initialAssignments}
@@ -255,13 +255,13 @@ export default function ConfirmActionPage() {
         )}
 
         {/* Action Button */}
-        <div className="max-w-md mx-auto w-full mt-auto">
+        <div className="max-w-md mx-auto w-full mt-auto pt-2">
           {toReserve ? (
             <Button
               onClick={handleConfirm}
               disabled={confirming || isEditingQuantity || !hasAssignments}
               size="lg"
-              className="w-full h-16 text-xl font-semibold disabled:opacity-50"
+              className="w-full h-14 text-lg font-semibold disabled:opacity-50"
             >
               {confirming ? (
                 <>
