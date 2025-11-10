@@ -10,6 +10,8 @@ import { getPalletCount, cleanupAndResequencePallets } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
 import { Printer, CheckCircle, Home, ChevronLeft, ChevronRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function PrintLabelsPage() {
   const [toNumber, setToNumber] = useState('');
   const [merchant, setMerchant] = useState('');

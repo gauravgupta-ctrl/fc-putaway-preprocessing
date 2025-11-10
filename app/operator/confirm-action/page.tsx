@@ -10,6 +10,8 @@ import { ArrowRight, CheckCircle, X } from 'lucide-react';
 import { PalletSelector } from '@/components/PalletSelector';
 import type { TransferOrderLineWithSku } from '@/types/database';
 
+export const dynamic = 'force-dynamic';
+
 export default function ConfirmActionPage() {
   const [item, setItem] = useState<TransferOrderLineWithSku | null>(null);
   const [toNumber, setToNumber] = useState('');
