@@ -301,28 +301,6 @@ export function PalletSelectorCarton({
         </div>
       </div>
 
-      {/* Clear Item Button */}
-      <div className="pt-1">
-        <Button
-          onClick={handleClearItem}
-          disabled={isClearing || currentItemQuantity === 0}
-          variant="ghost"
-          size="sm"
-          className="w-full text-xs text-gray-400 hover:text-red-500 h-8"
-        >
-          {isClearing ? (
-            <>
-              <div className="animate-spin rounded-full h-3 w-3 border-2 border-gray-400 border-t-transparent mr-1.5"></div>
-              Clearing...
-            </>
-          ) : (
-            <>
-              <RotateCcw className="h-3 w-3 mr-1.5" />
-              Clear Current Item
-            </>
-          )}
-        </Button>
-      </div>
     </div>
   );
 }

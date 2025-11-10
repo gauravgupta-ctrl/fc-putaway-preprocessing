@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getAllTOPallets, addCartonToPallet, clearItemAssignments } from '@/lib/pallets';
 import { supabase } from '@/lib/supabase';
-import { X, Package, ArrowRight, PackagePlus } from 'lucide-react';
+import { X, Package, ArrowRight, PackagePlus, RotateCcw } from 'lucide-react';
 import { PalletSelectorCarton } from '@/components/PalletSelectorCarton';
 import type { TransferOrderLineWithSku } from '@/types/database';
 
@@ -22,6 +22,7 @@ export default function AddCartonPage() {
   const [selectedPallet, setSelectedPallet] = useState(1);
   const [cartonQty, setCartonQty] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const toId = searchParams.get('to');
@@ -148,18 +149,31 @@ export default function AddCartonPage() {
   }
 
   async function handleClearItem() {
-    if (!toId || !item) return;
+    if (!toId || !item || isClearing) return;
 
-    await clearItemAssignments(toId, item.sku, userId);
-    
-    // Reset status to requested
-    await supabase
-      .from('transfer_order_lines')
-      .update({ preprocessing_status: 'requested' })
-      .eq('id', itemId);
+    if (!confirm(`Clear all assignments for ${item.sku}?\n\nThis will remove all quantities and cartons from all pallets for this item.`)) {
+      return;
+    }
 
-    // Reload data
-    await loadData();
+    setIsClearing(true);
+
+    try {
+      await clearItemAssignments(toId, item.sku, userId);
+      
+      // Reset status to requested
+      await supabase
+        .from('transfer_order_lines')
+        .update({ preprocessing_status: 'requested' })
+        .eq('id', itemId);
+
+      // Reload data
+      await loadData();
+    } catch (error) {
+      console.error('Error clearing item:', error);
+      alert('Failed to clear item. Please try again.');
+    } finally {
+      setIsClearing(false);
+    }
   }
 
   if (!item) {
@@ -238,6 +252,31 @@ export default function AddCartonPage() {
                   onSelectionChange={handleSelectionChange}
                 />
               </div>
+              
+              {/* Clear Item Button - Outside grey box */}
+              {currentItemQty > 0 && (
+                <div className="mt-2">
+                  <Button
+                    onClick={handleClearItem}
+                    disabled={isClearing}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs text-gray-400 hover:text-red-500 h-8"
+                  >
+                    {isClearing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-gray-400 border-t-transparent mr-1.5"></div>
+                        Clearing...
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="h-3 w-3 mr-1.5" />
+                        Clear Current Item
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </>
         ) : (
