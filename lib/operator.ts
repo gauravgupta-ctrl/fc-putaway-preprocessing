@@ -32,13 +32,13 @@ export async function findItemByBarcode(barcode: string, transferOrderId: string
 
   console.log('SKU lookup result:', skuData, 'error:', skuError);
 
-  if (skuError || !skuData || skuData.length === 0) {
+  if (skuError || !skuData || (Array.isArray(skuData) && skuData.length === 0)) {
     console.error('SKU not found for barcode:', barcode, 'error:', skuError);
     return null;
   }
 
   // If multiple SKUs have the same barcode, use the first one
-  const sku = Array.isArray(skuData) ? skuData[0].sku : skuData.sku;
+  const sku = Array.isArray(skuData) ? skuData[0]?.sku : (skuData as any).sku;
   console.log('Using SKU:', sku);
 
   // Then find the transfer order line

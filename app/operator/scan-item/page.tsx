@@ -164,23 +164,3 @@ export default function ScanItemPage() {
     </div>
   );
 }
-
-
-      {/* Bottom Actions - Print Label Only */}
-      {completedCount > 0 && (
-        <div className="px-4 py-6 flex justify-center">
-          <Button
-            onClick={handlePrintLabel}
-            size="lg"
-            variant="ghost"
-            className="bg-transparent border-0 h-12 text-base text-gray-700 hover:text-gray-900"
-          >
-            <Printer className="h-5 w-5 mr-2" />
-            Print Label
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
