@@ -199,11 +199,11 @@ export function PalletSelector({
                 type="button"
                 onClick={() => handlePalletClick(pallet.number)}
                 className={`w-14 h-14 rounded-lg font-bold transition-all ${
-                  pallet.quantity > 0
-                    ? 'bg-gray-200 text-gray-800'
-                    : editingPallet === pallet.number
-                    ? 'bg-white text-gray-700 border border-gray-400'
-                    : 'bg-white text-gray-700 hover:border hover:border-gray-300'
+                  editingPallet === pallet.number
+                    ? 'bg-gray-200 text-gray-800 border-2 border-gray-600'
+                    : pallet.quantity > 0
+                    ? 'bg-gray-200 text-gray-800 border border-gray-200'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
                 }`}
               >
                 <div className="text-lg">{pallet.number}</div>
