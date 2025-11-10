@@ -182,55 +182,33 @@ export function PalletSelectorCarton({
   const isUnderAllocated = totalAssigned < totalExpected;
 
   return (
-    <div className="space-y-4">
-      {/* Carton Quantity Input - MOVED TO TOP */}
-      <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
-        <p className="text-sm text-gray-600 mb-3">
-          Enter retail unit quantity in current carton
-        </p>
-        <div className="flex items-center gap-3">
-          <Input
-            ref={inputRef}
-            type="number"
-            min="1"
-            step="1"
-            value={cartonQuantity}
-            onChange={(e) => setCartonQuantity(e.target.value)}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleAddCarton();
-            }}
-            placeholder="Enter quantity"
-            className="text-lg h-12 text-center font-semibold flex-1 bg-white border-0 focus-visible:ring-0 focus-visible:outline-none"
-          />
-        </div>
-      </div>
-
-      {/* Pallet Squares */}
+    <div className="space-y-5">
+      {/* Pallet Squares - FIRST */}
       <div>
-        <label className="block text-sm font-medium text-gray-900 mb-3">
-          Select Pallet
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Select a pallet to assign current carton to
         </label>
-        <div className="flex flex-wrap gap-2" style={{ marginLeft: '2px', marginRight: '2px' }}>
+        <div className="flex flex-wrap gap-3">
           {pallets.map((pallet) => (
             <div key={pallet.number} className="relative">
               <button
                 type="button"
                 onClick={() => handlePalletClick(pallet.number)}
-                className={`w-16 h-16 rounded-lg font-bold transition-all ${
+                className={`w-[72px] h-[72px] rounded-xl font-semibold transition-all shadow-sm ${
                   selectedPallet === pallet.number
-                    ? 'bg-gray-200 text-gray-800 border-2 border-gray-600'
+                    ? 'bg-gradient-to-br from-gray-700 to-gray-800 text-white ring-2 ring-gray-900 ring-offset-2'
                     : pallet.quantity > 0
-                    ? 'bg-gray-200 text-gray-800 border border-gray-200'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+                    ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-800 hover:shadow-md'
+                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-400 hover:shadow-md'
                 }`}
               >
-                <div className="text-lg">{pallet.number}</div>
+                <div className="text-xl">{pallet.number}</div>
                 {pallet.quantity > 0 && (
                   <>
-                    <div className="text-[11px] font-medium">{pallet.quantity}</div>
-                    <div className="text-[9px] text-gray-600">{pallet.cartonCount} ctns</div>
+                    <div className="text-xs font-semibold mt-0.5">{pallet.quantity}</div>
+                    <div className={`text-[10px] ${selectedPallet === pallet.number ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {pallet.cartonCount} ctns
+                    </div>
                   </>
                 )}
               </button>
@@ -241,9 +219,9 @@ export function PalletSelectorCarton({
                     e.stopPropagation();
                     deletePallet(pallet.number);
                   }}
-                  className="absolute -top-2 -right-2 w-5 h-5 bg-gray-400 text-white rounded-full flex items-center justify-center hover:bg-gray-500"
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
@@ -251,17 +229,39 @@ export function PalletSelectorCarton({
           <button
             type="button"
             onClick={addPallet}
-            className="w-14 h-14 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            className="w-[72px] h-[72px] rounded-xl border-2 border-dashed border-gray-300 hover:border-gray-500 bg-white flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all hover:shadow-md"
           >
-            <Plus className="h-7 w-7" />
+            <Plus className="h-8 w-8" />
           </button>
         </div>
       </div>
 
-      {/* Progress Bar */}
+      {/* Carton Quantity Input - SECOND */}
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-sm font-medium text-gray-700">Progress</span>
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Enter retail unit quantity in current carton
+        </label>
+        <Input
+          ref={inputRef}
+          type="number"
+          min="1"
+          step="1"
+          value={cartonQuantity}
+          onChange={(e) => setCartonQuantity(e.target.value)}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleAddCarton();
+          }}
+          placeholder="Enter quantity"
+          className="text-2xl h-14 text-center font-semibold"
+        />
+      </div>
+
+      {/* Progress Bar */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Progress</span>
           <span
             className={`text-sm font-bold ${
               isOverAllocated
@@ -271,45 +271,60 @@ export function PalletSelectorCarton({
                 : 'text-green-600'
             }`}
           >
-            {totalAssigned} / {totalExpected} ({Math.round(progress)}%)
+            {totalAssigned} / {totalExpected}
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner">
           <div
-            className={`h-full transition-all duration-300 ${
+            className={`h-full transition-all duration-500 ease-out ${
               isOverAllocated
-                ? 'bg-blue-600'
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600'
                 : isUnderAllocated
-                ? 'bg-orange-600'
-                : 'bg-green-600'
+                ? 'bg-gradient-to-r from-orange-500 to-orange-600'
+                : 'bg-gradient-to-r from-green-500 to-green-600'
             }`}
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
+        <div className="text-right">
+          <span
+            className={`text-xs font-semibold ${
+              isOverAllocated
+                ? 'text-blue-600'
+                : isUnderAllocated
+                ? 'text-orange-600'
+                : 'text-green-600'
+            }`}
+          >
+            {Math.round(progress)}%
+          </span>
+        </div>
       </div>
 
-      {/* Clear Item Button */}
-      <div className="bg-white rounded-lg p-3">
-        <Button
-          onClick={handleClearItem}
-          disabled={isClearing || currentItemQuantity === 0}
-          variant="ghost"
-          size="sm"
-          className="w-full text-gray-600 hover:text-red-600"
-        >
-          {isClearing ? (
-            <>
-              <div className="animate-spin rounded-full h-3 w-3 border-2 border-gray-900 border-t-transparent mr-1"></div>
-              Clearing...
-            </>
-          ) : (
-            <>
-              <RotateCcw className="h-4 w-4 mr-1" />
-              Clear Current Item
-            </>
-          )}
-        </Button>
-      </div>
+      {/* Clear Item Button - Subtle */}
+      {currentItemQuantity > 0 && (
+        <div className="flex justify-center pt-2">
+          <Button
+            onClick={handleClearItem}
+            disabled={isClearing}
+            variant="ghost"
+            size="sm"
+            className="text-xs text-gray-400 hover:text-red-500 h-8"
+          >
+            {isClearing ? (
+              <>
+                <div className="animate-spin rounded-full h-3 w-3 border-2 border-gray-400 border-t-transparent mr-1.5"></div>
+                Clearing...
+              </>
+            ) : (
+              <>
+                <RotateCcw className="h-3 w-3 mr-1.5" />
+                Clear Current Item
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

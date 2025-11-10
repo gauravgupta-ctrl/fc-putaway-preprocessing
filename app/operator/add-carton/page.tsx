@@ -202,14 +202,14 @@ export default function AddCartonPage() {
         {toReserve ? (
           <>
             {/* Item Info */}
-            <div className="max-w-md mx-auto w-full mb-4">
-              <div className="bg-white rounded-lg border p-3">
-                <p className="text-xs text-gray-600 mb-1">Item</p>
+            <div className="max-w-md mx-auto w-full mb-5">
+              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Current Item</p>
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-lg font-bold text-gray-900 font-mono">
+                  <p className="text-xl font-bold text-gray-900 font-mono">
                     {item.sku}
                   </p>
-                  <p className="text-sm text-gray-600 truncate text-right">
+                  <p className="text-sm text-gray-600 truncate">
                     {item.sku_data?.description || ''}
                   </p>
                 </div>
@@ -217,15 +217,15 @@ export default function AddCartonPage() {
             </div>
 
             {/* Action Indicator */}
-            <div className="max-w-md mx-auto w-full mb-4">
-              <div className="bg-red-500 rounded-xl p-6 text-white text-center">
-                <p className="text-2xl">TO RESERVE</p>
+            <div className="max-w-md mx-auto w-full mb-5">
+              <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-5 text-white text-center shadow-lg">
+                <p className="text-2xl tracking-wide">TO RESERVE</p>
               </div>
             </div>
 
             {/* Pallet Assignment */}
-            <div className="max-w-md mx-auto w-full mb-4">
-              <div className="bg-gray-100 rounded-lg p-4">
+            <div className="max-w-md mx-auto w-full mb-5">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <PalletSelectorCarton
                   totalExpected={item.units_incoming || 0}
                   currentItemQuantity={currentItemQty}
@@ -276,22 +276,22 @@ export default function AddCartonPage() {
         )}
 
         {/* Action Button */}
-        <div className="max-w-md mx-auto w-full mt-auto">
+        <div className="max-w-md mx-auto w-full mt-auto px-4 pb-4">
           {toReserve ? (
             <Button
               onClick={handleAddCartonClick}
               disabled={isAdding || isInputFocused || cartonQty <= 0}
               size="lg"
-              className="w-full h-16 text-xl font-semibold disabled:opacity-50"
+              className="w-full h-14 text-lg font-semibold disabled:opacity-50 shadow-lg hover:shadow-xl transition-all"
             >
               {isAdding ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
                   Adding...
                 </>
               ) : (
                 <>
-                  <PackagePlus className="h-6 w-6 mr-3" />
+                  <PackagePlus className="h-5 w-5 mr-2" />
                   Add Carton to Pallet
                 </>
               )}
@@ -300,10 +300,10 @@ export default function AddCartonPage() {
             <Button
               onClick={() => router.push(`/operator/scan-item?to=${toId}`)}
               size="lg"
-              variant="ghost"
-              className="w-full h-16 text-xl font-semibold bg-transparent"
+              variant="outline"
+              className="w-full h-14 text-lg font-semibold"
             >
-              <ArrowRight className="h-6 w-6 mr-3" />
+              <ArrowRight className="h-5 w-5 mr-2" />
               Continue Scanning
             </Button>
           )}
