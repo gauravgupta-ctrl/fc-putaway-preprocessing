@@ -1,0 +1,37 @@
+transfer_number,merchant,estimated_arrival,receipt_time,destination,transfer_status,sku,units_incoming,sku_description,barcode,units_on_hand_pickface,average_daily_sales
+T0201,Merchant A,2025-11-15,2025-11-15 09:30:00,Warehouse 1,received,SKU-A001,500,Premium Wireless Headphones,7891234560001,45,5
+T0201,Merchant A,2025-11-15,2025-11-15 09:30:00,Warehouse 1,received,SKU-A002,300,Bluetooth Speaker,7891234560002,20,5
+T0201,Merchant A,2025-11-15,2025-11-15 09:30:00,Warehouse 1,received,SKU-A003,150,USB-C Cable 2m,7891234560003,80,5
+T0201,Merchant A,2025-11-15,2025-11-15 09:30:00,Warehouse 1,received,SKU-A004,200,Phone Case Black,7891234560004,15,5
+T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B001,1000,Organic Coffee Beans 1kg,7891234560011,10,5
+T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B002,800,Green Tea Bags 100ct,7891234560012,25,3
+T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B003,600,Honey Jar 500g,7891234560013,8,1
+T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B004,400,Almond Butter 350g,7891234560014,5,10
+T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C001,750,Yoga Mat Premium,7891234560021,12,20
+T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C002,500,Resistance Bands Set,7891234560022,8,1
+T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C003,300,Water Bottle 1L,7891234560023,50,8
+T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C004,250,Foam Roller,7891234560024,6,8
+T0204,Merchant A,2025-11-18,,Warehouse 1,in_transit,SKU-A005,400,Laptop Stand Aluminum,7891234560005,3,5
+T0204,Merchant A,2025-11-18,,Warehouse 1,in_transit,SKU-A006,350,Wireless Mouse,7891234560006,25,2
+T0204,Merchant A,2025-11-18,,Warehouse 1,in_transit,SKU-A007,600,Keyboard Mechanical,7891234560007,8,18
+T0205,Merchant D,2025-11-19,2025-11-19 10:15:00,Warehouse 3,received,SKU-D001,900,Stainless Steel Pan 28cm,7891234560031,5,5
+T0205,Merchant D,2025-11-19,2025-11-19 10:15:00,Warehouse 3,received,SKU-D002,700,Chef Knife 20cm,7891234560032,3,12
+T0205,Merchant D,2025-11-19,2025-11-19 10:15:00,Warehouse 3,received,SKU-D003,500,Cutting Board Bamboo,7891234560033,10,1
+T0205,Merchant D,2025-11-19,2025-11-19 10:15:00,Warehouse 3,received,SKU-D004,450,Mixing Bowl Set,7891234560034,7,10
+T0206,Merchant B,2025-11-20,,Warehouse 2,in_transit,SKU-B005,1200,Protein Powder Vanilla 2kg,7891234560015,4,12
+T0206,Merchant B,2025-11-20,,Warehouse 2,in_transit,SKU-B006,800,Energy Bars Box 24ct,7891234560016,15,10
+T0206,Merchant B,2025-11-20,,Warehouse 2,in_transit,SKU-B007,600,Vitamin C Tablets 100ct,7891234560017,20,2
+T0207,Merchant C,2025-11-21,2025-11-21 11:45:00,Warehouse 1,received,SKU-C005,550,Running Shoes Size 10,7891234560025,2,8
+T0207,Merchant C,2025-11-21,2025-11-21 11:45:00,Warehouse 1,received,SKU-C006,450,Sports Socks 3-Pack,7891234560026,30,5
+T0207,Merchant C,2025-11-21,2025-11-21 11:45:00,Warehouse 1,received,SKU-C007,350,Gym Bag Large,7891234560027,8,2
+T0207,Merchant C,2025-11-21,2025-11-21 11:45:00,Warehouse 1,received,SKU-C009,350,Gym Bag Largest,7849123456027,8,2
+T0207,Merchant C,2025-11-21,2025-11-21 11:45:00,Warehouse 1,received,SKU-C010,350,Gym Bag Tiny,7519123456027,20,2
+T0208,Merchant B,2025-11-22,,Warehouse 4,in_transit,SKU-E001,1500,LED Desk Lamp,7891234560041,6,3
+T0208,Merchant B,2025-11-22,,Warehouse 4,in_transit,SKU-E002,1200,Smart Plug 4-Pack,7891234560042,12,3
+T0208,Merchant B,2025-11-22,,Warehouse 4,in_transit,SKU-E003,900,Extension Cable 3m,7891234560043,40,8
+T0208,Merchant B,2025-11-22,,Warehouse 4,in_transit,SKU-E004,700,Power Bank 20000mAh,7891234560044,8,2
+T0208,Merchant B,2025-11-22,,Warehouse 4,in_transit,SKU-E005,700,Power Bank 8673mAh,7891234560049,8,2
+T02XX,Merchant A,2025-11-22,,Warehouse 4,in_transit,SKU-E001,1500,LED Desk Lamp,7891234560041,6,3
+T02XX,Merchant A,2025-11-22,,Warehouse 4,in_transit,SKU-E002,1200,Smart Plug 4-Pack,7891234560042,12,3
+T02XX,Merchant A,2025-11-22,,Warehouse 4,in_transit,SKU-E003,900,Extension Cable 3m,7891234560043,40,8
+T02XX,Merchant A,2025-11-22,,Warehouse 4,in_transit,SKU-E004,700,Power Bank 20000mAh,7891234560044,8,2

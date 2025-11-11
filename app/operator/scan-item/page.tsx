@@ -38,17 +38,14 @@ export default function ScanItemPage() {
       // Get all items for this TO that were requested
       const { data: items, error } = await supabase
         .from('transfer_order_lines')
-        .select(`
-          id,
-          sku,
-          units_incoming,
-          preprocessing_status,
-          sku_data:sku_attributes(description)
-        `)
+        .select('id, sku, units_incoming, preprocessing_status')
         .eq('transfer_order_id', toId)
         .in('preprocessing_status', ['requested', 'partially completed']);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching items:', error);
+        throw error;
+      }
 
       if (!items || items.length === 0) {
         // All items completed, proceed

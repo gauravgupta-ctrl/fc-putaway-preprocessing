@@ -314,27 +314,39 @@ export default function AddCartonPage() {
           </>
         )}
 
-        {/* Action Button */}
-        <div className="max-w-md mx-auto w-full mt-auto">
+        {/* Action Buttons */}
+        <div className="max-w-md mx-auto w-full mt-auto space-y-3">
           {toReserve ? (
-            <Button
-              onClick={handleAddCartonClick}
-              disabled={isAdding || isInputFocused || cartonQty <= 0}
-              size="lg"
-              className="w-full h-14 text-lg font-semibold disabled:opacity-50 shadow-lg hover:shadow-xl transition-all"
-            >
-              {isAdding ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <PackagePlus className="h-5 w-5 mr-2" />
-                  Add Carton to Pallet
-                </>
-              )}
-            </Button>
+            <>
+              <Button
+                onClick={handleAddCartonClick}
+                disabled={isAdding || isInputFocused || cartonQty <= 0}
+                size="lg"
+                className="w-full h-14 text-lg font-semibold disabled:opacity-50 shadow-lg hover:shadow-xl transition-all"
+              >
+                {isAdding ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <PackagePlus className="h-5 w-5 mr-2" />
+                    Add Carton to Pallet
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => router.push(`/operator/scan-item?to=${toId}`)}
+                disabled={isAdding}
+                size="lg"
+                variant="outline"
+                className="w-full h-12 text-base font-medium"
+              >
+                <Package className="h-5 w-5 mr-2" />
+                Scan Another Carton
+              </Button>
+            </>
           ) : (
             <Button
               onClick={() => router.push(`/operator/scan-item?to=${toId}`)}
