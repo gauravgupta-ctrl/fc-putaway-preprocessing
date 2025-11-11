@@ -276,7 +276,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
                   onReviewClick?.(row.original);
                 }}
               >
-                Review
+                Check
               </Button>
               <Button
                 variant="outline"
@@ -303,7 +303,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
       },
       {
         id: 'reviewed',
-        header: 'Reviewed',
+        header: 'Transfers Created?',
         cell: ({ row }) => {
           const status = row.original.preprocessing_status;
           if (status !== 'completed') return null;

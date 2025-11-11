@@ -208,7 +208,7 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
                 onCheckedChange={(checked) => handleToggleReviewed(!!checked)}
               />
               <Label htmlFor="reviewed-checkbox" className="text-sm font-medium cursor-pointer">
-                Reviewed
+                Transfers Created?
               </Label>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
