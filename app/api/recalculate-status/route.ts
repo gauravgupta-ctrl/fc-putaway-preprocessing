@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
       const manuallyCancelled = line.manually_cancelled;
       const autoRequested = line.auto_requested;
       
-      // Skip if already in-progress or completed
-      if (['in-progress', 'completed'].includes(currentStatus)) {
+      // Skip if already in-progress, partially completed, or completed
+      // These statuses indicate operator has started working on the item
+      if (['in-progress', 'partially completed', 'completed', 'not completed'].includes(currentStatus)) {
         continue;
       }
 
