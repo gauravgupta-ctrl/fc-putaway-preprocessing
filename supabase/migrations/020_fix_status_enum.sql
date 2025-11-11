@@ -1,5 +1,5 @@
 -- Migration: Fix preprocessing_status enum to include all required values
--- Add 'partially completed' and 'in-progress' to the enum
+-- Add 'partially completed', 'not completed', and 'in-progress' to the enum
 
 -- Step 1: Add new enum values if they don't exist
 DO $$ 
@@ -11,6 +11,15 @@ BEGIN
         AND enumtypid = 'preprocessing_status'::regtype
     ) THEN
         ALTER TYPE preprocessing_status ADD VALUE 'partially completed';
+    END IF;
+
+    -- Add 'not completed' if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_enum 
+        WHERE enumlabel = 'not completed' 
+        AND enumtypid = 'preprocessing_status'::regtype
+    ) THEN
+        ALTER TYPE preprocessing_status ADD VALUE 'not completed';
     END IF;
 
     -- Add 'in-progress' if it doesn't exist
