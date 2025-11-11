@@ -12,7 +12,7 @@ DECLARE
   all_not_needed BOOLEAN;
   new_status preprocessing_status;
 BEGIN
-  -- Get the transfer_order_id (works for both INSERT, UPDATE, DELETE)
+  -- Get the transfer_o rder_id (works for both INSERT, UPDATE, DELETE)
   IF TG_OP = 'DELETE' THEN
     to_id := OLD.transfer_order_id;
   ELSE

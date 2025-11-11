@@ -7,6 +7,7 @@ T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B001,1000,Organic Coffee
 T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B002,800,Green Tea Bags 100ct,7891234560012,25,4
 T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B003,600,Honey Jar 500g,7891234560013,8,1
 T0202,Merchant B,2025-11-16,,Warehouse 2,in_transit,SKU-B004,400,Almond Butter 350g,7891234560014,5,10
+T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C00X,750,Yoga Mat SUPER Premium,7234234560021,12,1
 T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C001,750,Yoga Mat Premium,7891234560021,12,22
 T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C002,500,Resistance Bands Set,7891234560022,8,45
 T0203,Merchant C,2025-11-17,2025-11-17 14:20:00,Warehouse 1,received,SKU-C003,300,Water Bottle 1L,7891234560023,50,8

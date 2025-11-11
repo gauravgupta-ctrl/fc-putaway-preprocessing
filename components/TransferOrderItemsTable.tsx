@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -20,6 +20,7 @@ import {
   requestAllPreprocessing,
   cancelAllPreprocessing,
 } from '@/lib/database';
+import { supabase } from '@/lib/supabase';
 
 interface TransferOrderItemsTableProps {
   data: TransferOrderLineWithSku[];
@@ -57,6 +58,37 @@ export function TransferOrderItemsTable({
     { id: 'days_of_stock', desc: true }, // Default: highest DOS first
   ]);
   const [loading, setLoading] = useState<string | null>(null);
+  const [itemProgress, setItemProgress] = useState<Map<string, { assigned: number; expected: number }>>(new Map());
+
+  useEffect(() => {
+    loadItemProgress();
+  }, [data]);
+
+  async function loadItemProgress() {
+    const progressMap = new Map<string, { assigned: number; expected: number }>();
+    
+    for (const item of data) {
+      // Only calculate for requested items
+      if (!['requested', 'partially completed', 'completed', 'not completed'].includes(item.preprocessing_status)) {
+        continue;
+      }
+      
+      const expected = item.units_incoming || 0;
+      
+      // Get assigned quantities for this item
+      const { data: assignments } = await supabase
+        .from('pallet_assignments')
+        .select('quantity')
+        .eq('transfer_order_id', item.transfer_order_id)
+        .eq('sku', item.sku);
+      
+      const assigned = assignments?.reduce((sum, a) => sum + a.quantity, 0) || 0;
+      
+      progressMap.set(item.id, { assigned, expected });
+    }
+    
+    setItemProgress(progressMap);
+  }
 
   async function handleRequest(itemId: string) {
     setLoading(itemId);
@@ -262,6 +294,36 @@ export function TransferOrderItemsTable({
           const status = row.getValue('preprocessing_status') as PreprocessingStatus;
           return <Badge className={getStatusColor(status)}>{status}</Badge>;
         },
+      },
+      {
+        id: 'progress',
+        header: 'Progress',
+        cell: ({ row }) => {
+          const progress = itemProgress.get(row.original.id);
+          if (!progress || progress.expected === 0) return null;
+          
+          const percentage = (progress.assigned / progress.expected) * 100;
+          const isOver = progress.assigned > progress.expected;
+          const isUnder = progress.assigned < progress.expected;
+          
+          return (
+            <div className="w-24">
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className={`h-full transition-all ${
+                    isOver
+                      ? 'bg-blue-500'
+                      : isUnder
+                      ? 'bg-orange-500'
+                      : 'bg-green-500'
+                  }`}
+                  style={{ width: `${Math.min(percentage, 100)}%` }}
+                />
+              </div>
+            </div>
+          );
+        },
+        enableSorting: false,
       },
       {
         id: 'storage_destination',
