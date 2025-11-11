@@ -100,15 +100,14 @@ export default function AddCartonPage() {
       const newTotalQty = currentItemQty + cartonQty;
       const expected = item.units_incoming || 0;
       
-      let newStatus: 'partially completed' | 'completed' = 'partially completed';
+      // Only update to 'completed' if all units are assigned
+      // Otherwise keep as 'requested' (partially completed state)
       if (newTotalQty >= expected) {
-        newStatus = 'completed';
+        await supabase
+          .from('transfer_order_lines')
+          .update({ preprocessing_status: 'completed' })
+          .eq('id', itemId);
       }
-
-      await supabase
-        .from('transfer_order_lines')
-        .update({ preprocessing_status: newStatus })
-        .eq('id', itemId);
 
       // Navigate back to scan item page
       router.push(`/operator/scan-item?to=${toId}`);
@@ -128,21 +127,20 @@ export default function AddCartonPage() {
     // This is called by Enter key in the component
     if (!toId || !itemId || !item) return;
 
-    await addCartonToPallet(toId, itemId, item.sku, palletNumber, cartonQuantity, userId);
-    
-    // Update item status
-    const newTotalQty = currentItemQty + cartonQuantity;
-    const expected = item.units_incoming || 0;
-    
-    let newStatus: 'partially completed' | 'completed' = 'partially completed';
-    if (newTotalQty >= expected) {
-      newStatus = 'completed';
-    }
-
-    await supabase
-      .from('transfer_order_lines')
-      .update({ preprocessing_status: newStatus })
-      .eq('id', itemId);
+      await addCartonToPallet(toId, itemId, item.sku, palletNumber, cartonQuantity, userId);
+      
+      // Update item status
+      const newTotalQty = currentItemQty + cartonQuantity;
+      const expected = item.units_incoming || 0;
+      
+      // Only update to 'completed' if all units are assigned
+      // Otherwise keep as 'requested' (partially completed state)
+      if (newTotalQty >= expected) {
+        await supabase
+          .from('transfer_order_lines')
+          .update({ preprocessing_status: 'completed' })
+          .eq('id', itemId);
+      }
 
     // Navigate back to scan item page
     router.push(`/operator/scan-item?to=${toId}`);
@@ -185,7 +183,6 @@ export default function AddCartonPage() {
   }
 
   const toReserve = item.preprocessing_status === 'requested' || 
-                     item.preprocessing_status === 'partially completed' || 
                      item.preprocessing_status === 'completed';
 
   return (
