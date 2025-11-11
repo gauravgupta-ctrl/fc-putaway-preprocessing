@@ -3,9 +3,10 @@
 export type PreprocessingStatus =
   | 'not needed'
   | 'requested'
-  | 'not completed'
   | 'partially completed'
-  | 'completed';
+  | 'not completed'
+  | 'completed'
+  | 'in-progress';
 
 export interface Setting {
   id: string;

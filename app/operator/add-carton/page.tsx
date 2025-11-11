@@ -100,14 +100,17 @@ export default function AddCartonPage() {
       const newTotalQty = currentItemQty + cartonQty;
       const expected = item.units_incoming || 0;
       
-      // Only update to 'completed' if all units are assigned
-      // Otherwise keep as 'requested' (partially completed state)
+      let newStatus: 'partially completed' | 'completed';
       if (newTotalQty >= expected) {
-        await supabase
-          .from('transfer_order_lines')
-          .update({ preprocessing_status: 'completed' })
-          .eq('id', itemId);
+        newStatus = 'completed';
+      } else {
+        newStatus = 'partially completed';
       }
+      
+      await supabase
+        .from('transfer_order_lines')
+        .update({ preprocessing_status: newStatus })
+        .eq('id', itemId);
 
       // Navigate back to scan item page
       router.push(`/operator/scan-item?to=${toId}`);
@@ -133,14 +136,17 @@ export default function AddCartonPage() {
       const newTotalQty = currentItemQty + cartonQuantity;
       const expected = item.units_incoming || 0;
       
-      // Only update to 'completed' if all units are assigned
-      // Otherwise keep as 'requested' (partially completed state)
+      let newStatus: 'partially completed' | 'completed';
       if (newTotalQty >= expected) {
-        await supabase
-          .from('transfer_order_lines')
-          .update({ preprocessing_status: 'completed' })
-          .eq('id', itemId);
+        newStatus = 'completed';
+      } else {
+        newStatus = 'partially completed';
       }
+      
+      await supabase
+        .from('transfer_order_lines')
+        .update({ preprocessing_status: newStatus })
+        .eq('id', itemId);
 
     // Navigate back to scan item page
     router.push(`/operator/scan-item?to=${toId}`);
@@ -183,6 +189,7 @@ export default function AddCartonPage() {
   }
 
   const toReserve = item.preprocessing_status === 'requested' || 
+                     item.preprocessing_status === 'partially completed' ||
                      item.preprocessing_status === 'completed';
 
   return (

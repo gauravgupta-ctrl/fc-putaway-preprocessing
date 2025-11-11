@@ -35,13 +35,12 @@ export default function ScanItemPage() {
     setCompletingTO(true);
     
     try {
-      // Get all items for this TO that were requested or in progress
-      // Note: Using 'requested' only since 'partially completed' may not be in the enum yet
+      // Get all items for this TO that are not yet fully completed
       const { data: items, error: itemsError } = await supabase
         .from('transfer_order_lines')
         .select('id, sku, units_incoming, preprocessing_status')
         .eq('transfer_order_id', toId)
-        .eq('preprocessing_status', 'requested');
+        .in('preprocessing_status', ['requested', 'partially completed']);
 
       if (itemsError) {
         console.error('Error fetching items:', itemsError);
