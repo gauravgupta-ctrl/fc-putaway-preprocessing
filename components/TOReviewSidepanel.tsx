@@ -129,15 +129,17 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
     }
 
     // Load expected quantities from transfer order lines
+    // Include all items that were requested for preprocessing (not just completed)
     const { data: linesData, error: linesError } = await supabase
       .from('transfer_order_lines')
       .select(`
         sku,
         units_incoming,
+        preprocessing_status,
         sku_data:sku_attributes(description)
       `)
       .eq('transfer_order_id', transferOrder.id)
-      .eq('preprocessing_status', 'completed');
+      .in('preprocessing_status', ['requested', 'partially completed', 'completed', 'not completed']);
 
     if (linesData && !linesError) {
       const expected = linesData.map((item: any) => ({
@@ -166,6 +168,7 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
   }, {} as Record<number, PalletAssignment[]>);
 
   // Calculate quantity variances by SKU
+  // Show ALL requested items with variance (including those never touched)
   const quantityVariances = expectedQuantities.map((expected) => {
     const assigned = palletAssignments
       .filter((a) => a.sku === expected.sku)
@@ -178,7 +181,7 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
       assigned,
       variance,
     };
-  }).filter((v) => v.variance !== 0); // Only show items with variance
+  }).filter((v) => v.variance !== 0); // Show items that are over or under assigned
 
   return (
     <>
