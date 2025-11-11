@@ -106,6 +106,17 @@ export default function ScanItemPage() {
         }
       }
 
+      // Mark TO as completed
+      const { error: toUpdateError } = await supabase
+        .from('transfer_orders')
+        .update({ preprocessing_status: 'completed' })
+        .eq('id', toId);
+
+      if (toUpdateError) {
+        console.error('Error updating TO status:', toUpdateError);
+        throw new Error(`Failed to update TO status: ${toUpdateError.message}`);
+      }
+
       // Navigate to print labels
       router.push(`/operator/print-labels?to=${toId}&completed=true`);
     } catch (error: any) {
