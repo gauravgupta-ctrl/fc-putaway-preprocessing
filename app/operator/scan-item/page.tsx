@@ -36,33 +36,40 @@ export default function ScanItemPage() {
     
     try {
       // Get all items for this TO that were requested
-      const { data: items, error } = await supabase
+      const { data: items, error: itemsError } = await supabase
         .from('transfer_order_lines')
         .select('id, sku, units_incoming, preprocessing_status')
         .eq('transfer_order_id', toId)
         .in('preprocessing_status', ['requested', 'partially completed']);
 
-      if (error) {
-        console.error('Error fetching items:', error);
-        throw error;
+      if (itemsError) {
+        console.error('Error fetching items:', itemsError);
+        throw new Error(`Failed to fetch items: ${itemsError.message}`);
       }
 
       if (!items || items.length === 0) {
-        // All items completed, proceed
+        // All items completed, proceed directly
         router.push(`/operator/print-labels?to=${toId}&completed=true`);
         return;
       }
 
       // Get assigned quantities for incomplete items
-      const { data: assignments } = await supabase
+      const { data: assignments, error: assignmentsError } = await supabase
         .from('pallet_assignments')
         .select('sku, quantity')
         .eq('transfer_order_id', toId);
 
+      if (assignmentsError) {
+        console.error('Error fetching assignments:', assignmentsError);
+        throw new Error(`Failed to fetch assignments: ${assignmentsError.message}`);
+      }
+
       const assignedQty = new Map<string, number>();
-      assignments?.forEach(a => {
-        assignedQty.set(a.sku, (assignedQty.get(a.sku) || 0) + a.quantity);
-      });
+      if (assignments) {
+        assignments.forEach(a => {
+          assignedQty.set(a.sku, (assignedQty.get(a.sku) || 0) + a.quantity);
+        });
+      }
 
       // Build warning message
       const incompleteItems = items.map(item => {
@@ -88,17 +95,22 @@ export default function ScanItemPage() {
         .map(item => item.id);
 
       if (notCompletedIds.length > 0) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('transfer_order_lines')
           .update({ preprocessing_status: 'not completed' })
           .in('id', notCompletedIds);
+
+        if (updateError) {
+          console.error('Error updating items:', updateError);
+          throw new Error(`Failed to update items: ${updateError.message}`);
+        }
       }
 
       // Navigate to print labels
       router.push(`/operator/print-labels?to=${toId}&completed=true`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error completing TO:', error);
-      alert('Failed to complete Transfer Order. Please try again.');
+      alert(`Failed to complete Transfer Order: ${error.message || 'Please try again.'}`);
       setCompletingTO(false);
     }
   }

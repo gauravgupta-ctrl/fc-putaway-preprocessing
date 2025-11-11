@@ -340,8 +340,8 @@ export default function AddCartonPage() {
                 onClick={() => router.push(`/operator/scan-item?to=${toId}`)}
                 disabled={isAdding}
                 size="lg"
-                variant="outline"
-                className="w-full h-12 text-base font-medium"
+                variant="ghost"
+                className="w-full h-12 text-base font-medium text-gray-600 hover:text-gray-900 bg-transparent"
               >
                 <Package className="h-5 w-5 mr-2" />
                 Scan Another Carton
