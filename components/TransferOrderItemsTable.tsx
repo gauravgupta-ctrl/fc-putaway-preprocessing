@@ -272,7 +272,7 @@ export function TransferOrderItemsTable({
           
           if (status === 'not needed') {
             return <span className="text-sm text-gray-600">Pick Face</span>;
-          } else if (['requested', 'in-progress', 'completed'].includes(status)) {
+          } else if (['requested', 'partially completed', 'completed', 'not completed'].includes(status)) {
             return (
               <span className="text-sm text-gray-900">
                 Reserve{reserveDest ? ` - ${reserveDest}` : ''}
