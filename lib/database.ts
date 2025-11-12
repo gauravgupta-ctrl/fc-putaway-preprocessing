@@ -178,6 +178,48 @@ export async function getTransferOrders() {
     return [];
   }
 
+  const toIds = tos.map((to) => to.id);
+
+  const requestedExpectedMap = new Map<string, number>();
+  const requestedLineIds = new Set<string>();
+
+  if (toIds.length > 0) {
+    const { data: lines } = await supabase
+      .from('transfer_order_lines')
+      .select('id, transfer_order_id, units_incoming, preprocessing_status')
+      .in('transfer_order_id', toIds);
+
+    lines?.forEach((line) => {
+      if (line.preprocessing_status && line.preprocessing_status !== 'not needed') {
+        requestedLineIds.add(line.id);
+        const incoming = line.units_incoming ?? 0;
+        requestedExpectedMap.set(
+          line.transfer_order_id,
+          (requestedExpectedMap.get(line.transfer_order_id) ?? 0) + incoming
+        );
+      }
+    });
+  }
+
+  const requestedProcessedMap = new Map<string, number>();
+
+  if (requestedLineIds.size > 0) {
+    const { data: assignments } = await supabase
+      .from('pallet_assignments')
+      .select('transfer_order_id, transfer_order_line_id, quantity')
+      .in('transfer_order_id', toIds);
+
+    assignments?.forEach((assignment) => {
+      if (requestedLineIds.has(assignment.transfer_order_line_id)) {
+        const qty = assignment.quantity ?? 0;
+        requestedProcessedMap.set(
+          assignment.transfer_order_id,
+          (requestedProcessedMap.get(assignment.transfer_order_id) ?? 0) + qty
+        );
+      }
+    });
+  }
+
   // Get all eligible merchants with destinations
   const { data: merchants, error: merchantError } = await supabase
     .from('eligible_merchants')
@@ -192,6 +234,8 @@ export async function getTransferOrders() {
   return tos.map((to) => ({
     ...to,
     reserve_destination: merchantDestMap.get(to.merchant) || null,
+    requested_units_expected: requestedExpectedMap.get(to.id) ?? 0,
+    requested_units_processed: requestedProcessedMap.get(to.id) ?? 0,
   }));
 }
 
@@ -214,6 +258,24 @@ export async function getTransferOrderLines(transferOrderIds: string[]) {
     return [];
   }
 
+  const lineIds = lines.map((line: any) => line.id);
+  const processedByLine = new Map<string, number>();
+
+  if (lineIds.length > 0) {
+    const { data: assignments } = await supabase
+      .from('pallet_assignments')
+      .select('transfer_order_line_id, quantity')
+      .in('transfer_order_line_id', lineIds);
+
+    assignments?.forEach((assignment) => {
+      const current = processedByLine.get(assignment.transfer_order_line_id) ?? 0;
+      processedByLine.set(
+        assignment.transfer_order_line_id,
+        current + (assignment.quantity ?? 0)
+      );
+    });
+  }
+
   // Get all eligible merchants with destinations
   const { data: merchants } = await supabase
     .from('eligible_merchants')
@@ -228,6 +290,7 @@ export async function getTransferOrderLines(transferOrderIds: string[]) {
   return lines.map((line: any) => ({
     ...line,
     reserve_destination: merchantDestMap.get(line.transfer_orders.merchant) || null,
+    processed_units: processedByLine.get(line.id) ?? 0,
   }));
 }
 

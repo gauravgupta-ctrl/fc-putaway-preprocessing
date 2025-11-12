@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -20,7 +20,6 @@ import {
   requestAllPreprocessing,
   cancelAllPreprocessing,
 } from '@/lib/database';
-import { supabase } from '@/lib/supabase';
 
 interface TransferOrderItemsTableProps {
   data: TransferOrderLineWithSku[];
@@ -48,6 +47,44 @@ function getStatusColor(status: PreprocessingStatus): string {
   }
 }
 
+function getItemProgressBarClass(processed: number, expected: number): string {
+  if (expected <= 0 && processed <= 0) {
+    return 'bg-gradient-to-r from-gray-300 to-gray-400';
+  }
+
+  if (processed > expected) {
+    return 'bg-gradient-to-r from-blue-500 to-blue-600';
+  }
+
+  if (processed === expected) {
+    return 'bg-gradient-to-r from-green-500 to-green-600';
+  }
+
+  return 'bg-gradient-to-r from-red-500 to-red-600';
+}
+
+function LineCompletionBar({ processed, expected }: { processed: number; expected: number }) {
+  const clampedExpected = expected > 0 ? expected : 0;
+  const clampedProcessed = processed > 0 ? processed : 0;
+  const ratio = clampedExpected > 0 ? (clampedProcessed / clampedExpected) * 100 : clampedProcessed > 0 ? 100 : 0;
+  const width = Math.min(100, Math.max(0, ratio));
+  const color = getItemProgressBarClass(clampedProcessed, clampedExpected);
+
+  return (
+    <div className="w-20" aria-label="Item completion">
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className={`h-full transition-all duration-500 ease-out ${color}`}
+          style={{ width: `${width}%` }}
+        />
+      </div>
+      <span className="sr-only">
+        {clampedProcessed} of {clampedExpected} units processed
+      </span>
+    </div>
+  );
+}
+
 export function TransferOrderItemsTable({
   data,
   userId,
@@ -58,37 +95,6 @@ export function TransferOrderItemsTable({
     { id: 'days_of_stock', desc: true }, // Default: highest DOS first
   ]);
   const [loading, setLoading] = useState<string | null>(null);
-  const [itemProgress, setItemProgress] = useState<Map<string, { assigned: number; expected: number }>>(new Map());
-
-  useEffect(() => {
-    loadItemProgress();
-  }, [data]);
-
-  async function loadItemProgress() {
-    const progressMap = new Map<string, { assigned: number; expected: number }>();
-    
-    for (const item of data) {
-      // Only calculate for requested items
-      if (!['requested', 'partially completed', 'completed', 'not completed'].includes(item.preprocessing_status)) {
-        continue;
-      }
-      
-      const expected = item.units_incoming || 0;
-      
-      // Get assigned quantities for this item
-      const { data: assignments } = await supabase
-        .from('pallet_assignments')
-        .select('quantity')
-        .eq('transfer_order_id', item.transfer_order_id)
-        .eq('sku', item.sku);
-      
-      const assigned = assignments?.reduce((sum, a) => sum + a.quantity, 0) || 0;
-      
-      progressMap.set(item.id, { assigned, expected });
-    }
-    
-    setItemProgress(progressMap);
-  }
 
   async function handleRequest(itemId: string) {
     setLoading(itemId);
@@ -296,32 +302,17 @@ export function TransferOrderItemsTable({
         },
       },
       {
-        id: 'progress',
-        header: 'Progress',
+        id: 'completion',
+        header: 'Completion',
         cell: ({ row }) => {
-          const progress = itemProgress.get(row.original.id);
-          if (!progress || progress.expected === 0) return null;
-          
-          const percentage = (progress.assigned / progress.expected) * 100;
-          const isOver = progress.assigned > progress.expected;
-          const isUnder = progress.assigned < progress.expected;
-          
-          return (
-            <div className="w-24">
-              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                <div
-                  className={`h-full transition-all ${
-                    isOver
-                      ? 'bg-blue-500'
-                      : isUnder
-                      ? 'bg-orange-500'
-                      : 'bg-green-500'
-                  }`}
-                  style={{ width: `${Math.min(percentage, 100)}%` }}
-                />
-              </div>
-            </div>
-          );
+          const expected = row.original.preprocessing_status === 'not needed' ? 0 : row.original.units_incoming ?? 0;
+          const processed = row.original.processed_units ?? 0;
+
+          if ((expected ?? 0) <= 0 && processed <= 0) {
+            return <span className="text-xs text-gray-400">-</span>;
+          }
+
+          return <LineCompletionBar processed={processed} expected={expected ?? 0} />;
         },
         enableSorting: false,
       },

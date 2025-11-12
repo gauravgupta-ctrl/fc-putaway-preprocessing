@@ -37,6 +37,8 @@ export interface TransferOrder {
   synced_at: string;
   created_at: string;
   updated_at: string;
+  requested_units_expected?: number;
+  requested_units_processed?: number;
 }
 
 export interface SkuAttribute {
@@ -68,6 +70,7 @@ export interface TransferOrderLine {
   synced_at: string;
   created_at: string;
   updated_at: string;
+  processed_units?: number;
 }
 
 export interface PalletLabel {

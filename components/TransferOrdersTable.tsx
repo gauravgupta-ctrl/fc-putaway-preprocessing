@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -21,7 +21,6 @@ import type { TransferOrder, PreprocessingStatus } from '@/types/database';
 import { format } from 'date-fns';
 import { generateTransferCSVs } from '@/lib/transferCSV';
 import { toggleAdminReviewed } from '@/lib/database';
-import { supabase } from '@/lib/supabase';
 
 interface TransferOrdersTableProps {
   data: TransferOrder[];
@@ -53,6 +52,44 @@ function getStatusColor(status: PreprocessingStatus): string {
   }
 }
 
+function getProgressBarClass(processed: number, expected: number): string {
+  if (expected <= 0 && processed <= 0) {
+    return 'bg-gradient-to-r from-gray-300 to-gray-400';
+  }
+
+  if (processed > expected) {
+    return 'bg-gradient-to-r from-blue-500 to-blue-600';
+  }
+
+  if (processed === expected) {
+    return 'bg-gradient-to-r from-green-500 to-green-600';
+  }
+
+  return 'bg-gradient-to-r from-red-500 to-red-600';
+}
+
+function CompletionBar({ processed, expected }: { processed: number; expected: number }) {
+  const clampedExpected = expected > 0 ? expected : 0;
+  const clampedProcessed = processed > 0 ? processed : 0;
+  const ratio = clampedExpected > 0 ? (clampedProcessed / clampedExpected) * 100 : clampedProcessed > 0 ? 100 : 0;
+  const width = Math.min(100, Math.max(0, ratio));
+  const colorClass = getProgressBarClass(clampedProcessed, clampedExpected);
+
+  return (
+    <div className="w-24" aria-label="Unit completion">
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className={`h-full transition-all duration-500 ease-out ${colorClass}`}
+          style={{ width: `${width}%` }}
+        />
+      </div>
+      <span className="sr-only">
+        {clampedProcessed} of {clampedExpected} units processed
+      </span>
+    </div>
+  );
+}
+
 export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onReviewClick, userId, onUpdate, reviewedOverrides, onReviewedChange }: TransferOrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'estimated_arrival', desc: true }, // Default: newest first
@@ -60,38 +97,6 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [downloadingTOs, setDownloadingTOs] = useState<Set<string>>(new Set());
   const [updatingReviewed, setUpdatingReviewed] = useState<string | null>(null);
-  const [toProgress, setToProgress] = useState<Map<string, { assigned: number; expected: number }>>(new Map());
-
-  useEffect(() => {
-    loadProgressData();
-  }, [data]);
-
-  async function loadProgressData() {
-    const progressMap = new Map<string, { assigned: number; expected: number }>();
-    
-    for (const to of data) {
-      // Get expected quantities for requested items
-      const { data: lines } = await supabase
-        .from('transfer_order_lines')
-        .select('sku, units_incoming')
-        .eq('transfer_order_id', to.id)
-        .in('preprocessing_status', ['requested', 'partially completed', 'completed', 'not completed']);
-      
-      const expected = lines?.reduce((sum, line) => sum + (line.units_incoming || 0), 0) || 0;
-      
-      // Get assigned quantities
-      const { data: assignments } = await supabase
-        .from('pallet_assignments')
-        .select('quantity')
-        .eq('transfer_order_id', to.id);
-      
-      const assigned = assignments?.reduce((sum, a) => sum + a.quantity, 0) || 0;
-      
-      progressMap.set(to.id, { assigned, expected });
-    }
-    
-    setToProgress(progressMap);
-  }
 
   async function handleToggleReviewed(toId: string, transferNumber: string, checked: boolean) {
     console.log('Toggling reviewed for TO:', transferNumber, 'ID:', toId, 'New value:', checked);
@@ -294,31 +299,17 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
       },
       {
         id: 'progress',
-        header: 'Progress',
+        header: 'Completion',
         cell: ({ row }) => {
-          const progress = toProgress.get(row.original.id);
-          if (!progress || progress.expected === 0) return null;
-          
-          const percentage = (progress.assigned / progress.expected) * 100;
-          const isOver = progress.assigned > progress.expected;
-          const isUnder = progress.assigned < progress.expected;
-          
-          return (
-            <div className="w-24">
-              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                <div
-                  className={`h-full transition-all ${
-                    isOver
-                      ? 'bg-blue-500'
-                      : isUnder
-                      ? 'bg-orange-500'
-                      : 'bg-green-500'
-                  }`}
-                  style={{ width: `${Math.min(percentage, 100)}%` }}
-                />
-              </div>
-            </div>
-          );
+          const to = row.original as TransferOrder & { requested_units_expected?: number; requested_units_processed?: number };
+          const expected = to.requested_units_expected ?? 0;
+          const processed = to.requested_units_processed ?? 0;
+
+          if (expected <= 0 && processed <= 0) {
+            return <span className="text-xs text-gray-400">-</span>;
+          }
+
+          return <CompletionBar processed={processed} expected={expected} />;
         },
         enableSorting: false,
       },
