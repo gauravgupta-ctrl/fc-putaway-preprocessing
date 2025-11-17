@@ -23,6 +23,7 @@ export default function AddCartonPage() {
   const [cartonQty, setCartonQty] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const toId = searchParams.get('to');
@@ -32,6 +33,36 @@ export default function AddCartonPage() {
     loadData();
     checkAuth();
   }, [toId, itemId]);
+
+  // Auto-navigation countdown for pick face items
+  useEffect(() => {
+    if (!item) return;
+    
+    const toReserve = item.preprocessing_status === 'requested' || 
+                     item.preprocessing_status === 'partially completed' ||
+                     item.preprocessing_status === 'completed';
+    
+    // Only start countdown for pick face items (not needed)
+    if (!toReserve && toId) {
+      setCountdown(3);
+      
+      const interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            clearInterval(interval);
+            // Navigate after countdown completes
+            router.push(`/operator/scan-item?to=${toId}`);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    } else {
+      setCountdown(null);
+    }
+  }, [item, toId, router]);
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -352,15 +383,18 @@ export default function AddCartonPage() {
               </Button>
             </>
           ) : (
-            <Button
+            <div
               onClick={() => router.push(`/operator/scan-item?to=${toId}`)}
-              size="lg"
-              variant="outline"
-              className="w-full h-14 text-lg font-semibold"
+              className="w-full text-center cursor-pointer py-4 px-6 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              <ArrowRight className="h-5 w-5 mr-2" />
-              Continue Scanning
-            </Button>
+              <p className="text-lg font-semibold text-gray-700 hover:text-gray-900 transition-colors">
+                {countdown !== null && countdown > 0 ? (
+                  <>Scan next item in {countdown} second{countdown !== 1 ? 's' : ''}</>
+                ) : (
+                  <>Scan next item</>
+                )}
+              </p>
+            </div>
           )}
         </div>
       </div>
