@@ -28,20 +28,30 @@ export default function PrintLabelsPage() {
   const completed = searchParams.get('completed') === 'true';
 
   useEffect(() => {
-    loadData();
-    checkAuth();
-    setIsAllCompleted(completed);
+    initialize();
   }, [toId, completed]);
+
+  async function initialize() {
+    setIsAllCompleted(completed);
+    // Ensure userId is loaded before loadData
+    await checkAuth();
+    await loadData();
+  }
 
   async function checkAuth() {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    setUserId(session?.user?.id || null);
+    const currentUserId = session?.user?.id || null;
+    setUserId(currentUserId);
+    return currentUserId;
   }
 
   async function loadData() {
     if (!toId) return;
+
+    // Ensure userId is available
+    const currentUserId = userId || await checkAuth();
 
     // Load TO info with merchant
     const { data: toData } = await supabase
@@ -71,8 +81,8 @@ export default function PrintLabelsPage() {
     setCompletedItems(items);
 
     // If all items are completed, cleanup and resequence pallets
-    if (completed) {
-      await cleanupAndResequencePallets(toId, userId);
+    if (completed && currentUserId) {
+      await cleanupAndResequencePallets(toId, currentUserId);
     }
 
     // Get pallet count from assignments (after cleanup)
@@ -86,7 +96,14 @@ export default function PrintLabelsPage() {
     setPrinting(true);
 
     try {
-      await logLabelPrint(toId, labelCount, userId);
+      // Ensure userId is available before printing
+      const currentUserId = userId || await checkAuth();
+      
+      if (!currentUserId) {
+        throw new Error('User not authenticated. Please log in again.');
+      }
+
+      await logLabelPrint(toId, labelCount, currentUserId);
 
       // Log to console (replace with actual printer integration later)
       console.log('PRINTING PALLET LABELS:', {
@@ -106,9 +123,9 @@ export default function PrintLabelsPage() {
           router.push('/operator');
         }, 2000);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error logging label print:', error);
-      alert('Failed to log label print. Please try again.');
+      alert(`Failed to log label print: ${error.message || 'Please try again.'}`);
       setPrinting(false);
     }
   }
