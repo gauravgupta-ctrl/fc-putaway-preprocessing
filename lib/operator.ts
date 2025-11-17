@@ -2,18 +2,35 @@ import { supabase } from './supabase';
 import type { TransferOrder, TransferOrderLine, SkuAttribute, PreprocessingStatus } from '@/types/database';
 
 // Find TO by transfer number (supports both "#T0303" and "T0303")
+// Note: Database stores transfer numbers WITH the "#" prefix
 export async function findTransferOrderByNumber(transferNumber: string) {
-  // Remove # prefix if present for consistent lookup
-  const normalized = transferNumber.startsWith('#') ? transferNumber.substring(1) : transferNumber;
+  // Trim whitespace first
+  const trimmed = transferNumber.trim();
   
+  // Remove # prefix if present to get the base number
+  const baseNumber = trimmed.startsWith('#') ? trimmed.substring(1) : trimmed;
+  
+  // Check both with and without # prefix (database stores with #)
+  const withPrefix = `#${baseNumber}`;
+  const withoutPrefix = baseNumber;
+  const withPrefixUpper = withPrefix.toUpperCase();
+  const withoutPrefixUpper = withoutPrefix.toUpperCase();
+  
+  // Search for all possible variations: with/without # and case variations
   const { data, error } = await supabase
     .from('transfer_orders')
     .select('*')
-    .eq('transfer_number', normalized)
-    .single();
+    .or(`transfer_number.eq.${withPrefix},transfer_number.eq.${withoutPrefix},transfer_number.eq.${withPrefixUpper},transfer_number.eq.${withoutPrefixUpper}`)
+    .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 results gracefully
 
   if (error) {
     console.error('Error finding TO:', error);
+    console.error('Searched for:', withPrefix, withoutPrefix, withPrefixUpper, withoutPrefixUpper);
+    return null;
+  }
+
+  if (!data) {
+    console.log('Transfer Order not found. Searched for:', withPrefix, withoutPrefix);
     return null;
   }
 
