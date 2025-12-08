@@ -239,7 +239,7 @@ export function PalletSelectorCarton({
       {/* Carton Quantity Input - SECOND */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Enter retail unit quantity in current carton
+          How many units are in this carton?
         </label>
         <Input
           ref={inputRef}
