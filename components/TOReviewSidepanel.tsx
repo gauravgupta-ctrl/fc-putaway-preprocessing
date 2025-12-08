@@ -196,7 +196,7 @@ export function TOReviewSidepanel({ transferOrder, onClose, userId, onUpdate, re
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900">Pre-processed Pallets</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Prepared Pallets</h2>
             <p className="text-sm text-gray-600 mt-1">Review pallet assignments and quantities for this transfer order</p>
           </div>
           <div className="flex items-center gap-4">

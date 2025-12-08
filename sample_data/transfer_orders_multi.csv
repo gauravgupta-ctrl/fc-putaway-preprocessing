@@ -1,0 +1,12 @@
+transfer_number,merchant,estimated_arrival,receipt_time,destination,transfer_status,sku,units_incoming,sku_description,barcode,units_on_hand_pickface,average_daily_sales
+T0501,Merchant X,2025-12-10,2025-12-10 09:00:00,Warehouse 1,Received,SKU-1001,120,Red Hoodie,111100001,300,25
+T0501,Merchant X,2025-12-10,2025-12-10 09:00:00,Warehouse 1,Received,SKU-1002,80,Blue Jeans,111100002,180,18
+T0501,Merchant X,2025-12-10,2025-12-10 09:00:00,Warehouse 1,Received,SKU-1003,60,White Tee,111100003,220,30
+T0501,Merchant X,2025-12-10,2025-12-10 09:00:00,Warehouse 1,Received,SKU-1004,45,Black Cap,111100004,140,12
+T0501,Merchant X,2025-12-10,2025-12-10 09:00:00,Warehouse 1,Received,SKU-1005,35,Green Scarf,111100005,90,8
+T0502,Merchant Y,2025-12-15,,Warehouse 2,In Transit,SKU-2001,150,Sport Sneakers,222200001,400,40
+T0502,Merchant Y,2025-12-15,,Warehouse 2,In Transit,SKU-2002,95,Running Shorts,222200002,260,22
+T0502,Merchant Y,2025-12-15,,Warehouse 2,In Transit,SKU-2003,70,Training Socks,222200003,310,28
+T0502,Merchant Y,2025-12-15,,Warehouse 2,In Transit,SKU-2004,55,Gym Bag,222200004,120,10
+T0502,Merchant Y,2025-12-15,,Warehouse 2,In Transit,SKU-2005,40,Water Bottle,222200005,150,14
+
