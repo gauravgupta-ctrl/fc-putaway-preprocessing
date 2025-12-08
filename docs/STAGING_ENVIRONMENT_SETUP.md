@@ -75,9 +75,25 @@ You need to replicate your production database schema in staging:
 
 ### 1.4 Configure Row Level Security (RLS)
 
+**Option A: Use the RLS Setup Script (Recommended)**
+
+1. Go to **SQL Editor** in your staging Supabase project
+2. Open the file: `docs/STAGING_RLS_SETUP.sql`
+3. Copy the entire contents
+4. Paste into SQL Editor
+5. Click "Run" (or press Cmd/Ctrl + Enter)
+6. Verify all policies were created (check the verification query results)
+
+**Option B: Manual Setup**
+
 1. Go to **Authentication** → **Policies**
 2. Replicate the same RLS policies from production
 3. Or run the same policy creation SQL scripts
+
+**What the script does:**
+- Enables RLS on all tables (settings, eligible_merchants, transfer_orders, sku_attributes, transfer_order_lines, pallet_labels, audit_log, user_profiles, pallet_assignments)
+- Creates "Allow all operations" policies for development/staging
+- Includes verification queries to check the setup
 
 ---
 
@@ -102,13 +118,34 @@ You need to replicate your production database schema in staging:
    - **Output Directory**: `.next` (auto-filled)
    - **Install Command**: `npm install` (auto-filled)
 
-4. **Configure Git Settings**
-   - **Production Branch**: Set to `staging` (important!)
-   - This ensures only the `staging` branch deploys to this project
-
-5. **Click "Deploy"**
+4. **Click "Deploy"**
    - Wait for initial deployment to complete
    - Note the staging URL (e.g., `putaway-preprocess-staging.vercel.app`)
+
+5. **Configure Production Branch (After Deployment)**
+   
+   **Option A: Find in General Settings**
+   - Go to your project dashboard (after deployment completes)
+   - Click **Settings** → **General**
+   - Scroll down to find **Production Branch** setting
+   - Change from `main` to `staging` ⚠️ (Important!)
+   - Save changes
+   
+   **Option B: Alternative Approach (If setting not found)**
+   
+   Since you're creating a **separate Vercel project** for staging, you have two options:
+   
+   1. **Leave Production Branch as `main`** - This is fine! You can:
+      - Manually trigger deployments from the `staging` branch using the Deployments page
+      - Or use Preview Deployments (Vercel automatically creates previews for non-main branches)
+      - Your staging project will get preview deployments from `staging` branch
+   
+   2. **Use the Deployments page**:
+      - Go to **Deployments** tab
+      - Click **"..."** (three dots) on any deployment
+      - Select **"Redeploy"** and choose the `staging` branch
+   
+   **Note:** For a separate staging project, you don't strictly need to change the Production Branch. The key is using different environment variables (staging Supabase) and manually deploying from the `staging` branch when needed.
 
 ### 2.2 Configure Environment Variables
 

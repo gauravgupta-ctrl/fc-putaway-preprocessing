@@ -1,0 +1,11 @@
+transfer_number,merchant,estimated_arrival,receipt_time,destination,transfer_status,sku,units_incoming,sku_description,barcode,units_on_hand_pickface,average_daily_sales
+T1001,Merchant Alpha,2025-12-01,2025-12-01 09:00:00,Warehouse 1,received,SKU-ALPHA-01,300,Wireless Scanner,BAR-ALPHA-01,25,8
+T1001,Merchant Alpha,2025-12-01,2025-12-01 09:00:00,Warehouse 1,received,SKU-ALPHA-02,150,Handheld Printer,BAR-ALPHA-02,12,6
+T1002,Merchant Beta,2025-12-02,,Warehouse 2,in_transit,SKU-BETA-01,500,Industrial Tape,BAR-BETA-01,40,10
+T1002,Merchant Beta,2025-12-02,,Warehouse 2,in_transit,SKU-BETA-02,250,Safety Gloves,BAR-BETA-02,60,20
+T1003,Merchant Gamma,2025-12-03,2025-12-03 14:30:00,Warehouse 1,received,SKU-GAMMA-01,400,Stackable Bins,BAR-GAMMA-01,80,18
+T1003,Merchant Gamma,2025-12-03,2025-12-03 14:30:00,Warehouse 1,received,SKU-GAMMA-02,200,Barcode Labels,BAR-GAMMA-02,150,30
+T1004,Merchant Delta,2025-12-04,,Warehouse 3,in_transit,SKU-DELTA-01,600,LED Worklight,BAR-DELTA-01,20,5
+T1004,Merchant Delta,2025-12-04,,Warehouse 3,in_transit,SKU-DELTA-02,350,Battery Pack,BAR-DELTA-02,18,4
+T1005,Merchant Echo,2025-12-05,,Warehouse 4,scheduled,SKU-ECHO-01,450,Floor Marking Tape,BAR-ECHO-01,200,25
+T1005,Merchant Echo,2025-12-05,,Warehouse 4,scheduled,SKU-ECHO-02,300,Stretch Wrap,BAR-ECHO-02,90,15
