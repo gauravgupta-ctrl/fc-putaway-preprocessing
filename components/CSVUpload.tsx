@@ -192,7 +192,7 @@ T0102,Merchant B,2025-11-20,,Warehouse 2,In Transit,SKU-003,200,Gadget C,4567891
             <li>Timestamps: <code className="bg-gray-100 px-1 rounded">YYYY-MM-DD HH:MM:SS</code> (e.g., 2025-11-15 14:30:00)</li>
             <li>Numeric fields must be positive numbers</li>
             <li>Existing records will be updated, new records will be added</li>
-            <li>Manual preprocessing choices will be preserved</li>
+            <li>Manual pre-sortation choices will be preserved</li>
           </ul>
         </div>
       </CardContent>

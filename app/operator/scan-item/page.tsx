@@ -168,7 +168,7 @@ export default function ScanItemPage() {
       } else if (status === 'completed') {
         setWarning('This item has already been processed. You can reprocess it if needed.');
       } else if (status === 'not needed') {
-        setWarning('This item is not requested for pre-processing. It will go to PICK FACE.');
+        setWarning('This item is not requested for pre-sortation. It will go to PICK FACE.');
       }
 
       // Always allow to proceed

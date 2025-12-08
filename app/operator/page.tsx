@@ -44,7 +44,7 @@ export default function OperatorHomePage() {
       const status = transferOrder.preprocessing_status;
       
       if (status === 'completed') {
-        setError('Pre-processing for this Transfer Order is already completed.');
+        setError('Pre-sortation for this Transfer Order is already completed.');
         setCompletedTO(transferOrder);
         
         // Get pallet count for the completed TO
@@ -56,7 +56,7 @@ export default function OperatorHomePage() {
       }
 
       if (status === 'not needed') {
-        setError('This Transfer Order has not been requested for pre-processing yet.');
+        setError('This Transfer Order has not been requested for pre-sortation yet.');
         setLoading(false);
         return;
       }
@@ -112,7 +112,7 @@ export default function OperatorHomePage() {
             Scan Transfer Order
           </h1>
           <p className="text-gray-600">
-            Scan the TO barcode to begin pre-processing
+            Scan the TO barcode to begin pre-sortation
           </p>
         </div>
 

@@ -139,7 +139,7 @@ export default function SettingsPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
-          <p className="text-gray-600">Configure pre-processing rules and data synchronization</p>
+          <p className="text-gray-600">Configure pre-sortation rules and data synchronization</p>
         </div>
         <Button
           variant="outline"
@@ -167,7 +167,7 @@ export default function SettingsPage() {
           <CardTitle>Days of Stock Threshold</CardTitle>
           <CardDescription>
             Items with more than this many days of stock in the pick face will be flagged for
-            pre-processing
+            pre-sortation
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,7 +207,7 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>Eligible Merchants</CardTitle>
           <CardDescription>
-            Only these merchants can be subject to pre-processing. Other merchants will always go to
+            Only these merchants can be subject to pre-sortation. Other merchants will always go to
             ASRS.
           </CardDescription>
         </CardHeader>
@@ -242,7 +242,7 @@ export default function SettingsPage() {
             <div className="border rounded-md divide-y">
               {merchants.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
-                  No merchants configured. Add merchants that can be subject to pre-processing.
+                  No merchants configured. Add merchants that can be subject to pre-sortation.
                 </div>
               ) : (
                 merchants.map((merchant) => (

@@ -103,7 +103,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold mb-2">Transfer Orders Dashboard</h1>
           <p className="text-gray-600">
-            Review and manage pre-processing for incoming transfer orders
+            Review and manage pre-sortation for incoming transfer orders
           </p>
           <p className="text-sm text-gray-500 mt-1">
             Current threshold: <Badge variant="outline">{threshold} days</Badge>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle>Transfer Orders</CardTitle>
           <CardDescription>
-            Select transfer orders to review items and request pre-processing to direct high-stock items to shelf storage
+            Select transfer orders to review items and request pre-sortation to direct high-stock items to shelf storage
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -145,7 +145,7 @@ export default function DashboardPage() {
               Items in Selected Transfer Order{selectedTOs.length > 1 ? 's' : ''}
             </CardTitle>
             <CardDescription>
-              Items above the {threshold}-day threshold are automatically requested for pre-processing. Review and cancel individual items if needed, or manually request items below the threshold.
+              Items above the {threshold}-day threshold are automatically requested for pre-sortation. Review and cancel individual items if needed, or manually request items below the threshold.
             </CardDescription>
           </CardHeader>
           <CardContent>

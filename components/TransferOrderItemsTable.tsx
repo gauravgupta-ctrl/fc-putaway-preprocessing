@@ -102,8 +102,8 @@ export function TransferOrderItemsTable({
       await requestPreprocessing(itemId, userId);
       await onUpdate();
     } catch (error) {
-      console.error('Error requesting preprocessing:', error);
-      alert('Failed to request preprocessing');
+      console.error('Error requesting pre-sortation:', error);
+      alert('Failed to request pre-sortation');
     } finally {
       setLoading(null);
     }
@@ -115,8 +115,8 @@ export function TransferOrderItemsTable({
       await cancelPreprocessing(itemId, userId);
       await onUpdate();
     } catch (error) {
-      console.error('Error canceling preprocessing:', error);
-      alert('Failed to cancel preprocessing');
+      console.error('Error canceling pre-sortation:', error);
+      alert('Failed to cancel pre-sortation');
     } finally {
       setLoading(null);
     }
@@ -132,7 +132,7 @@ export function TransferOrderItemsTable({
       .map((item) => item.id);
 
     if (eligibleItems.length === 0) {
-      alert('No items above threshold available for pre-processing request');
+      alert('No items above threshold available for pre-sortation request');
       return;
     }
 
@@ -283,25 +283,6 @@ export function TransferOrderItemsTable({
         },
       },
       {
-        accessorKey: 'preprocessing_status',
-        header: ({ column }) => {
-          return (
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-              className="h-auto p-0"
-            >
-              Pre-processing Status
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },
-        cell: ({ row }) => {
-          const status = row.getValue('preprocessing_status') as PreprocessingStatus;
-          return <Badge className={getStatusColor(status)}>{status}</Badge>;
-        },
-      },
-      {
         id: 'completion',
         header: 'Completion',
         cell: ({ row }) => {
@@ -351,7 +332,7 @@ export function TransferOrderItemsTable({
                 onClick={() => handleRequest(itemId)}
                 disabled={isLoading}
               >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Request'}
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send to Reserve'}
               </Button>
             );
           } else if (status === 'requested') {
@@ -362,13 +343,32 @@ export function TransferOrderItemsTable({
                 onClick={() => handleCancel(itemId)}
                 disabled={isLoading}
               >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Cancel'}
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send to Pick Face'}
               </Button>
             );
           } else {
             // For in-progress and completed, no action
             return <span className="text-gray-400 text-sm">-</span>;
           }
+        },
+      },
+      {
+        accessorKey: 'preprocessing_status',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="h-auto p-0"
+            >
+              Pre-sortation Status
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const status = row.getValue('preprocessing_status') as PreprocessingStatus;
+          return <Badge className={getStatusColor(status)}>{status}</Badge>;
         },
       },
     ],

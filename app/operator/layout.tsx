@@ -20,7 +20,7 @@ export default function OperatorLayout({ children }: { children: React.ReactNode
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900">Putaway Pre-processing</h1>
+            <h1 className="text-xl font-bold text-gray-900">Putaway Pre-sortation</h1>
             <button
               onClick={handleLogout}
               className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg flex items-center gap-1"

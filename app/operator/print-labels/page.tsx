@@ -149,7 +149,7 @@ export default function PrintLabelsPage() {
             All Complete!
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            Pre-processing completed for {toNumber}
+            Pre-sortation completed for {toNumber}
           </p>
           <p className="text-sm text-gray-500">
             Redirecting...
@@ -182,7 +182,7 @@ export default function PrintLabelsPage() {
                 All Items Completed
               </p>
               <p className="text-sm text-green-700 mt-1">
-                Pre-processing complete for this Transfer Order
+                Pre-sortation complete for this Transfer Order
               </p>
             </div>
           </div>

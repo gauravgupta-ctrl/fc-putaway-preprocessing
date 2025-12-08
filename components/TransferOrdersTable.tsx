@@ -287,7 +287,7 @@ export function TransferOrdersTable({ data, selectedTOs, onSelectionChange, onRe
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
               className="h-auto p-0"
             >
-              Pre-processing Status
+              Pre-sortation Status
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           );
