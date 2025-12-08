@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Putaway Preprocess',
-  description: 'Fulfillment center putaway process management',
+  title: 'Putaway Pre-sortation',
+  description: 'Fulfillment center putaway pre-sortation management',
 }
 
 export default function RootLayout({

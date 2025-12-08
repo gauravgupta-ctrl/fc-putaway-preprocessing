@@ -9,7 +9,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Putaway Preprocess</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Putaway Pre-sortation</h1>
               <p className="text-sm text-gray-600">Admin Portal</p>
             </div>
             <nav className="flex gap-4">

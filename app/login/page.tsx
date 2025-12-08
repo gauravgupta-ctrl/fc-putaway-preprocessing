@@ -71,7 +71,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl font-bold">Putaway Preprocess</CardTitle>
+          <CardTitle className="text-2xl font-bold">Putaway Pre-sortation</CardTitle>
           <CardDescription className="text-base">
             {selectedRole ? `Login as ${selectedRole === 'admin' ? 'Admin' : 'Operator'}` : 'Select your role to continue'}
           </CardDescription>
